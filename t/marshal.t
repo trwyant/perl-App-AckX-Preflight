@@ -64,6 +64,13 @@ is_deeply marshal( qw{ --file x --reverse A B C } ),
 	} ],
     '--file x --reverse uses that order';
 
+is_deeply marshal( qw{ --reverse --file x --no-reverse A B C } ),
+    [ qw{
+	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::Reverse
+	} ],
+    '--reverse --file x --no-reverse pulls File to front';
+
 done_testing;
 
 1;

@@ -112,7 +112,7 @@ sub __marshal_plugins {
     # of a plug-in is recorded.
     my @found_p_rec;
     my %num_found;
-    foreach my $arg ( @ARGV ) {
+    foreach my $arg ( reverse @ARGV ) {
 	$arg =~ m/ \A -+ ( [^=:]+ ) /smx
 	    or next;
 	foreach my $p_rec ( @{ $opt_to_plugin{$1} || [] } ) {
@@ -126,7 +126,7 @@ sub __marshal_plugins {
 
     return (
 	grep { ! $num_found{$_->{package}}++ }
-	@found_p_rec,
+	reverse( @found_p_rec ),
        	sort { $a->{package} cmp $b->{package} }
 	    @plugin_without_opt,
 	    map { @{ $_ } } values %opt_to_plugin,
@@ -209,9 +209,10 @@ with it.
 
 Plug-ins that have an L<__options()|/__options> method are called in the
 order the specified options appear on the command line. If a plug-in's
-L<__options()|/__options> method returns more than one option, the first
-one seen determines the order. If more than one plug-in specifies the
-same option, they are processed in ASCIIbetical order.
+L<__options()|/__options> method returns more than one option, or if an
+option is specified more than once, the last one seen determines the
+order. If more than one plug-in specifies the same option, they are
+processed in ASCIIbetical order.
 
 Plug-ins whose options do not appear in the actual command, or that do
 not implement an L<__options()|/__options> method are called last, in
