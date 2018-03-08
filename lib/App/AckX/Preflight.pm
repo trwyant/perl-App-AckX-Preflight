@@ -53,7 +53,28 @@ EOD
 	},
     );
 
-####
+    foreach my $p_rec ( $self->__marshal_plugins ) {
+	my $code = $p_rec->{package}->can( '__process' )
+	    or $p_rec->{package}->__process();	# Just to get the error.
+	my $opt = $p_rec->{options} ?
+	    $self->getopt( @{ $p_rec->{options} } ) :
+	    {};
+	$code->( $self, $opt );
+    }
+
+    return $self->__execute( ack => @ARGV );
+}
+
+sub __execute {
+    my ( $self, @arg ) = @_;
+
+    exec { $arg[0] } @arg
+	or $self->die( "Failed to exec $arg[0]: $!" );
+}
+
+# Its own code so we can test it.
+sub __marshal_plugins {
+    my ( $self ) = @_;
 
     # Go through all the plugins and index them by the options they
     # support.
@@ -70,9 +91,14 @@ EOD
 	    foreach ( @opt_spec ) {
 		my $os = $_;			# Don't want alias
 		$os =~ s/ \A -+ //smx;		# Optional leading dash
-		$os =~ s/ [:=+!] .* //smx;	# Argument spec.
+		$os =~ s/ ( [:=+!] ) .* //smx;	# Argument spec.
+		my $negated = '!' eq $1;
 		foreach my $o ( split qr{ [|] }smx, $os ) {
 		    push @{ $opt_to_plugin{$o} ||= [] }, $p_rec;
+		    if ( $negated ) {
+			push @{ $opt_to_plugin{"no$o"} ||= [] }, $p_rec;
+			push @{ $opt_to_plugin{"no-$o"} ||= [] }, $p_rec;
+		    }
 		    $recorded++;
 		}
 	    }
@@ -85,69 +111,41 @@ EOD
     # order, the plug-in, if any, that handles each. Only the first use
     # of a plug-in is recorded.
     my @found_p_rec;
+    my %num_found;
     foreach my $arg ( @ARGV ) {
 	$arg =~ m/ \A -+ ( [^=:]+ ) /smx
 	    or next;
 	foreach my $p_rec ( @{ $opt_to_plugin{$1} || [] } ) {
-	    $p_rec->{found}++
+	    $num_found{$p_rec->{package}}++
 		and next;
 	    push @found_p_rec, $p_rec;
 	}
     }
 
-    # Finally, process all the plug-ins in order. The order is those
-    # with options appearing on the command line in the order found,
-    # followed by those without options on the command line in
-    # alphabetical order.
-    foreach my $p_rec ( @found_p_rec,
+    %num_found = ();
+
+    return (
+	grep { ! $num_found{$_->{package}}++ }
+	@found_p_rec,
        	sort { $a->{package} cmp $b->{package} }
 	    @plugin_without_opt,
-	    map { @{ $_ } } values %opt_to_plugin ) {
-	$p_rec->{processed}++
-	    and next;
-	my $code = $p_rec->{package}->can( '__process' )
-	    or $p_rec->{package}->__process();	# Just to get the error.
-	my $opt = $p_rec->{options} ?
-	    $self->getopt( @{ $p_rec->{options} } ) :
-	    {};
-	$code->( $self, $opt );
-    }
-
-=begin comment
-
-    foreach my $module ( $self->__plugins() ) {
-	if ( my $code = $module->can( '__process' ) ) {
-	    $code->( $self );
-	} else {
-	    $module->__process();	# Just to get the error.
-	}
-    }
-
-=end comment
-
-=cut
-
-    return $self->__execute( ack => @ARGV );
-}
-
-sub __execute {
-    my ( $self, @arg ) = @_;
-
-    exec { $arg[0] } @arg
-	or $self->die( "Failed to exec $arg[0]: $!" );
+	    map { @{ $_ } } values %opt_to_plugin,
+    );
 }
 
 {
-    my $mpo = Module::Pluggable::Object->new(
-	filename	=> __FILE__,
-	inner		=> 0,
-	max_depth	=> MAX_DEPTH,
-	package		=> __PACKAGE__,
-	require		=> 1,
-	search_path	=> SEARCH_PATH,
-    );
+
+    my $mpo;
 
     sub __plugins {
+	$mpo ||= Module::Pluggable::Object->new(	# Oh, for state()
+	    filename	=> __FILE__,
+	    inner		=> 0,
+	    max_depth	=> MAX_DEPTH,
+	    package		=> __PACKAGE__,
+	    require		=> 1,
+	    search_path	=> SEARCH_PATH,
+	);
 	return $mpo->plugins();
     }
 }

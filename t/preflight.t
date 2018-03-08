@@ -5,53 +5,11 @@ use 5.008008;
 use strict;
 use warnings;
 
-use Module::Pluggable::Object;
-
-BEGIN {
-
-    # This horrible hack is because Module::Pluggable::Object insists on
-    # grooming @INC if it detects that it is running a distribution
-    # test. And I want that, because I do not want to pull in rogue
-    # plugins once they exist. But I also do not want to distribute any
-    # plugins with this distribution. So the testing plugins have to
-    # live somewhere else, and that somewhere needs to be injected back
-    # into the search list AFTER it is groomed. And without changing any
-    # source code. So my solution (as taught in the Conan the Barbarian
-    # school of programming) is to modify
-    # Module::Pluggable::Object::new().
-    #
-    # This MUST be done in a BEGIN block BEFORE App::AckX::Preflight is
-    # loaded, because the Module::Pluggable::Object object is
-    # instantiated when App::AckX::Preflight is loaded.
-
-    my $old_new = \&Module::Pluggable::Object::new;
-
-    no warnings qw{ redefine };
-
-    *Module::Pluggable::Object::new = sub {
-	my ( $class, %opt ) = @_;
-	push @{ $opt{search_dirs} ||= [] }, 't/lib';
-	return $old_new->( $class, %opt );
-    };
-}
-
 use App::AckX::Preflight;
-
-BEGIN {
-
-    # Hot-plug the __execute() method to simply return its arguments,
-    # since what they are constitutes the basis of this test.
-
-    no warnings qw{ redefine };
-
-    *App::AckX::Preflight::__execute = sub {
-	my ( undef, @arg ) = @_;
-	return @arg;
-    };
-}
-
 use Test::More 0.88;	# Because of done_testing();
 
+use lib qw{ inc };
+use My::Module::Test qw{ -noexec -search-test };
 
 is_deeply [ sort App::AckX::Preflight->__plugins() ],
     [ qw{
