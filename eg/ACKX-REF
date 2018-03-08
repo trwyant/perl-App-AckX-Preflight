@@ -1,0 +1,5 @@
+
+# ackxp -file
+# match Perl literal reference single-quoted, double-quoted, or fat comma
+
+((['"])(?:ARRAY|CODE|FORMAT|GLOB|HASH|IO|LVALUE|REF|Regexp|SCALAR|VSTRING)\2|(?<!['"\w])(?:ARRAY|CODE|FORMAT|GLOB|HASH|IO|LVALUE|REF|Regexp|SCALAR|VSTRING)\s*=>)

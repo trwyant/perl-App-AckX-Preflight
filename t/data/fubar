@@ -1,0 +1,4 @@
+# match either 'fu' or 'bar', case-blind
+
+(?i:\bfu\b)
+(?i:\bbar\b)
