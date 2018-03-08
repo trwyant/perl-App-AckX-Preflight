@@ -7,7 +7,7 @@ use warnings;
 
 use Carp;
 
-our $VERSION = '0.000_01';
+our $VERSION = '0.000_001';
 
 sub __options {
     return( qw{ reverse! } );

@@ -17,7 +17,7 @@ use File::Basename ();
 use Getopt::Long 2.33;
 use Module::Pluggable::Object 5.2;
 
-our $VERSION = '0.000_01';
+our $VERSION = '0.000_001';
 
 sub die : method {	## no critic (ProhibitBuiltinHomonyms,RequireFinalReturn)
     my ( undef, @arg ) = @_;
