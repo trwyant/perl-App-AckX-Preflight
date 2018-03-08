@@ -119,18 +119,9 @@ author of the file to ensure that these manipulations of the file's
 contents result in a valid regular expression that has the desired
 functionality. I<Caveat coder.>
 
-=head1 METHODS
-
-This class supports the following public methods:
-
-=head1 ATTRIBUTES
-
-This class has the following attributes:
-
-
 =head1 SEE ALSO
 
-<<< replace or remove boilerplate >>>
+L<App::AckX::Preflight|App::AckX::Preflight>.
 
 =head1 SUPPORT
 
