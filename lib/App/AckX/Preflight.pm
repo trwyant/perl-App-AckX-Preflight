@@ -5,19 +5,85 @@ use 5.008008;
 use strict;
 use warnings;
 
+use App::Ack();
+use Carp;
+use Cwd ();
+use File::Basename ();
+use File::Spec;
+use Getopt::Long 2.33;
+use Module::Pluggable::Object 5.2;
+use Text::ParseWords ();
+
+our $VERSION = '0.000_001';
+
+use constant ARRAY_REF	=> ref [];
+use constant SCALAR_REF	=> ref \0;
+
+use constant IS_VMS	=> 'VMS' eq $^O;
+use constant IS_WINDOWS	=> { map { $_ => 1 } qw{ dos MSWin32 } }->{$^O};
+
+BEGIN {
+    IS_WINDOWS
+	and require Win32;
+}
+
+use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
+    qw{ dos MSWin32 VMS } }->{$^O};
+
 use constant SEARCH_PATH	=> join '::', __PACKAGE__, 'Plugin';
 use constant MAX_DEPTH		=> do {
     my @parts = split qr{ :: }smx, SEARCH_PATH;
     1 + @parts;
 };
 
-use App::Ack();
-use Carp;
-use File::Basename ();
-use Getopt::Long 2.33;
-use Module::Pluggable::Object 5.2;
+{
+    my %default = (
+	global	=> IS_VMS ? undef :	# TODO what, exactly?
+	    IS_WINDOWS ? Win32::CSIDL_COMMON_APPDATA() :
+	    '/etc',
+	home	=> IS_VMS ? $ENV{'SYS$LOGIN'} :
+	    IS_WINDOWS ? Win32::CSIDL_APPDATA() :
+	    $ENV{HOME},
+    );
 
-our $VERSION = '0.000_001';
+    sub new {
+	my ( $class, %arg ) = @_;
+
+	ref $class
+	    and %arg = ( %{ $class }, %arg );
+
+	foreach ( keys %arg ) {
+	    exists $default{$_}
+		or croak "Argument '$_' not supported";
+	}
+
+	foreach ( keys %default ) {
+	    defined $arg{$_}
+		or $arg{$_} = $default{$_};
+	}
+
+	foreach ( qw{ global home } ) {
+	    -d $arg{$_}
+		or croak "Argument '$_' must be a directory";
+	}
+
+	return bless \%arg, ref $class || $class;
+    }
+
+    sub global {
+	my ( $self ) = @_;
+	ref $self
+	    or $self = \%default;
+	return $self->{global};
+    }
+
+    sub home {
+	my ( $self ) = @_;
+	ref $self
+	    or $self = \%default;
+	return $self->{home};
+    }
+}
 
 sub die : method {	## no critic (ProhibitBuiltinHomonyms,RequireFinalReturn)
     my ( undef, @arg ) = @_;
@@ -53,6 +119,8 @@ EOD
 	},
     );
 
+    $self->__process_files( $self->__find_files() );
+
     foreach my $p_rec ( $self->__marshal_plugins ) {
 	my $code = $p_rec->{package}->can( '__process' )
 	    or $p_rec->{package}->__process();	# Just to get the error.
@@ -70,6 +138,96 @@ sub __execute {
 
     exec { $arg[0] } @arg
 	or $self->die( "Failed to exec $arg[0]: $!" );
+}
+
+sub __find_files {
+    my ( $self ) = @_;
+    my $opt = $self->getopt( qw{ ackxprc=s ignore-ackxp-defaults! } );
+
+    my $use_env = ! grep { m/ \A --?  noenv \z /smx } @ARGV;
+
+    my @files;
+
+    # Files are processed in most-significant to least-significant
+    # order, as shown below. Starred sources are disabled by --noenv
+
+    # ACKXP_OPTIONS environment variable (*)
+    $use_env
+	and defined $ENV{ACKXP_OPTIONS}
+	and '' ne $ENV{ACKXP_OPTIONS}
+	and push @files, \$ENV{ACKXP_OPTIONS};
+    # --ackxprc
+    defined $opt->{ackxprc}
+	and push @files, $opt->{ackxprc};
+
+    if ( $use_env ) {
+	# Project ackprc (walk directories current to root inclusive)(*)
+	my $cwd = Cwd::getcwd();
+	# TODO ack untaints this, but ...
+	my @parts = File::Spec->splitdir( $cwd );
+	while ( @parts ) {
+	    my $path = $self->_file_from_parts( catdir => @parts )
+		or next;
+	    push @files, $path;
+	    last;
+	} continue {
+	    pop @parts;
+	}
+	# User's home ackxprc (ACKXPRC or system-dependant location)(*)
+	push @files, $self->_file_from_env( catfile => 'ACKXPRC' ) ||
+	    $self->_file_from_parts( catdir => $self->home() );
+	# Global ackxprc(*)
+	push @files, $self->_file_from_parts(
+	    catdir => $self->global(), [ 'ackxprc' ] );
+    }
+    # Built-in defaults (unless --ignore-ackxp-defaults)
+
+    my %seen;
+    return ( grep { ! $seen{_file_id( $_ )}++ } @files );
+}
+
+sub _file_from_env {	## no critic (RequireArgUnpacking)
+    my ( $self, $method, @arg ) = @_;
+    @arg
+	or return;
+    foreach ( @arg ) {
+	defined $ENV{$_}
+	    and '' ne $ENV{$_}
+	    or return;
+	$_ = $ENV{$_};
+    }
+    @_ = ( $self, $method, @arg );
+    goto &_file_from_parts;
+}
+
+sub _file_from_parts {
+    my ( $self, $method, @arg ) = @_;
+    my $names = ARRAY_REF eq ref $arg[-1] ? pop @arg : [ qw{ .ackxprc
+	_ackxprc } ];
+    @arg
+	or $self->die( "No file parts specified" );	# TODO Confess?
+    my $path = @arg > 1 ? File::Spec->$method( @arg ) : $arg[0];
+    -d $path
+	or return $path;
+    my @f;
+    foreach my $base ( @{ $names } ) {
+	my $p = File::Spec->catfile( $path, $base );
+	-r $p
+	    and push @f, $p;
+    }
+    @f
+	or return;
+    local $" = ' and ';
+    @f > 1
+	and $self->die( "Both @f found; delete one" );
+    return $f[0];
+}
+
+sub _file_id {
+    my ( $path ) = @_;
+    return FILE_ID_IS_INODE ?
+	join( ':', ( stat $path )[ 0, 1 ] ) :
+	Cwd::abs_path( $path );
 }
 
 # Its own code so we can test it.
@@ -150,6 +308,29 @@ sub __marshal_plugins {
     }
 }
 
+sub __process_files {
+    my ( $self, @files ) = @_;
+    foreach my $fn ( @files ) {
+	my @args;
+	if ( SCALAR_REF eq ref $fn ) {
+	    @args = Text::ParseWords::shellwords( ${ $fn } );
+	} else {
+	    open my $fh, '<:encoding(utf-8)', $fn	## no critic (RequireBriefOpen)
+		or $self->die( "Failed to open $fn: $!" );
+	    while ( <$fh> ) {
+		m/ \S /smx
+		    and not m/ \A \s* [#] /smx
+		    or next;
+		chomp;
+		push @args, $_;
+	    }
+	    close $fh;
+	}
+	splice @ARGV, 0, 0, @args;
+    }
+    return;
+}
+
 1;
 
 __END__
@@ -175,23 +356,70 @@ All the interesting functionality is provided by a plugin system.
 
 This class supports the following public methods:
 
+=head2 new
+
+ my $aaxp = App::AckX::Preflight->new();
+
+This static method instantiates an C<App::AckX::Preflight> object. It
+takes the following optional arguments as name/value pairs.
+
+=over
+
+=item global
+
+This is the name of the directory in which the global configuration file
+is stored. The directory must exist. The default is system-dependant,
+and chosen to be compatible with L<App::Ack|App::Ack>:
+
+=over
+
+=item VMS: None. I will fix this if someone will tell me what it should
+be.
+
+=item Windows: C<Win32::CSIDL_COMMON_APPDATA()>.
+
+=item anything else: C<'/etc'>.
+
+=back
+
+=item home
+
+This is the name of the directory in which the user's configuration file
+is stored. The directory must exist. The default is system-dependant,
+and chosen to be compatible with L<App::Ack|App::Ack>:
+
+=over
+
+=item VMS: C<$ENV{'SYS$LOGIN'}>.
+
+=item Windows: C<Win32::CSIDL_APPDATA()>.
+
+=item anything else: C<$ENV{HOME}>.
+
+=back
+
+=back
+
+If C<new()> is called as a normal method it clones its invocant,
+applying the arguments (if any) after the clone.
+
 =head2 die
 
  App::Ack::Preflight->die( 'Goodbye, cruel world!' );
+ $aaxp->die( 'Ditto.' );
 
-This static method dies with the given message. If more than one
-argument is specified they are concatenated. The message is prefixed by
-the basename of C<$0>.
+This method is simply a wrapper for C<App::Ack::die()>.
 
 =head2 getopt
 
  my $opt = App::AckX::Preflight->getopt(
      qw{ foo! bar=s } );
+ my $opt2 = $aaxp->getopt( qw{ foo! bar=s } );
 
-This static method simply calls C<Getopt::Long::GetOptions>, with the
-package configured appropriately for our use. Any arguments actually
-processed will be removed from C<@ARGV>. The return is a reference to
-the options hash.
+This method simply calls C<Getopt::Long::GetOptions>, with the package
+configured appropriately for our use. Any arguments actually processed
+will be removed from C<@ARGV>. The return is a reference to the options
+hash.
 
 The actual configuration used is
 
@@ -199,13 +427,32 @@ The actual configuration used is
 
 which is what L<App::Ack|App::Ack> uses.
 
+=head2 global
+
+ say App::Ack::Preflight->global();
+ say $aaxp->global();
+
+If called on an object, this method returns the value of the C<{global}>
+attribute, whether explicit or defaulted. If called statically, it
+returns the default value of the C<{global}> attribute.
+
+=head2 home
+
+ say App::Ack::Preflight->home();
+ say $aaxp->home();
+
+If called on an object, this method returns the value of the C<{home}>
+attribute, whether explicit or defaulted. If called statically, it
+returns the default value of the C<{home}> attribute.
+
 =head2 run
 
  App::Ack::Preflight->run();
+ $aaxp->run();
 
-This static method calls the plugins, and then C<exec()>s F<ack>,
-passing it C<@ARGV> as it stands after all the plugins have finished
-with it.
+This method reads all the configuration files, calls the plugins,
+and then C<exec()>s F<ack>, passing it C<@ARGV> as it stands after all
+the plugins have finished with it.
 
 Plug-ins that have an L<__options()|/__options> method are called in the
 order the specified options appear on the command line. If a plug-in's
@@ -282,6 +529,64 @@ if the plug-in implements L<__options()|/__options>, or
 
 if it does not. If the plug-in has no options, use the latter form but
 omit the call to C<getopt()>.
+
+=head1 CONFIGURATION
+
+The configuration system mirrors that of L<App::Ack|App::Ack> itself, as
+nearly as I can manage. The only known difference is support for VMS.
+Any other differences will be resolved in favor of C<App::Ack|App::Ack>.
+
+Like L<App::Ack|App::Ack>'s configuration system,
+C<App::AckX::Preflight>'s configuration is simply a list of default
+command line options to be prepended to the command line. Options
+specific to C<App::AckX::Preflight> will be removed before the command
+line is presented to F<ack>.
+
+The Configuration comes from the following sources, in order from
+most-general to most-specific. If an option is specified more than once,
+the most-specific one rules. It is probably a 'feature' (in the sense of
+'documented bug') that C<App::AckX::Preflight> configuration data trumps
+L<App::Ack|App::Ack> configuration data.
+
+=over
+
+=item Global configuration file.
+
+This optional file is named F<ackxprc>, and lives in the directory
+reported by the L<global()|/global> method.
+
+This configuration file is ignored if C<--noenv> is specified.
+
+=item User-specific configuration file.
+
+If environment variable C<ACKXPRC> exists and is non-empty, it points to
+the user-specific configuration file, which must exist.
+
+Otherwise this optional file is whichever of F<.ackxprc> or F<_ackxprc>
+actually exists. It is an error if both exist.
+
+This configuration file is ignored if C<--noenv> is specified.
+
+=item Project-specific configuration file.
+
+This optional file is the first of F<.ackxprc> or F<_ackxprc> found by
+walking up the directory tree from the current directory. It is an error
+if both files are found in the same directory.
+
+This configuration file is ignored if C<--noenv> is specified.
+
+=item Configuration file specified by C<--ackxprc>
+
+If this option is specified, the file must exist.
+
+=item The contents of environment variable C<ACKXP_OPTIONS>
+
+This optional environment variable will be parsed by
+C<Text::Parsewords::shellwords()>.
+
+This environment variable is ignored if C<--noenv> is specified.
+
+=back
 
 =head1 SEE ALSO
 

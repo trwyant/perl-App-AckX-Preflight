@@ -24,4 +24,5 @@ ackxp
 ASCIIbetical
 getopt
 merchantability
+VMS
 Wyant

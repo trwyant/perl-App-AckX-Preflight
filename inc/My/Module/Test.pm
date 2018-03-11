@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use Carp;
+use Cwd ();
 
 our $VERSION = '0.000_001';
 
@@ -13,6 +14,7 @@ use Exporter ();
 
 {
     my %special = (
+
 	'-noexec'	=> sub {
 
 	    require App::AckX::Preflight;
@@ -26,6 +28,7 @@ use Exporter ();
 
 	    return;
 	},
+
 	'-search-test'	=> sub {
 
 	    require Module::Pluggable::Object;
@@ -36,7 +39,7 @@ use Exporter ();
 
 	    *Module::Pluggable::Object::new = sub {
 		my ( $class, %opt ) = @_;
-		push @{ $opt{search_dirs} ||= [] }, 't/lib';
+		push @{ $opt{search_dirs} ||= [] }, Cwd::abs_path( 't/lib' );
 		return $old_new->( $class, %opt );
 	    };
 
@@ -47,11 +50,12 @@ use Exporter ();
     sub import {
 	my @arg = @_;
 	@_ = ();
-	foreach ( @arg ) {
-	    if ( my $code = $special{$_} ) {
-		$code->();
+	while ( @arg ) {
+	    my $p = shift @arg;
+	    if ( my $code = $special{$p} ) {
+		$code->( \@arg );
 	    } else {
-		push @_, $_;
+		push @_, $p;
 	    }
 	}
 	goto &Exporter::import;

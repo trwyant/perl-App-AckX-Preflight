@@ -15,8 +15,12 @@ META.yml
 README
 script/ackxp
 t/basic.t
+t/data/ackxprc
 t/data/foo
 t/data/fubar
+t/data/global/ackxprc
+t/data/home/_ackxprc
+t/data/project/_ackxprc
 t/execute
 t/execute.t
 t/lib/App/AckX/Preflight/Plugin/Reverse.pm
