@@ -137,7 +137,16 @@ sub __find_files {
     my ( $self ) = @_;
     my $opt = $self->getopt( qw{ ackxprc=s ignore-ackxp-defaults! } );
 
-    my $use_env = ! grep { m/ \A --?  noenv \z /smx } @ARGV;
+    # I want to leave --env/--noenv in the command line for ack, but I
+    # need to know its value. Fortunately ack does not allow option
+    # abbreviation, so I can (I hope!) just traverse the command line
+    # and recognize it in-place myself;
+    my $use_env = 1;
+    foreach ( @ARGV ) {
+	m/ \A --? ( no-? ) env \z /smx
+	    or next;
+	$use_env = ! $1;
+    }
 
     my @files;
 
