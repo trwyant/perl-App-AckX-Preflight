@@ -10,11 +10,11 @@ use Cwd qw{ abs_path };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
-use My::Module::Test qw{ -noexec -search-test };
+use My::Module::Preflight;
 
 delete @ENV{ qw{ ACKXPRC ACKXP_OPTIONS } };
 
-is_deeply [ sort App::AckX::Preflight->__plugins() ],
+is_deeply [ sort My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Reverse
@@ -62,7 +62,7 @@ is_deeply xqt( qw{ --noenv --ackxprc t/data/ackxprc } ),
     '--ackxprc t/data/ackxprc';
 
 {
-    my $aaxp = App::AckX::Preflight->new(
+    my $aaxp = My::Module::Preflight->new(
 	global	=> abs_path( 't/data/global' ),
 	home	=> abs_path( 't/data/home' ),
     );
@@ -99,7 +99,7 @@ done_testing;
 
 sub xqt {
     local @ARGV = @_;
-    my $invocant = ref $ARGV[0] ? shift @ARGV : 'App::AckX::Preflight';
+    my $invocant = ref $ARGV[0] ? shift @ARGV : 'My::Module::Preflight';
 
     return [ $invocant->run() ];
 

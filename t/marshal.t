@@ -9,12 +9,12 @@ use App::AckX::Preflight;
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
-use My::Module::Test qw{ -search-test };
+use My::Module::Preflight;
 
-use constant PACKAGE	=> 'App::AckX::Preflight';
+use constant PACKAGE	=> 'My::Module::Preflight';
 
 
-is_deeply [ sort App::AckX::Preflight->__plugins() ],
+is_deeply [ sort My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Reverse

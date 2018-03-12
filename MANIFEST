@@ -3,7 +3,7 @@ Changes
 eg/ACKX-REF
 inc/My/Module/Build.pm
 inc/My/Module/Meta.pm
-inc/My/Module/Test.pm
+inc/My/Module/Preflight.pm
 lib/App/AckX/Preflight.pm
 lib/App/AckX/Preflight/Util.pm
 lib/App/AckX/Preflight/Plugin/File.pm

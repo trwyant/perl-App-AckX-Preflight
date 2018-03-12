@@ -299,16 +299,23 @@ sub __marshal_plugins {
     my $mpo;
 
     sub __plugins {
+	my ( $self ) = @_;
 	$mpo ||= Module::Pluggable::Object->new(	# Oh, for state()
-	    filename	=> __FILE__,
-	    inner		=> 0,
-	    max_depth	=> MAX_DEPTH,
-	    package		=> __PACKAGE__,
-	    require		=> 1,
-	    search_path	=> SEARCH_PATH,
+	    $self->__module_pluggable_object_new_args(),
 	);
 	return $mpo->plugins();
     }
+}
+
+sub __module_pluggable_object_new_args {
+    return (
+	filename	=> __FILE__,
+	inner		=> 0,
+	max_depth	=> MAX_DEPTH,
+	package		=> __PACKAGE__,
+	require		=> 1,
+	search_path	=> SEARCH_PATH,
+    );
 }
 
 sub __process_files {
