@@ -9,11 +9,13 @@ use App::AckX::Preflight::Plugin::File;
 use Getopt::Long;
 use Test::More 0.88;	# Because of done_testing();
 
+use constant PACKAGE	=> 'App::AckX::Preflight::Plugin::File';
+
 my @got;
 my @want;
 
 
-@got = App::AckX::Preflight::Plugin::File->__options();
+@got = PACKAGE->__options();
 is_deeply \@got,
     [ qw{ file=s match=s } ],
     'Options'
@@ -94,15 +96,14 @@ done_testing;
 sub prs {
     local @ARGV = @_;
     my $opt = {};
-    GetOptions( $opt,
-	App::AckX::Preflight::Plugin::File->__options() );
+    GetOptions( $opt, PACKAGE->__options() );
     return ( $opt, @ARGV );
 }
 
 sub xqt {
     my $opt = shift;
     local @ARGV = @_;
-    App::AckX::Preflight::Plugin::File->__process( $opt );
+    PACKAGE->__process( $opt );
     return @ARGV;
 }
 

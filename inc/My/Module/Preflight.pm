@@ -18,13 +18,6 @@ sub __execute {
     return @arg;
 }
 
-sub __module_pluggable_object_new_args {
-    my ( $self ) = @_;
-    my %arg = $self->SUPER::__module_pluggable_object_new_args();
-    push @{ $arg{search_dirs} ||= [] }, Cwd::abs_path( 't/lib' );
-    return %arg;
-}
-
 
 1;
 
@@ -58,10 +51,6 @@ overridden. There is nothing to see here. Move along. Move along.
 =head2 __execute
 
 Instead of executing a command, this override just returns it.
-
-=head2 __module_pluggable_object_new_args
-
-Modify the arguments passed to C<< Module::Pluggable::Object->new() >>.
 
 =head1 SEE ALSO
 

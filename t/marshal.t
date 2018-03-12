@@ -17,7 +17,7 @@ use constant PACKAGE	=> 'My::Module::Preflight';
 is_deeply [ sort My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::File
-	App::AckX::Preflight::Plugin::Reverse
+	App::AckX::Preflight::Plugin::Manifest
 	} ],
     'Plugins'
 	or diag explain [ App::AckX::Preflight->__plugins() ];
@@ -25,49 +25,49 @@ is_deeply [ sort My::Module::Preflight->__plugins() ],
 is_deeply marshal( qw{ A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
-	App::AckX::Preflight::Plugin::Reverse
+	App::AckX::Preflight::Plugin::Manifest
 	} ],
     'Default order';
 
-is_deeply marshal( qw{ --reverse A B C } ),
+is_deeply marshal( qw{ --manifest A B C } ),
     [ qw{
-	App::AckX::Preflight::Plugin::Reverse
+	App::AckX::Preflight::Plugin::Manifest
 	App::AckX::Preflight::Plugin::File
 	} ],
-    '--reverse pulls Reverse to front';
+    '--manifest pulls Manifest to front';
 
-is_deeply marshal( qw{ --noreverse A B C } ),
+is_deeply marshal( qw{ --nomanifest A B C } ),
     [ qw{
-	App::AckX::Preflight::Plugin::Reverse
+	App::AckX::Preflight::Plugin::Manifest
 	App::AckX::Preflight::Plugin::File
 	} ],
-    '--noreverse pulls Reverse to front';
+    '--nomanifest pulls Manifest to front';
 
-is_deeply marshal( qw{ --no-reverse A B C } ),
+is_deeply marshal( qw{ --no-manifest A B C } ),
     [ qw{
-	App::AckX::Preflight::Plugin::Reverse
+	App::AckX::Preflight::Plugin::Manifest
 	App::AckX::Preflight::Plugin::File
 	} ],
-    '--no-reverse pulls Reverse to front';
+    '--no-manifest pulls Manifest to front';
 
-is_deeply marshal( qw{ --reverse --file x A B C } ),
+is_deeply marshal( qw{ --manifest --file x A B C } ),
     [ qw{
-	App::AckX::Preflight::Plugin::Reverse
+	App::AckX::Preflight::Plugin::Manifest
 	App::AckX::Preflight::Plugin::File
 	} ],
-    '--reverse --file x pulls Reverse to front';
+    '--manifest --file x pulls Manifest to front';
 
-is_deeply marshal( qw{ --file x --reverse A B C } ),
+is_deeply marshal( qw{ --file x --manifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
-	App::AckX::Preflight::Plugin::Reverse
+	App::AckX::Preflight::Plugin::Manifest
 	} ],
-    '--file x --reverse uses that order';
+    '--file x --manifest uses that order';
 
-is_deeply marshal( qw{ --reverse --file x --no-reverse A B C } ),
+is_deeply marshal( qw{ --manifest --file x --no-manifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
-	App::AckX::Preflight::Plugin::Reverse
+	App::AckX::Preflight::Plugin::Manifest
 	} ],
     '--reverse --file x --no-reverse pulls File to front';
 

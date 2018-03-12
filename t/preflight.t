@@ -7,17 +7,21 @@ use warnings;
 
 use App::AckX::Preflight;
 use Cwd qw{ abs_path };
+use ExtUtils::Manifest qw{ maniread };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
 use My::Module::Preflight;
 
 delete @ENV{ qw{ ACKXPRC ACKXP_OPTIONS } };
+my @manifest = sort keys %{ maniread() };
 
-is_deeply [ sort My::Module::Preflight->__plugins() ],
+my @got;
+
+is_deeply [ My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::File
-	App::AckX::Preflight::Plugin::Reverse
+	App::AckX::Preflight::Plugin::Manifest
 	} ],
     'Plugins';
 
@@ -25,13 +29,13 @@ is_deeply xqt( qw{ --noenv A B C } ),
     [ qw{ ack --noenv A B C } ],
     'No reversal by default';
 
-is_deeply xqt( qw{ --noenv --noreverse A B C } ),
+is_deeply xqt( qw{ --noenv --nomanifest A B C } ),
     [ qw{ ack --noenv A B C } ],
-    '--noreverse';
+    '--nomanifest';
 
-is_deeply xqt( qw{ --noenv --reverse A B C } ),
-    [ qw{ ack C B A --noenv } ],
-    '--reverse';
+is_deeply xqt( qw{ --noenv --manifest A B C } ),
+    [ qw{ ack --noenv A B C }, @manifest ],
+    '--manifest';
 
 is_deeply xqt( qw{ --noenv --file t/data/foo } ),
     [ qw{ ack --match (?i:\bfoo\b) --noenv } ],
@@ -47,15 +51,13 @@ SKIP: {
 	'--file t/data/fubar';
 }
 
-# Test combining non-transitive plug-ins.
+# Test combining plug-ins.
 
-is_deeply xqt( qw{ --noenv --reverse t/data/foo --file t/data/fubar } ),
-    [ qw{ ack --match (?i:\bfoo\b) t/data/fubar --noenv } ],
-    '--reverse --file';
-
-is_deeply xqt( qw{ --noenv --file t/data/foo --reverse fubar } ),
-    [ qw{ ack fubar --noenv (?i:\bfoo\b) --match } ],	# This won't execute
-    '--file --reverse';
+@got = @{ xqt( qw{ --noenv --manifest --file t/data/foo } ) };
+is_deeply \@got,
+    [ qw{ ack --match (?i:\bfoo\b) --noenv }, @manifest ],
+    '--manifest --file t/data/foo'
+    or diag 'Got ', explain \@got;
 
 is_deeply xqt( qw{ --noenv --ackxprc t/data/ackxprc } ),
     [ qw{ ack --from=t/data/ackxprc --noenv } ],
