@@ -5,7 +5,8 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::Ack();
+use App::Ack ();
+use App::AckX::Preflight::Util qw{ :all };
 use Carp;
 use Cwd ();
 use File::Basename ();
@@ -15,9 +16,6 @@ use Module::Pluggable::Object 5.2;
 use Text::ParseWords ();
 
 our $VERSION = '0.000_001';
-
-use constant ARRAY_REF	=> ref [];
-use constant SCALAR_REF	=> ref \0;
 
 use constant IS_VMS	=> 'VMS' eq $^O;
 use constant IS_WINDOWS	=> { map { $_ => 1 } qw{ dos MSWin32 } }->{$^O};
@@ -85,11 +83,6 @@ use constant MAX_DEPTH		=> do {
     }
 }
 
-sub die : method {	## no critic (ProhibitBuiltinHomonyms,RequireFinalReturn)
-    my ( undef, @arg ) = @_;
-    App::Ack::die( @arg );
-}
-
 {
     my $psr = Getopt::Long::Parser->new();
     $psr->configure( qw{
@@ -98,10 +91,10 @@ sub die : method {	## no critic (ProhibitBuiltinHomonyms,RequireFinalReturn)
     );
 
     sub getopt {
-	my ( $self, @opt_spec ) = @_;
+	my ( undef, @opt_spec ) = @_;	# Invocant unused
 	my %opt;
 	$psr->getoptions( \%opt, @opt_spec )
-	    or $self->die( 'Invalid option' );	# TODO something better
+	    or __die( 'Invalid option on command line' );
 	return \%opt;
     }
 }
@@ -134,10 +127,10 @@ EOD
 }
 
 sub __execute {
-    my ( $self, @arg ) = @_;
+    my ( undef, @arg ) = @_;	# Invocant unused
 
     exec { $arg[0] } @arg
-	or $self->die( "Failed to exec $arg[0]: $!" );
+	or __die( "Failed to exec $arg[0]: $!" );
 }
 
 sub __find_files {
@@ -201,11 +194,12 @@ sub _file_from_env {	## no critic (RequireArgUnpacking)
 }
 
 sub _file_from_parts {
-    my ( $self, $method, @arg ) = @_;
+    my ( undef, $method, @arg ) = @_;	# Invocant unused
     my $names = ARRAY_REF eq ref $arg[-1] ? pop @arg : [ qw{ .ackxprc
 	_ackxprc } ];
     @arg
-	or $self->die( "No file parts specified" );	# TODO Confess?
+	or Carp::confess(
+	'Progeamming error - No file parts specified' );
     my $path = @arg > 1 ? File::Spec->$method( @arg ) : $arg[0];
     -d $path
 	or return $path;
@@ -219,7 +213,7 @@ sub _file_from_parts {
 	or return;
     local $" = ' and ';
     @f > 1
-	and $self->die( "Both @f found; delete one" );
+	and __die( "Both @f found; delete one" );
     return $f[0];
 }
 
@@ -309,14 +303,13 @@ sub __marshal_plugins {
 }
 
 sub __process_files {
-    my ( $self, @files ) = @_;
+    my ( undef, @files ) = @_;			# Invocant unused
     foreach my $fn ( @files ) {
 	my @args;
 	if ( SCALAR_REF eq ref $fn ) {
 	    @args = Text::ParseWords::shellwords( ${ $fn } );
 	} else {
-	    open my $fh, '<:encoding(utf-8)', $fn	## no critic (RequireBriefOpen)
-		or $self->die( "Failed to open $fn: $!" );
+	    my $fh = __open_for_read( $fn );	# Dies on error.
 	    while ( <$fh> ) {
 		m/ \S /smx
 		    and not m/ \A \s* [#] /smx
@@ -402,13 +395,6 @@ and chosen to be compatible with L<App::Ack|App::Ack>:
 
 If C<new()> is called as a normal method it clones its invocant,
 applying the arguments (if any) after the clone.
-
-=head2 die
-
- App::Ack::Preflight->die( 'Goodbye, cruel world!' );
- $aaxp->die( 'Ditto.' );
-
-This method is simply a wrapper for C<App::Ack::die()>.
 
 =head2 getopt
 

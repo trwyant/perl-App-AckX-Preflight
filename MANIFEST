@@ -5,6 +5,7 @@ inc/My/Module/Build.pm
 inc/My/Module/Meta.pm
 inc/My/Module/Test.pm
 lib/App/AckX/Preflight.pm
+lib/App/AckX/Preflight/Util.pm
 lib/App/AckX/Preflight/Plugin/File.pm
 LICENSES/Artistic
 LICENSES/Copying

@@ -5,6 +5,8 @@ use 5.008008;
 use strict;
 use warnings;
 
+use App::Ack;
+use App::AckX::Preflight::Util qw{ :all };
 use Carp;
 
 our $VERSION = '0.000_001';
@@ -14,7 +16,7 @@ sub __options {
 }
 
 sub __process {
-    my ( $preflight, $opt ) = @_;
+    my ( undef, $opt ) = @_;
 
     # If we actually got a --file option
     if ( defined $opt->{file} ) {
@@ -22,13 +24,11 @@ sub __process {
 	# We can't have --match if we have --file, since --file is
 	# implemented using --match.
 	defined $opt->{match}
-	    and $preflight->die(
+	    and __die(
 	    'Options --file and --match are mutually exclusive.' );
 
 	# Read the file, or die.
-	open my $fh, '<:encoding(utf-8)', $opt->{file}	## no critic (RequireBriefOpen)
-	    or $preflight->die(
-	    "Unable to open $opt->{file} for input: $!" );
+	my $fh = __open_for_read( $opt->{file} );
 	my @pattern;
 
 	# Find any patterns in the file.
@@ -44,14 +44,14 @@ sub __process {
 
 	# Die if there are no patterns.
 	@pattern
-	    or $preflight->die( "No patterns found in $opt->{file}" );
+	    or __die( "No patterns found in $opt->{file}" );
 
 	# If we got more than one pattern
 	if ( 1 < @pattern ) {
 
 	    # The Regex we need to build requires 5.009005, really.
 	    '5.010' gt $]
-		and $preflight->die(
+		and __die(
 		"Perl $] does not support multiple patterns in a file" );
 
 	    # Enclose the individual patterns in (?: ... ) unless it
