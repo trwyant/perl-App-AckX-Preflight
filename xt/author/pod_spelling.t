@@ -23,6 +23,8 @@ __DATA__
 ackxp
 ASCIIbetical
 getopt
+hoc
 merchantability
+preflight
 VMS
 Wyant

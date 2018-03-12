@@ -21,7 +21,9 @@ my %args = (
     requires => $meta->requires(
 	perl => $meta->requires_perl(),
     ),
+    script_files => [ qw{ script/ackxp } ],
     license => 'perl',
+    add_to_cleanup => [ qw{ cover_db xt/author/optionals } ],
 );
 
 if ( $mbv >= 0.28 ) {
