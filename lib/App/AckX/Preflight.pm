@@ -16,6 +16,7 @@ use Module::Pluggable::Object 5.2;
 use Text::ParseWords ();
 
 our $VERSION = '0.000_001';
+our $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
 
 use constant IS_VMS	=> 'VMS' eq $^O;
 use constant IS_WINDOWS	=> { map { $_ => 1 } qw{ dos MSWin32 } }->{$^O};
@@ -105,7 +106,9 @@ sub run {
 	version	=> sub {
 	    print <<"EOD";
 @{[ __PACKAGE__ ]} $VERSION
+    $COPYRIGHT
 App::Ack $App::Ack::VERSION
+    $App::Ack::COPYRIGHT
 Perl $^V
 EOD
 	exit;

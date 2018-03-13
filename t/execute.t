@@ -10,7 +10,9 @@ use Test::More 0.88;	# Because of done_testing();
 
 use constant WANT_VERSION	=>
 "App::AckX::Preflight $App::AckX::Preflight::VERSION
+    $App::AckX::Preflight::COPYRIGHT
 App::Ack $App::Ack::VERSION
+    $App::Ack::COPYRIGHT
 Perl $^V";
 
 is xqt( '-version' ), WANT_VERSION, 'Version';
