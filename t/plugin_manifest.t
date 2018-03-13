@@ -8,7 +8,8 @@ use warnings;
 use App::AckX::Preflight::Plugin::Manifest;
 use Cwd qw{ getcwd };
 use ExtUtils::Manifest qw{ maniread };
-use Getopt::Long;
+use Getopt::Long qw{ :config
+    no_auto_version no_ignore_case no_auto_abbrev pass_through };
 use Test::More 0.88;	# Because of done_testing();
 
 use constant PACKAGE	=> 'App::AckX::Preflight::Plugin::Manifest';
@@ -18,6 +19,10 @@ my @want;
 
 my $cwd = getcwd();
 my @manifest = sort keys %{ maniread() };
+my @manifest_perl = grep {
+    m/ [.] (?i: pl | pm | t ) \z /smx ||
+    m| \A script/ |smx
+} @manifest;
 
 @got = PACKAGE->__options();
 is_deeply \@got,
@@ -47,6 +52,18 @@ is_deeply \@got, \@want,
 @got = xqt( @want );
 is_deeply \@got, \@manifest,
     q<Process '--manifest'>
+    or diag explain 'Got ', \@got;
+
+
+@got = prs( qw{ --manifest --perl } ),
+@want = ( { manifest => '1' }, '--perl' );
+is_deeply \@got, \@want,
+    q<Parse '--manifest --perl'>
+    or diag explain 'Got ', \@got;
+
+@got = xqt( @want );
+is_deeply \@got, [ '--perl', @manifest_perl ],
+    q<Process '--manifest --perl'>
     or diag explain 'Got ', \@got;
 
 
@@ -104,49 +121,26 @@ SKIP: {
     chdir $cwd;
 }
 
-done_testing; exit;
-
-
-SKIP: {
-
-    '5.010' le $]
-	or skip( "Perl 5.10 required; this is $]", 2 );
-
-    @got = prs( qw{ --file=t/data/fubar } );
-    @want = ( { file => 't/data/fubar' } );
-    is_deeply \@got, \@want,
-	q<Parse '--file=t/data/fubar'>
-	or diag explain 'Got ', \@got;
-
-    @got = xqt( @want );
-    is_deeply \@got,
-	[ qw{ --match (?|(?i:\bfu\b)|(?i:\bbar\b)) } ],
-	'--file=t/data/fubar'
-	or diag explain 'Got ', \@got;
-}
-
-
-@got = prs( qw{ foo --match=bar bazzle } );
-@want = ( { match => 'bar' }, qw{ foo bazzle } );
-is_deeply \@got, \@want,
-    q<Parse 'foo --match=bar bazzle'>
-    or diag explain 'Got ', \@got;
-
-@got = xqt( @want );
-is_deeply \@got,
-    [ qw{ --match bar foo bazzle } ],
-    q<Process 'foo --match=bar bazzle'>
-    or diag explain 'Got ', \@got;
-
-
 
 done_testing;
 
-sub prs {
-    local @ARGV = @_;
-    my $opt = {};
-    GetOptions( $opt, PACKAGE->__options() );
-    return ( $opt, @ARGV );
+{
+    my $psr;
+
+    BEGIN {
+	$psr = Getopt::Long::Parser->new();
+	$psr->configure( qw{
+	    no_auto_version no_ignore_case no_auto_abbrev pass_through
+	    },
+	);
+    }
+
+    sub prs {
+	local @ARGV = @_;
+	my $opt = {};
+	$psr->getoptions( $opt, PACKAGE->__options() );
+	return ( $opt, @ARGV );
+    }
 }
 
 sub xqt {

@@ -5,6 +5,17 @@ use 5.008008;
 use strict;
 use warnings;
 
+use App::Ack::ConfigLoader;
+use App::Ack::Filter ();
+use App::Ack::Filter::Collection;
+use App::Ack::Filter::Default;
+use App::Ack::Filter::Extension;
+use App::Ack::Filter::FirstLineMatch;
+use App::Ack::Filter::Inverse;
+use App::Ack::Filter::Is;
+use App::Ack::Filter::IsPath;
+use App::Ack::Filter::Match;
+use App::Ack::Resource;
 use App::AckX::Preflight::Util qw{ __open_for_read };
 use Carp;
 
@@ -31,9 +42,82 @@ sub __process {
 	return;
     }
 
+    # TODO the filter logic probably belongs on ::Preflight.
+
+    my @filters;
+
+    {	# Purpose of block is to localize @ARGV
+
+	local @ARGV = @ARGV;
+
+	my @arg_sources = App::Ack::ConfigLoader::retrieve_arg_sources();
+
+	my %known_type;
+	my $argv;
+
+	foreach my $as ( @arg_sources ) {
+	    if ( 'ARGV' eq $as->{name} ) {
+		$argv = $as;
+	    } else {
+		my @contents = @{ $as->{contents} };
+		while ( @contents ) {
+		    local $_ = shift @contents;
+		    if ( m/ \A --? type- ( add | set | del )
+			( = ( [^:]+) | \z ) /smx ) {
+			my $verb = $1;
+			my $type = $3;
+			unless ( $type ) {
+			    local $_ = shift @contents;
+			    m/ \A ( [^:]+ ) /smx
+				or next;
+			    $type = $1;
+			}
+			if ( 'del' eq $verb ) {
+			    delete $known_type{$type};
+			} else {
+			    $known_type{$type} = 1;
+			}
+		    }
+		}
+	    }
+	}
+
+	if ( $argv ) {
+	    my @contents = @{ $argv->{contents} };
+	    my @rslt;
+	    while ( @contents ) {
+		local $_ = shift @contents;
+		if ( m/ \A --? type ( = | \z ) /smx ) {
+		    push @rslt, $_;
+		    $1
+			or push @rslt, shift @contents;
+		} elsif ( m/ \A --? ( [[:alpha:]0-9]+ ) \z /smx &&
+		    $known_type{$1} ) {
+		    push @rslt, $_;
+		}
+	    }
+	    @{ $argv->{contents} } = @rslt;
+	}
+
+	my $opt = App::Ack::ConfigLoader::process_args( @arg_sources );
+
+	@filters = @{ $opt->{filters} };
+
+    }	# End localized @ARGV
+
     require ExtUtils::Manifest;
 
-    push @ARGV, sort keys %{ ExtUtils::Manifest::maniread() };
+    my @manifest = sort keys %{ ExtUtils::Manifest::maniread() };
+
+    foreach ( @manifest ) {
+	my $r = App::Ack::Resource->new( $_ );
+	foreach my $f ( @filters ) {
+	    $f->filter( $r )
+		or next;
+	    push @ARGV, $_;
+	    last;
+	}
+    }
 
     return;
 }
@@ -72,9 +156,11 @@ plug-in does nothing. If C<--manifest> is specified anywhere (command
 line or resource file) this option is ignored. It is really intended
 more for use in a configuration file.
 
-Unfortunately, C<--type=> options do not get applied to the manifest.
-This is a restriction which, given how opaque F<ack> is, is probably not
-going to be lifted any time soon, no matter how desirable it may be.
+Any C<--type=> options (or equivalent) are applied to the manifest, so
+that something like C<--manifest --perl> selects only Perl files, using
+F<ack>'s definition of Perl files. I am not sure of the status of the
+L<App::Ack|App::Ack> interface I am using to make this happen, so this
+may cause problems down the road.
 
 =head1 SEE ALSO
 

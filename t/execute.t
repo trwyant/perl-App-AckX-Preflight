@@ -23,7 +23,7 @@ done_testing;
 
 sub xqt {
     my @arg = @_;
-    my $rslt = `$^X t/execute @arg`;
+    my $rslt = `$^X t/execute.PL @arg`;
     chomp $rslt;
     return $rslt;
 }

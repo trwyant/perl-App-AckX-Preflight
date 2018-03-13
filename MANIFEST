@@ -23,7 +23,7 @@ t/data/fubar
 t/data/global/ackxprc
 t/data/home/_ackxprc
 t/data/project/_ackxprc
-t/execute
+t/execute.PL
 t/execute.t
 t/marshal.t
 t/plugin_file.t

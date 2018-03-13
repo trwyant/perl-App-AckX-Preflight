@@ -26,13 +26,13 @@ __END__
 
 =head1 TITLE
 
-execute - Helper script for t/execute.t
+execute.PL - Helper script for t/execute.t
 
 =head1 SYNOPSIS
 
- execute
- execute -help
- execute -version
+ execute.PL
+ execute.PL -help
+ execute.PL -version
 
 =head1 OPTIONS
 
