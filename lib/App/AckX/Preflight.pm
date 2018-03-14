@@ -11,7 +11,6 @@ use Carp ();
 use Cwd ();
 use File::Basename ();
 use File::Spec;
-use Getopt::Long 2.33;
 use Module::Pluggable::Object 5.2;
 use Pod::Usage ();
 use Text::ParseWords ();
@@ -85,25 +84,9 @@ use constant MAX_DEPTH		=> do {
     }
 }
 
-{
-    my $psr = Getopt::Long::Parser->new();
-    $psr->configure( qw{
-	no_auto_version no_ignore_case no_auto_abbrev pass_through
-	},
-    );
-
-    sub __getopt {
-	my ( undef, @opt_spec ) = @_;	# Invocant unused
-	my $opt = HASH_REF eq ref $opt_spec[0] ? shift @opt_spec : {};
-	$psr->getoptions( $opt, @opt_spec )
-	    or __die( 'Invalid option on command line' );
-	return $opt;
-    }
-}
-
 sub run {
     my ( $self ) = @_;
-    $self->__getopt(
+    __getopt(
 	version	=> sub {
 	    print <<"EOD";
 @{[ __PACKAGE__ ]} $VERSION
@@ -142,7 +125,7 @@ EOD
 
     foreach my $p_rec ( $self->__marshal_plugins ) {
 	my $plugin = $p_rec->{package};
-	my $opt = $self->__process_plugin_options( $plugin );
+	my $opt = __getopt_for_plugin( $plugin );
 	$plugin->__process( $self, $opt );
     }
 
@@ -280,7 +263,7 @@ sub __execute {
 
 sub __find_config_files {
     my ( $self ) = @_;
-    my $opt = $self->__getopt( qw{ ackxprc=s ignore-ackxp-defaults! } );
+    my $opt = __getopt( qw{ ackxprc=s ignore-ackxp-defaults! } );
 
     # I want to leave --env/--noenv in the command line for ack, but I
     # need to know its value. Fortunately ack does not allow option
@@ -484,20 +467,6 @@ sub __process_config_files {
     return;
 }
 
-# Exposed (kinda sorta) for use in testing.
-sub __process_plugin_options {
-    my ( $self, $plugin ) = @_;
-    my $opt = {};
-    if ( my @spec = $plugin->__options() ) {
-	$self->__getopt( $opt, @spec );
-    }
-    if ( my @spec = $plugin->__peek_opt() ) {
-	local @ARGV = @ARGV;
-	$self->__getopt( $opt, @spec );
-    }
-    return $opt;
-}
-
 1;
 
 __END__
@@ -569,24 +538,6 @@ and chosen to be compatible with L<App::Ack|App::Ack>:
 
 If C<new()> is called as a normal method it clones its invocant,
 applying the arguments (if any) after the clone.
-
-=head2 __getopt
-
- my $opt = App::AckX::Preflight->__getopt(
-     qw{ foo! bar=s } );
- my $opt2 = $aaxp->__getopt( qw{ foo! bar=s } );
-
-This method is intended for the use of plug-ins that want to process
-their own options. It simply calls C<Getopt::Long::GetOptions>, with the
-package configured appropriately for our use. Any arguments actually
-processed will be removed from C<@ARGV>. The return is a reference to
-the options hash.
-
-The actual configuration used is
-
- no_auto_version no_ignore_case no_auto_abbrev pass_through
-
-which is what L<App::Ack|App::Ack> uses.
 
 =head2 global
 

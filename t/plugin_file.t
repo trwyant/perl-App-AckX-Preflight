@@ -7,6 +7,7 @@ use warnings;
 
 use App::AckX::Preflight;
 use App::AckX::Preflight::Plugin::File;
+use App::AckX::Preflight::Util qw{ HASH_REF __getopt_for_plugin };
 use Getopt::Long;
 use Test::More 0.88;	# Because of done_testing();
 
@@ -96,12 +97,9 @@ done_testing;
 
 sub prs {
     local @ARGV = @_;
-    my $opt = App::AckX::Preflight->__process_plugin_options(
-	PACKAGE );
+    my $opt = __getopt_for_plugin( PACKAGE );
     return ( $opt, @ARGV );
 }
-
-use constant HASH_REF	=> ref {};
 
 sub xqt {
     local @ARGV = @_;

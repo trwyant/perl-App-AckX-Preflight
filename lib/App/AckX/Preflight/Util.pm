@@ -8,11 +8,14 @@ use warnings;
 use App::Ack ();
 # use Carp ();
 use Exporter qw{ import };
+use Getopt::Long 2.33;
 
 our $VERSION = '0.000_001';
 
 our @EXPORT_OK = qw{
     __die
+    __getopt
+    __getopt_for_plugin
     __open_for_read
     __warn
 
@@ -31,6 +34,41 @@ use constant HASH_REF	=> ref {};
 use constant SCALAR_REF	=> ref \0;
 
 *__die = \&App::Ack::die;	# sub __die
+
+{
+    my $psr;	# Oh, for 5.10 and 'state'.
+
+    sub __getopt {
+	my ( @opt_spec ) = @_;
+	$psr ||= _get_option_parser();
+	my $opt = HASH_REF eq ref $opt_spec[0] ? shift @opt_spec : {};
+	$psr->getoptions( $opt, @opt_spec )
+	    or __die( 'Invalid option on command line' );
+	return $opt;
+    }
+}
+
+sub _get_option_parser {
+    my $psr = Getopt::Long::Parser->new();
+    $psr->configure( qw{
+	no_auto_version no_ignore_case no_auto_abbrev pass_through
+	},
+    );
+    return $psr;
+}
+
+sub __getopt_for_plugin {
+    my ( $plugin ) = @_;
+    my $opt = {};
+    if ( my @spec = $plugin->__options() ) {
+	__getopt( $opt, @spec );
+    }
+    if ( my @spec = $plugin->__peek_opt() ) {
+	local @ARGV = @ARGV;
+	__getopt( $opt, @spec );
+    }
+    return $opt;
+}
 
 sub __open_for_read {
     my ( $path ) = @_;
@@ -70,6 +108,33 @@ default.
  __die( 'Goodbye, cruel world!' );
 
 This subroutine is really just an alias for C<App::Ack::die()>.
+
+=head2 __getopt
+
+ my $opt = __getopt( qw{ foo! bar=s } );
+
+This subroutine is intended for the use of plug-ins that want to process
+their own options. It simply calls C<Getopt::Long::GetOptions>, with the
+package configured appropriately for our use. Any arguments actually
+processed will be removed from C<@ARGV>. The return is a reference to
+the options hash.
+
+The actual configuration used is
+
+ no_auto_version no_ignore_case no_auto_abbrev pass_through
+
+which is what L<App::Ack|App::Ack> uses.
+
+=head2 __getopt_for_plugin
+
+ my $opt = __getopt_for_plugin( $plugin_class_name );
+
+This subroutine is really exposed for the convenience of plugin unit
+testing. It calls the plugin's
+L<__options()|App::AckX::Preflight::Plugin/__options> and
+L<__peek_opt()|App::AckX::Preflight::Plugin/__peek_opt> methods to
+determine which options to parse, and returns a reference to the options
+hash.
 
 =head2 __open_for_read
 
