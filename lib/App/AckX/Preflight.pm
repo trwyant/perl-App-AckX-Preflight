@@ -91,7 +91,7 @@ use constant MAX_DEPTH		=> do {
 	},
     );
 
-    sub getopt {
+    sub __getopt {
 	my ( undef, @opt_spec ) = @_;	# Invocant unused
 	my %opt;
 	$psr->getoptions( \%opt, @opt_spec )
@@ -102,7 +102,7 @@ use constant MAX_DEPTH		=> do {
 
 sub run {
     my ( $self ) = @_;
-    $self->getopt(
+    $self->__getopt(
 	version	=> sub {
 	    print <<"EOD";
 @{[ __PACKAGE__ ]} $VERSION
@@ -121,7 +121,7 @@ EOD
 	my $code = $p_rec->{package}->can( '__process' )
 	    or $p_rec->{package}->__process();	# Just to get the error.
 	my $opt = $p_rec->{options} ?
-	    $self->getopt( @{ $p_rec->{options} } ) :
+	    $self->__getopt( @{ $p_rec->{options} } ) :
 	    {};
 	$code->( $self, $opt );
     }
@@ -138,7 +138,7 @@ sub __execute {
 
 sub __find_files {
     my ( $self ) = @_;
-    my $opt = $self->getopt( qw{ ackxprc=s ignore-ackxp-defaults! } );
+    my $opt = $self->__getopt( qw{ ackxprc=s ignore-ackxp-defaults! } );
 
     # I want to leave --env/--noenv in the command line for ack, but I
     # need to know its value. Fortunately ack does not allow option
@@ -415,16 +415,17 @@ and chosen to be compatible with L<App::Ack|App::Ack>:
 If C<new()> is called as a normal method it clones its invocant,
 applying the arguments (if any) after the clone.
 
-=head2 getopt
+=head2 __getopt
 
- my $opt = App::AckX::Preflight->getopt(
+ my $opt = App::AckX::Preflight->__getopt(
      qw{ foo! bar=s } );
- my $opt2 = $aaxp->getopt( qw{ foo! bar=s } );
+ my $opt2 = $aaxp->__getopt( qw{ foo! bar=s } );
 
-This method simply calls C<Getopt::Long::GetOptions>, with the package
-configured appropriately for our use. Any arguments actually processed
-will be removed from C<@ARGV>. The return is a reference to the options
-hash.
+This method is intended for the use of plug-ins that want to process
+their own options. It simply calls C<Getopt::Long::GetOptions>, with the
+package configured appropriately for our use. Any arguments actually
+processed will be removed from C<@ARGV>. The return is a reference to
+the options hash.
 
 The actual configuration used is
 
@@ -490,7 +491,7 @@ specifier, two things happen:
 
 =over
 
-=item * The L<run()|/run> method will call L<getopt()|/getopt> on your
+=item * The L<run()|/run> method will call L<__getopt()|/__getopt> on your
 behalf, passing you the results.
 
 =item * If any of the specified options actually appears in the command
@@ -528,12 +529,12 @@ if the plug-in implements L<__options()|/__options>, or
 
  sub __process {
      my ( $preflight ) = @_;
-     my $opt = $preflight->getopt( ... );
+     my $opt = $preflight->__getopt( ... );
      ...
  }
 
 if it does not. If the plug-in has no options, use the latter form but
-omit the call to C<getopt()>.
+omit the call to C<__getopt()>.
 
 =head1 CONFIGURATION
 

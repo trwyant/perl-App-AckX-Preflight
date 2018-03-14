@@ -10,7 +10,8 @@ use constant PACKAGE	=> 'App::AckX::Preflight';
 require_ok PACKAGE
     or BAIL_OUT $@;
 
-can_ok PACKAGE, qw{ getopt run };
+can_ok PACKAGE, qw{ new __getopt run }
+    or BAIL_OUT;
 
 done_testing;
 
