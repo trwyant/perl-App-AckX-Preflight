@@ -25,10 +25,36 @@ ackxp - Ad-hoc preflight munging of F<ack>'s arguments.
 
 =head1 OPTIONS
 
+The following options are interpreted directly. Others may be
+interpreted by plug-ins or by F<ack>. See the relevant documentation for
+these.
+
 =head2 -help
 
 This option displays the documentation for this script. The script then
 exits.
+
+You can provide the following optional arguments:
+
+=over
+
+=item C<'plugins'>
+
+This argument causes the installed plugins to be listed. The script then
+exits.
+
+=item plugin name
+
+If the argument is a name from the list provided by C<'plugins'>, the
+documentation for that plugin is displayed. The script then exits.
+
+=back
+
+Any other argument is an error.
+
+=head2 -man
+
+This option is a synonym for L<-help|/-help>.
 
 =head2 -version
 

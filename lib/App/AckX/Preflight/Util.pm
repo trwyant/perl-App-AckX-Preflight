@@ -14,6 +14,7 @@ our $VERSION = '0.000_001';
 our @EXPORT_OK = qw{
     __die
     __open_for_read
+    __warn
 
     ARRAY_REF
     SCALAR_REF
@@ -35,6 +36,8 @@ sub __open_for_read {
 	or App::Ack::die( "Unable to open $path: $!" );
     return $fh;
 }
+
+*__warn = \&App::Ack::warn;	# sub __warn
 
 1;
 
@@ -72,6 +75,12 @@ This subroutine is really just an alias for C<App::Ack::die()>.
 
 This subroutine opens the named file for reading. It is assumed to be
 encoded C<UTF-8>. An exception is thrown if the open fails.
+
+=head2 __warn
+
+ __warn( q<Don't jump!> );
+
+This subroutine is really just an alias for C<App::Ack::warn()>.
 
 =head1 MANIFEST CONSTANTS
 

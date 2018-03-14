@@ -13,6 +13,7 @@ use File::Basename ();
 use File::Spec;
 use Getopt::Long 2.33;
 use Module::Pluggable::Object 5.2;
+use Pod::Usage ();
 use Text::ParseWords ();
 
 our $VERSION = '0.000_001';
@@ -111,7 +112,29 @@ App::Ack $App::Ack::VERSION
     $App::Ack::COPYRIGHT
 Perl $^V
 EOD
-	exit;
+	    exit;
+	},
+	'help|man' => sub {
+	    @ARGV
+		and defined $ARGV[0]
+		and '' ne $ARGV[0]
+		or Pod::Usage::pod2usage( { -verbose => 2 } );
+	    if ( 'plugins' eq $ARGV[0] ) {
+		foreach ( $self->__plugins() ) {
+		    s/ .* :: //smx;
+		    print STDERR "    $_\n";
+		}
+		exit 1;
+	    }
+	    my $match = qr{ :: \Q$ARGV[0]\E \z }smx;
+	    foreach ( $self->__plugins() ) {
+		$_ =~ $match
+		    or next;
+		( my $file = "$_.pm" ) =~ s| :: |/|smxg;
+		Pod::Usage::pod2usage( { -verbose => 2, -input => $INC{$file} } );
+	    }
+	    __warn( "No such plug-in as '$ARGV[0]'" );
+	    exit 1;
 	},
     );
 
