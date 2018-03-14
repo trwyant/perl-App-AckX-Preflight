@@ -118,12 +118,10 @@ EOD
     $self->__process_files( $self->__find_files() );
 
     foreach my $p_rec ( $self->__marshal_plugins ) {
-	my $code = $p_rec->{package}->can( '__process' )
-	    or $p_rec->{package}->__process();	# Just to get the error.
 	my $opt = $p_rec->{options} ?
 	    $self->__getopt( @{ $p_rec->{options} } ) :
 	    {};
-	$code->( $self, $opt );
+	$p_rec->{package}->__process( $self, $opt );
     }
 
     return $self->__execute( ack => @ARGV );
@@ -249,8 +247,7 @@ sub __marshal_plugins {
 	    package	=> $plugin,
 	};
 	my $recorded;
-	if ( $plugin->can( '__options' ) and my @opt_spec =
-	    $plugin->__options() ) {
+	if ( my @opt_spec = $plugin->__options() ) {
 	    $p_rec->{options} = \@opt_spec;
 	    foreach ( @opt_spec ) {
 		my $os = $_;			# Don't want alias
@@ -476,65 +473,9 @@ This method B<does not return.>
 =head1 PLUGINS
 
 Plugins B<must> be named
-C<App::AckX::Preflight::Plugin::something_or_other>. They B<must not> be
-subclassed from C<App::AckX::Preflight::Plugin>, because that does not
-exist.
-
-Plugins B<may> implement the following static methods:
-
-=head2 __options
-
-This static method returns L<Getopt::Long|Getopt::Long> option
-specifiers for options associated with this plug-in. This method is
-optional, but if it exists, and actually returns at least one option
-specifier, two things happen:
-
-=over
-
-=item * The L<run()|/run> method will call L<__getopt()|/__getopt> on your
-behalf, passing you the results.
-
-=item * If any of the specified options actually appears in the command
-line, this plug-in will be called before plug-ins that do not implement
-L<__options()|/__options>, and before those whose options do not appear.
-
-=back
-
-Plug-ins that do not implement this are free to do options processing
-when they are called, but their processing order is as through they had
-no options.
-
-Boiler plate for this method looks something like
-
- sub __options {
-     return( qw{ foo=s bar|baz! } );
- }
-
-=head2 __process
-
-This static method is called as though it was invoked by this class,
-even though it is not a member of this class. It returns nothing.  It is
-allowed, and in fact expected, to modify C<@ARGV> in the course of its
-duties.
-
-This method B<must> be implemented. Boiler plate for this method would
-look something like
-
- sub __process {
-     my ( $preflight, $opt ) = @_;
-     ...
- }
-
-if the plug-in implements L<__options()|/__options>, or
-
- sub __process {
-     my ( $preflight ) = @_;
-     my $opt = $preflight->__getopt( ... );
-     ...
- }
-
-if it does not. If the plug-in has no options, use the latter form but
-omit the call to C<__getopt()>.
+C<App::AckX::Preflight::Plugin::something_or_other>. They B<may> be
+subclassed from C<App::AckX::Preflight::Plugin>, but need not as long as
+they conform to its interface.
 
 =head1 CONFIGURATION
 

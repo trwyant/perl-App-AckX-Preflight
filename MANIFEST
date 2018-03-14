@@ -6,6 +6,7 @@ inc/My/Module/Meta.pm
 inc/My/Module/Preflight.pm
 lib/App/AckX/Preflight.pm
 lib/App/AckX/Preflight/Util.pm
+lib/App/AckX/Preflight/Plugin.pm
 lib/App/AckX/Preflight/Plugin/File.pm
 lib/App/AckX/Preflight/Plugin/Manifest.pm
 LICENSES/Artistic

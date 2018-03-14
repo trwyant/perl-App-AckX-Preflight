@@ -9,6 +9,8 @@ use App::Ack;
 use App::AckX::Preflight::Util qw{ :all };
 use Carp;
 
+use parent qw{ App::AckX::Preflight::Plugin };
+
 our $VERSION = '0.000_001';
 
 sub __options {
@@ -16,7 +18,7 @@ sub __options {
 }
 
 sub __process {
-    my ( undef, $opt ) = @_;
+    my ( undef, undef, $opt ) = @_;
 
     # If we actually got a --file option
     if ( defined $opt->{file} ) {

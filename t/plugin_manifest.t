@@ -5,6 +5,7 @@ use 5.008008;
 use strict;
 use warnings;
 
+use App::AckX::Preflight;
 use App::AckX::Preflight::Plugin::Manifest;
 use Cwd qw{ getcwd };
 use ExtUtils::Manifest qw{ maniread };
@@ -143,10 +144,15 @@ done_testing;
     }
 }
 
+use constant HASH_REF	=> ref {};
+
 sub xqt {
-    my $opt = shift;
     local @ARGV = @_;
-    PACKAGE->__process( $opt );
+    my $aaxp = 'App::AckX::Preflight' eq ref $ARGV[0] ?
+	shift @ARGV :
+	App::AckX::Preflight->new();
+    my $opt = HASH_REF eq ref $ARGV[0] ? shift @ARGV : {};
+    PACKAGE->__process( $aaxp, $opt );
     return @ARGV;
 }
 

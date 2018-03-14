@@ -5,6 +5,7 @@ use 5.008008;
 use strict;
 use warnings;
 
+use App::AckX::Preflight;
 use App::AckX::Preflight::Plugin::File;
 use Getopt::Long;
 use Test::More 0.88;	# Because of done_testing();
@@ -100,10 +101,15 @@ sub prs {
     return ( $opt, @ARGV );
 }
 
+use constant HASH_REF	=> ref {};
+
 sub xqt {
-    my $opt = shift;
     local @ARGV = @_;
-    PACKAGE->__process( $opt );
+    my $aaxp = 'App::AckX::Preflight' eq ref $ARGV[0] ?
+	shift @ARGV :
+	App::AckX::Preflight->new();
+    my $opt = HASH_REF eq ref $ARGV[0] ? shift @ARGV : {};
+    PACKAGE->__process( $aaxp, $opt );
     return @ARGV;
 }
 

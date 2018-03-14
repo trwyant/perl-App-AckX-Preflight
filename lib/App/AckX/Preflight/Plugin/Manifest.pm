@@ -19,6 +19,8 @@ use App::Ack::Resource;
 use App::AckX::Preflight::Util qw{ __open_for_read };
 use Carp;
 
+use parent qw{ App::AckX::Preflight::Plugin };
+
 our $VERSION = '0.000_01';
 
 use constant MANIFEST	=> 'MANIFEST';
@@ -29,7 +31,7 @@ sub __options {
 
 
 sub __process {
-    my ( undef, $opt ) = @_;
+    my ( undef, undef, $opt ) = @_;
 
     if ( defined $opt->{manifest} ) {
 	$opt->{manifest}
