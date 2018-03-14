@@ -86,6 +86,10 @@ use constant MAX_DEPTH		=> do {
 
 sub run {
     my ( $self ) = @_;
+
+    ref $self
+	or $self = $self->new();
+
     __getopt(
 	version	=> sub {
 	    print <<"EOD";
@@ -102,7 +106,17 @@ EOD
 		and defined $ARGV[0]
 		and '' ne $ARGV[0]
 		or Pod::Usage::pod2usage( { -verbose => 2 } );
-	    if ( 'plugins' eq $ARGV[0] ) {
+	    if ( 'config' eq $ARGV[0] ) {
+		my $count;
+		foreach ( $self->__find_config_files() ) {
+		    $count++;
+		    print STDERR '    ',
+			ref $_ ? "ACKXP_OPTIONS=$$_\n" : "$_\n";
+		}
+		$count
+		    or print STDERR "    No configuration files found\n";
+		exit 1;
+	    } elsif ( 'plugins' eq $ARGV[0] ) {
 		foreach ( $self->__plugins() ) {
 		    s/ .* :: //smx;
 		    print STDERR "    $_\n";
@@ -175,6 +189,10 @@ sub __execute {
 
 	*__filter_files = sub {		# sub __filter_files
 	    my ( $self, @files ) = @_;
+
+	    ref $self
+		or Carp::confess(
+		'__filter_files() may not be called as static method' );
 
 	    unless ( $self->{filters} ) {
 
@@ -584,7 +602,32 @@ filters are not supported, returns all file names.
  App::Ack::Preflight->run();
  $aaxp->run();
 
-This method reads all the configuration files, calls the plugins,
+This method handles the C<--help>, C<--man>, and C<--version> options if
+they are specified. The C<--help> option and its synonym C<--man>
+display the POD in the top-level script by default. They also take an
+optional argument as follows:
+
+=over
+
+=item C<'config'>
+
+This argument causes the names of any configuration files used to be
+displayed.
+
+=item C<'plugins'>
+
+This argument causes the names of any available plugins to be displayed.
+
+=item plugin name
+
+If this argument is an item from the plugins list, the POD for that
+plugin will be displayed.
+
+=back
+
+All other arguments to C<--help> are invalid and result in an error.
+
+This method then reads all the configuration files, calls the plugins,
 and then C<exec()>s F<ack>, passing it C<@ARGV> as it stands after all
 the plugins have finished with it.
 

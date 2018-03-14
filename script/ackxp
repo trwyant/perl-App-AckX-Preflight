@@ -38,6 +38,11 @@ You can provide the following optional arguments:
 
 =over
 
+=item C<'config'>
+
+This argument causes all the configuration files that would be used to
+be displayed. The script then exits.
+
 =item C<'plugins'>
 
 This argument causes the installed plugins to be listed. The script then

@@ -8,7 +8,10 @@ use Test::More 0.88;
 require_ok 'App::AckX::Preflight::Util'
     or BAIL_OUT $@;
 
-can_ok 'App::AckX::Preflight::Util', qw{ ARRAY_REF SCALAR_REF __open_for_read }
+can_ok 'App::AckX::Preflight::Util', qw{
+    ARRAY_REF HASH_REF SCALAR_REF
+    __die __getopt __getopt_for_plugin __open_for_read __warn
+    }
     or BAIL_OUT;
 
 require_ok 'App::AckX::Preflight'
