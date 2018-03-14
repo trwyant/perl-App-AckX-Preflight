@@ -63,7 +63,7 @@ is_deeply \@got, \@want,
     or diag explain 'Got ', \@got;
 
 SKIP: {
-    App::AckX::Preflight->__filter_support()
+    App::AckX::Preflight->__filter_available()
 	or skip 'Test requires App::Ack filters', 1;
     @got = xqt( @want );
     is_deeply \@got, [ '--perl', @manifest_perl ],

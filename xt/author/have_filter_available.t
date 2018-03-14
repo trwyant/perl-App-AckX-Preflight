@@ -8,8 +8,8 @@ use warnings;
 use App::AckX::Preflight;
 use Test::More 0.88;	# Because of done_testing();
 
-ok( App::AckX::Preflight->__filter_support(),
-    'Have support for App::Ack file filters' );
+ok( App::AckX::Preflight->__filter_available(),
+    'App::Ack file filters are available' );
 
 done_testing;
 

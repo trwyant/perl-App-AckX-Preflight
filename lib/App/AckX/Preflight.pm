@@ -243,7 +243,7 @@ sub __execute {
 	    return @rslt;
 	};
 
-	*__filter_support = sub { 1 };	# sub __filter_support
+	*__filter_available = sub { 1 };	# sub __filter_available
 
 	1;
     } or do {
@@ -252,7 +252,7 @@ sub __execute {
 	    return @files;
 	};
 
-	*__filter_support = sub { 0 };	# sub __filter_support
+	*__filter_available = sub { 0 };	# sub __filter_available
     };
 }	# End localized $@
 
@@ -570,27 +570,28 @@ If called on an object, this method returns the value of the C<{home}>
 attribute, whether explicit or defaulted. If called statically, it
 returns the default value of the C<{home}> attribute.
 
+=head2 __filter_available
+
+ $self->__filter_available()
+     and print "Filters are supported\n";
+
+This method returns a true value if L<App::Ack|App::Ack> filters are
+available, and a false value if not.
+
+The use of L<App::Ack|App::Ack> filters requires a certain amount of
+mucking around in the internals of L<App::Ack|App::Ack>. What a true
+return really means is that all requisite modules loaded and supported
+all requisite methods.
+
 =head2 __filter_files
 
  my @rslt = $self->__filter_files( @files );
 
 This method takes as its arguments zero or more file names. If
 L<App::Ack|App::Ack> filters are supported (see
-L<__filter_support()|/__filter_support>), the return is the names of
+L<__filter_available()|/__filter_available>), the return is the names of
 those files that passed the filters specified on the command line. If
 filters are not supported, returns all file names.
-
-=head2 __filter_support
-
- $self->__filter_support()
-     and print "Filters are supported\n";
-
-This method returns a true value if L<App::Ack|App::Ack> filters are
-supported, and a false value if not.
-
-The filter support requires a certain amount of mucking around in the
-internals of L<App::Ack|App::Ack>. What a true return really means is
-that all requisite modules loaded and supported all requisite methods.
 
 =head2 run
 
