@@ -18,13 +18,13 @@ my @want;
 
 @got = PACKAGE->__options();
 is_deeply \@got,
-    [ qw{ file=s match=s } ],
+    [ qw{ file=s } ],
     'Options'
     or diag explain 'Got ', @got;
 
 
 @got = prs( qw{ --file fu --match bar } );
-@want = ( { file => 'fu', match => 'bar' } );
+@want = ( { file => 'fu' }, qw{ --match bar } );
 is_deeply \@got, \@want,
     q<Parse '--file fu --match bar'>
     or diag explain 'Got ', \@got;
@@ -35,13 +35,13 @@ like $str, qr{ \b \Qmutually exclusive\E \b }smx,
 
 
 @got = prs( qw{ --match=(?i:\bbazzle\b) } );
-@want = ( { match => '(?i:\bbazzle\b)' } );
+@want = ( {}, '--match=(?i:\bbazzle\b)' );
 is_deeply \@got, \@want,
     q<Parse '--match=(?i:\bbazzle\b)'>
     or diag explain 'Got ', \@got;
 
 @got = xqt( @want );
-is_deeply \@got, [ qw{ --match (?i:\bbazzle\b) } ],
+is_deeply \@got, [ qw{ --match=(?i:\bbazzle\b) } ],
     q<Process '--match=(?i:\bbazzle\b)'>
     or diag explain 'Got ', \@got;
 
@@ -79,14 +79,14 @@ SKIP: {
 
 
 @got = prs( qw{ foo --match=bar bazzle } );
-@want = ( { match => 'bar' }, qw{ foo bazzle } );
+@want = ( {}, qw{ foo --match=bar bazzle } );
 is_deeply \@got, \@want,
     q<Parse 'foo --match=bar bazzle'>
     or diag explain 'Got ', \@got;
 
 @got = xqt( @want );
 is_deeply \@got,
-    [ qw{ --match bar foo bazzle } ],
+    [ qw{ foo --match=bar bazzle } ],
     q<Process 'foo --match=bar bazzle'>
     or diag explain 'Got ', \@got;
 
@@ -94,11 +94,23 @@ is_deeply \@got,
 
 done_testing;
 
-sub prs {
-    local @ARGV = @_;
-    my $opt = {};
-    GetOptions( $opt, PACKAGE->__options() );
-    return ( $opt, @ARGV );
+{
+    my $psr;
+
+    BEGIN {
+	$psr = Getopt::Long::Parser->new();
+	$psr->configure( qw{
+	    no_auto_version no_ignore_case no_auto_abbrev pass_through
+	    },
+	);
+    }
+
+    sub prs {
+	local @ARGV = @_;
+	my $opt = {};
+	$psr->getoptions( $opt, PACKAGE->__options() );
+	return ( $opt, @ARGV );
+    }
 }
 
 use constant HASH_REF	=> ref {};

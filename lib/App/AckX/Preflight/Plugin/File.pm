@@ -14,7 +14,7 @@ use parent qw{ App::AckX::Preflight::Plugin };
 our $VERSION = '0.000_001';
 
 sub __options {
-    return( qw{ file=s match=s } );
+    return( qw{ file=s } );
 }
 
 sub __process {
@@ -25,7 +25,7 @@ sub __process {
 
 	# We can't have --match if we have --file, since --file is
 	# implemented using --match.
-	defined $opt->{match}
+	grep { m/ \A --? match (?: = | \z ) /smx } @ARGV
 	    and __die(
 	    'Options --file and --match are mutually exclusive.' );
 
@@ -72,12 +72,6 @@ sub __process {
 	    unshift @ARGV, '--match', @pattern;
 
 	}
-
-    # Else if we got a --match option
-    } elsif ( defined $opt->{match} ) {
-
-	# Inject it back into the arguments.
-	unshift @ARGV, '--match', $opt->{match};
 
     }
 
