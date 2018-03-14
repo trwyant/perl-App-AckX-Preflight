@@ -13,6 +13,10 @@ sub __options {
     return;
 }
 
+sub __peek_opt {
+    return;
+}
+
 sub __process {
     Carp::confess( '__process() must be overridden' );
 }
@@ -35,6 +39,13 @@ App::AckX::Preflight::Plugin - Convenience superclass for plugins
  # superclass' method returns nothing.
  sub __options {
      return qw{ myoption! };
+ }
+
+ # May override this if you want options processing done for you. The
+ # superclass' method returns nothing. The difference from __options is
+ # that these are not removed from @ARGV
+ sub __peek_opt {
+     return qw{ someone-elses-option! };
  }
  
  # Must override this. The superclass' method dies.
@@ -72,6 +83,19 @@ the last-occurring option determines the plug-in's order. If more than
 one plug-in specifies the same option, they are called ASCIIbetically,
 and they had better have the same syntax. Plug-ins that return nothing,
 or whose options do not appear, are called last, in ASCIIbetical order.
+
+=head2 __peek_opt
+
+ $plugin_class->__peek_opt();
+
+This static method is similar to L<__options()|/__options>. Its return
+is L<Getopt::Long|Getopt::Long> option specifications, and any of these
+actually found appear in the C<$opt> argument passed to
+L<__process()|/__process>.
+
+The difference is that options specified by this method are not removed
+from C<@ARGV>. The idea is that you specify here options that belong to
+someone else but you want to know about.
 
 =head2 __process
 

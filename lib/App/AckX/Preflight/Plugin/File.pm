@@ -17,61 +17,64 @@ sub __options {
     return( qw{ file=s } );
 }
 
+sub __peek_opt {
+    return( qw{ match=s } );
+}
+
 sub __process {
     my ( undef, undef, $opt ) = @_;
 
-    # If we actually got a --file option
-    if ( defined $opt->{file} ) {
+    # Unless we actually have a --file option, we have nothing to do.
+    defined $opt->{file}
+	or return;
 
-	# We can't have --match if we have --file, since --file is
-	# implemented using --match.
-	grep { m/ \A --? match (?: = | \z ) /smx } @ARGV
+    # We can't have --match if we have --file, since --file is
+    # implemented using --match.
+    defined $opt->{match}
+	and __die(
+	'Options --file and --match are mutually exclusive.' );
+
+    # Read the file, or die.
+    my $fh = __open_for_read( $opt->{file} );
+    my @pattern;
+
+    # Find any patterns in the file.
+    while ( <$fh> ) {
+	m/ \S /smx
+	    and not m/ \A \s* [#] /smx
+	    or next;
+	chomp;
+	push @pattern, $_;
+    }
+
+    close $fh;
+
+    # Die if there are no patterns.
+    @pattern
+	or __die( "No patterns found in $opt->{file}" );
+
+    # If we got more than one pattern
+    if ( 1 < @pattern ) {
+
+	# The Regex we need to build requires 5.009005, really.
+	'5.010' gt $]
 	    and __die(
-	    'Options --file and --match are mutually exclusive.' );
+	    "Perl $] does not support multiple patterns in a file" );
 
-	# Read the file, or die.
-	my $fh = __open_for_read( $opt->{file} );
-	my @pattern;
+	# Enclose the individual patterns in (?: ... ) unless it
+	# looks like they already are.
+	@pattern = map {
+	    m/ \A [(] [?] [[:lower:]]* : /smx ? $_ :  "(?:$_)" } @pattern;
 
-	# Find any patterns in the file.
-	while ( <$fh> ) {
-	    m/ \S /smx
-		and not m/ \A \s* [#] /smx
-		or next;
-	    chomp;
-	    push @pattern, $_;
-	}
+	# Manufacture a --match, and inject it into the arguments.
+	local $" = '|';
+	unshift @ARGV, '--match', "(?|@pattern)";
 
-	close $fh;
+    # If there is not more than one pattern
+    } else {
 
-	# Die if there are no patterns.
-	@pattern
-	    or __die( "No patterns found in $opt->{file}" );
-
-	# If we got more than one pattern
-	if ( 1 < @pattern ) {
-
-	    # The Regex we need to build requires 5.009005, really.
-	    '5.010' gt $]
-		and __die(
-		"Perl $] does not support multiple patterns in a file" );
-
-	    # Enclose the individual patterns in (?: ... ) unless it
-	    # looks like they already are.
-	    @pattern = map {
-		m/ \A [(] [?] [[:lower:]]* : /smx ? $_ :  "(?:$_)" } @pattern;
-
-	    # Manufacture a --match, and inject it into the arguments.
-	    local $" = '|';
-	    unshift @ARGV, '--match', "(?|@pattern)";
-
-	# If there is not more than one pattern
-	} else {
-
-	    # Just inject it back into the arguments.
-	    unshift @ARGV, '--match', @pattern;
-
-	}
+	# Just inject it back into the arguments.
+	unshift @ARGV, '--match', @pattern;
 
     }
 

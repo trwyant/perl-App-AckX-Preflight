@@ -94,10 +94,10 @@ use constant MAX_DEPTH		=> do {
 
     sub __getopt {
 	my ( undef, @opt_spec ) = @_;	# Invocant unused
-	my %opt;
-	$psr->getoptions( \%opt, @opt_spec )
+	my $opt = HASH_REF eq ref $opt_spec[0] ? shift @opt_spec : {};
+	$psr->getoptions( $opt, @opt_spec )
 	    or __die( 'Invalid option on command line' );
-	return \%opt;
+	return $opt;
     }
 }
 
@@ -138,13 +138,12 @@ EOD
 	},
     );
 
-    $self->__process_files( $self->__find_files() );
+    $self->__process_config_files( $self->__find_config_files() );
 
     foreach my $p_rec ( $self->__marshal_plugins ) {
-	my $opt = $p_rec->{options} ?
-	    $self->__getopt( @{ $p_rec->{options} } ) :
-	    {};
-	$p_rec->{package}->__process( $self, $opt );
+	my $plugin = $p_rec->{package};
+	my $opt = $self->__process_plugin_options( $plugin );
+	$plugin->__process( $self, $opt );
     }
 
     return $self->__execute( ack => @ARGV );
@@ -279,7 +278,7 @@ sub __execute {
     };
 }	# End localized $@
 
-sub __find_files {
+sub __find_config_files {
     my ( $self ) = @_;
     my $opt = $self->__getopt( qw{ ackxprc=s ignore-ackxp-defaults! } );
 
@@ -463,7 +462,7 @@ sub __module_pluggable_object_new_args {
     );
 }
 
-sub __process_files {
+sub __process_config_files {
     my ( undef, @files ) = @_;			# Invocant unused
     foreach my $fn ( @files ) {
 	my @args;
@@ -483,6 +482,20 @@ sub __process_files {
 	splice @ARGV, 0, 0, @args;
     }
     return;
+}
+
+# Exposed (kinda sorta) for use in testing.
+sub __process_plugin_options {
+    my ( $self, $plugin ) = @_;
+    my $opt = {};
+    if ( my @spec = $plugin->__options() ) {
+	$self->__getopt( $opt, @spec );
+    }
+    if ( my @spec = $plugin->__peek_opt() ) {
+	local @ARGV = @ARGV;
+	$self->__getopt( $opt, @spec );
+    }
+    return $opt;
 }
 
 1;

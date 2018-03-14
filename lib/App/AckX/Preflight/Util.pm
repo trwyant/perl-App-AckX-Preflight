@@ -17,6 +17,7 @@ our @EXPORT_OK = qw{
     __warn
 
     ARRAY_REF
+    HASH_REF
     SCALAR_REF
 };
 
@@ -26,6 +27,7 @@ our %EXPORT_TAGS = (
 );
 
 use constant ARRAY_REF	=> ref [];
+use constant HASH_REF	=> ref {};
 use constant SCALAR_REF	=> ref \0;
 
 *__die = \&App::Ack::die;	# sub __die

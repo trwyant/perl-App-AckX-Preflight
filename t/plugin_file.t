@@ -24,7 +24,7 @@ is_deeply \@got,
 
 
 @got = prs( qw{ --file fu --match bar } );
-@want = ( { file => 'fu' }, qw{ --match bar } );
+@want = ( { file => 'fu', match => 'bar' }, qw{ --match bar } );
 is_deeply \@got, \@want,
     q<Parse '--file fu --match bar'>
     or diag explain 'Got ', \@got;
@@ -35,7 +35,7 @@ like $str, qr{ \b \Qmutually exclusive\E \b }smx,
 
 
 @got = prs( qw{ --match=(?i:\bbazzle\b) } );
-@want = ( {}, '--match=(?i:\bbazzle\b)' );
+@want = ( { match => '(?i:\bbazzle\b)' }, qw{ --match=(?i:\bbazzle\b) } );
 is_deeply \@got, \@want,
     q<Parse '--match=(?i:\bbazzle\b)'>
     or diag explain 'Got ', \@got;
@@ -79,7 +79,7 @@ SKIP: {
 
 
 @got = prs( qw{ foo --match=bar bazzle } );
-@want = ( {}, qw{ foo --match=bar bazzle } );
+@want = ( { match => 'bar' }, qw{ foo --match=bar bazzle } );
 is_deeply \@got, \@want,
     q<Parse 'foo --match=bar bazzle'>
     or diag explain 'Got ', \@got;
@@ -94,23 +94,11 @@ is_deeply \@got,
 
 done_testing;
 
-{
-    my $psr;
-
-    BEGIN {
-	$psr = Getopt::Long::Parser->new();
-	$psr->configure( qw{
-	    no_auto_version no_ignore_case no_auto_abbrev pass_through
-	    },
-	);
-    }
-
-    sub prs {
-	local @ARGV = @_;
-	my $opt = {};
-	$psr->getoptions( $opt, PACKAGE->__options() );
-	return ( $opt, @ARGV );
-    }
+sub prs {
+    local @ARGV = @_;
+    my $opt = App::AckX::Preflight->__process_plugin_options(
+	PACKAGE );
+    return ( $opt, @ARGV );
 }
 
 use constant HASH_REF	=> ref {};
