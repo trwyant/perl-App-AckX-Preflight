@@ -19,6 +19,7 @@ sub new {
 
 sub build_requires {
     return +{
+	'lib'		=> 0,		# To load inc/ stuff.
 	'Test::More'	=> 0.88,	# Because of done_testing().
     };
 }
@@ -67,9 +68,32 @@ sub requires {
 ##  if ( ! $self->distribution() ) {
 ##  }
     return +{
-	'Carp'		=> 0,
-	strict		=> 0,
-	warnings	=> 0,
+	'App::Ack'			=> 0,
+	'App::Ack::ConfigLoader'	=> 0,
+	'App::Ack::Filter'		=> 0,
+	'App::Ack::Filter::Collection'	=> 0,
+	'App::Ack::Filter::Default'	=> 0,
+	'App::Ack::Filter::Extension'	=> 0,
+	'App::Ack::Filter::FirstLineMatch'	=> 0,
+	'App::Ack::Filter::Inverse'	=> 0,
+	'App::Ack::Filter::Is'		=> 0,
+	'App::Ack::Filter::IsPath'	=> 0,
+	'App::Ack::Filter::Match'	=> 0,
+	'App::Ack::Resource'		=> 0,
+	'Carp'				=> 0,
+	'Cwd'				=> 0,
+	'Exporter'			=> 0,
+	'ExtUtils::Manifest'		=> 0,
+	'File::Basename'		=> 0,
+	'File::Spec'			=> 0,
+	'Getopt::Long'			=> 2.33,
+	'Module::Pluggable::Object'	=> 5.2,
+	'Pod::Usage'			=> 0,
+	'Text::ParseWords'		=> 0,
+	'constant'			=> 0,
+	'parent'			=> 0,
+	'strict'			=> 0,
+	'warnings'			=> 0,
 	@extra,
     };
 }
