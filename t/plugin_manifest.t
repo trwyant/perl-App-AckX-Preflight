@@ -62,10 +62,14 @@ is_deeply \@got, \@want,
     q<Parse '--manifest --perl'>
     or diag explain 'Got ', \@got;
 
-@got = xqt( @want );
-is_deeply \@got, [ '--perl', @manifest_perl ],
-    q<Process '--manifest --perl'>
-    or diag explain 'Got ', \@got;
+SKIP: {
+    App::AckX::Preflight->__filter_support()
+	or skip 'Test requires App::Ack filters', 1;
+    @got = xqt( @want );
+    is_deeply \@got, [ '--perl', @manifest_perl ],
+	q<Process '--manifest --perl'>
+	or diag explain 'Got ', \@got;
+}
 
 
 @got = prs( qw{ --nomanifest-default } );

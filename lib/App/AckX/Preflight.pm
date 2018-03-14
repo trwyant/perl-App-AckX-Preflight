@@ -134,6 +134,128 @@ sub __execute {
 	or __die( "Failed to exec $arg[0]: $!" );
 }
 
+# We go through this to defined __filter_files because we are rummaging
+# around in the internals of App::Ack, and who knows what may break?
+{	# Localize $@
+
+    local $@ = undef;
+
+    eval {
+	require App::Ack::ConfigLoader;
+	App::Ack::ConfigLoader->can( 'retrieve_arg_sources' )
+	    and App::Ack::ConfigLoader->can( 'process_args' )
+	    or return;
+	require App::Ack::Filter;
+	# filter() not implemented on superclass
+	require App::Ack::Filter::Collection;
+	App::Ack::Filter::Collection->can( 'filter' )
+	    or return;
+	require App::Ack::Filter::Default;
+	App::Ack::Filter::Default->can( 'filter' )
+	    or return;
+	require App::Ack::Filter::Extension;
+	App::Ack::Filter::Extension->can( 'filter' )
+	    or return;
+	require App::Ack::Filter::FirstLineMatch;
+	App::Ack::Filter::FirstLineMatch->can( 'filter' )
+	    or return;
+	require App::Ack::Filter::Inverse;
+	# etc
+	require App::Ack::Filter::Is;
+	require App::Ack::Filter::IsPath;
+	require App::Ack::Filter::Match;
+	require App::Ack::Resource;
+	App::Ack::Resource->can( 'new' )
+	    or return;
+
+	*__filter_files = sub {		# sub __filter_files
+	    my ( $self, @files ) = @_;
+
+	    unless ( $self->{filters} ) {
+
+		local @ARGV = @ARGV;
+
+		my @arg_sources = App::Ack::ConfigLoader::retrieve_arg_sources();
+
+		my %known_type;
+		my $argv;
+
+		foreach my $as ( @arg_sources ) {
+		    if ( 'ARGV' eq $as->{name} ) {
+			$argv = $as;
+		    } else {
+			my @contents = @{ $as->{contents} };
+			while ( @contents ) {
+			    local $_ = shift @contents;
+			    if ( m/ \A --? type- ( add | set | del )
+				( = ( [^:]+) | \z ) /smx ) {
+				my $verb = $1;
+				my $type = $3;
+				unless ( $type ) {
+				    local $_ = shift @contents;
+				    m/ \A ( [^:]+ ) /smx
+					or next;
+				    $type = $1;
+				}
+				if ( 'del' eq $verb ) {
+				    delete $known_type{$type};
+				} else {
+				    $known_type{$type} = 1;
+				}
+			    }
+			}
+		    }
+		}
+
+		if ( $argv ) {
+		    my @contents = @{ $argv->{contents} };
+		    my @rslt;
+		    while ( @contents ) {
+			local $_ = shift @contents;
+			if ( m/ \A --? type ( = | \z ) /smx ) {
+			    push @rslt, $_;
+			    $1
+				or push @rslt, shift @contents;
+			} elsif ( m/ \A --? ( [[:alpha:]0-9]+ ) \z /smx &&
+			    $known_type{$1} ) {
+			    push @rslt, $_;
+			}
+		    }
+		    @{ $argv->{contents} } = @rslt;
+		}
+
+		my $opt = App::Ack::ConfigLoader::process_args( @arg_sources );
+
+		$self->{filters} = $opt->{filters};
+	    }
+
+	    my @rslt;
+	    foreach my $file ( @files ) {
+		my $r = App::Ack::Resource->new( $file );
+		foreach my $filter ( @{ $self->{filters} } ) {
+		    $filter->filter( $r )
+			or next;
+		    push @rslt, $file;
+		    last;
+		}
+	    }
+
+	    return @rslt;
+	};
+
+	*__filter_support = sub { 1 };	# sub __filter_support
+
+	1;
+    } or do {
+	*__filter_files = sub {	# sub __filter_files
+	    my ( undef, @files ) = @_;
+	    return @files;
+	};
+
+	*__filter_support = sub { 0 };	# sub __filter_support
+    };
+}	# End localized $@
+
 sub __find_files {
     my ( $self ) = @_;
     my $opt = $self->__getopt( qw{ ackxprc=s ignore-ackxp-defaults! } );
@@ -447,6 +569,28 @@ returns the default value of the C<{global}> attribute.
 If called on an object, this method returns the value of the C<{home}>
 attribute, whether explicit or defaulted. If called statically, it
 returns the default value of the C<{home}> attribute.
+
+=head2 __filter_files
+
+ my @rslt = $self->__filter_files( @files );
+
+This method takes as its arguments zero or more file names. If
+L<App::Ack|App::Ack> filters are supported (see
+L<__filter_support()|/__filter_support>), the return is the names of
+those files that passed the filters specified on the command line. If
+filters are not supported, returns all file names.
+
+=head2 __filter_support
+
+ $self->__filter_support()
+     and print "Filters are supported\n";
+
+This method returns a true value if L<App::Ack|App::Ack> filters are
+supported, and a false value if not.
+
+The filter support requires a certain amount of mucking around in the
+internals of L<App::Ack|App::Ack>. What a true return really means is
+that all requisite modules loaded and supported all requisite methods.
 
 =head2 run
 

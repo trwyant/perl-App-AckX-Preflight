@@ -101,7 +101,9 @@ done_testing;
 
 sub xqt {
     local @ARGV = @_;
-    my $invocant = ref $ARGV[0] ? shift @ARGV : 'My::Module::Preflight';
+    my $invocant = ref $ARGV[0] ?
+	shift @ARGV :
+	My::Module::Preflight->new();
 
     return [ $invocant->run() ];
 

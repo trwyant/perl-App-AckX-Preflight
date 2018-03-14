@@ -31,7 +31,7 @@ sub __options {
 
 
 sub __process {
-    my ( undef, undef, $opt ) = @_;
+    my ( undef, $aaxp, $opt ) = @_;
 
     if ( defined $opt->{manifest} ) {
 	$opt->{manifest}
@@ -44,82 +44,10 @@ sub __process {
 	return;
     }
 
-    # TODO the filter logic probably belongs on ::Preflight.
-
-    my @filters;
-
-    {	# Purpose of block is to localize @ARGV
-
-	local @ARGV = @ARGV;
-
-	my @arg_sources = App::Ack::ConfigLoader::retrieve_arg_sources();
-
-	my %known_type;
-	my $argv;
-
-	foreach my $as ( @arg_sources ) {
-	    if ( 'ARGV' eq $as->{name} ) {
-		$argv = $as;
-	    } else {
-		my @contents = @{ $as->{contents} };
-		while ( @contents ) {
-		    local $_ = shift @contents;
-		    if ( m/ \A --? type- ( add | set | del )
-			( = ( [^:]+) | \z ) /smx ) {
-			my $verb = $1;
-			my $type = $3;
-			unless ( $type ) {
-			    local $_ = shift @contents;
-			    m/ \A ( [^:]+ ) /smx
-				or next;
-			    $type = $1;
-			}
-			if ( 'del' eq $verb ) {
-			    delete $known_type{$type};
-			} else {
-			    $known_type{$type} = 1;
-			}
-		    }
-		}
-	    }
-	}
-
-	if ( $argv ) {
-	    my @contents = @{ $argv->{contents} };
-	    my @rslt;
-	    while ( @contents ) {
-		local $_ = shift @contents;
-		if ( m/ \A --? type ( = | \z ) /smx ) {
-		    push @rslt, $_;
-		    $1
-			or push @rslt, shift @contents;
-		} elsif ( m/ \A --? ( [[:alpha:]0-9]+ ) \z /smx &&
-		    $known_type{$1} ) {
-		    push @rslt, $_;
-		}
-	    }
-	    @{ $argv->{contents} } = @rslt;
-	}
-
-	my $opt = App::Ack::ConfigLoader::process_args( @arg_sources );
-
-	@filters = @{ $opt->{filters} };
-
-    }	# End localized @ARGV
-
     require ExtUtils::Manifest;
 
-    my @manifest = sort keys %{ ExtUtils::Manifest::maniread() };
-
-    foreach ( @manifest ) {
-	my $r = App::Ack::Resource->new( $_ );
-	foreach my $f ( @filters ) {
-	    $f->filter( $r )
-		or next;
-	    push @ARGV, $_;
-	    last;
-	}
-    }
+    push @ARGV, $aaxp->__filter_files(
+	sort keys %{ ExtUtils::Manifest::maniread() } );
 
     return;
 }
