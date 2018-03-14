@@ -270,10 +270,9 @@ sub __find_config_files {
     # abbreviation, so I can (I hope!) just traverse the command line
     # and recognize it in-place myself;
     my $use_env = 1;
-    foreach ( @ARGV ) {
-	m/ \A --? ( no-? ) env \z /smx
-	    or next;
-	$use_env = ! $1;
+    {
+	local @ARGV = @ARGV;
+	__getopt( 'env!' => \$use_env );
     }
 
     my @files;
