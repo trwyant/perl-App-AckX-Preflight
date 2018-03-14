@@ -11,13 +11,16 @@ use App::AckX::Preflight::Util qw{ HASH_REF __getopt_for_plugin };
 use Getopt::Long;
 use Test::More 0.88;	# Because of done_testing();
 
-use constant PACKAGE	=> 'App::AckX::Preflight::Plugin::File';
+use lib qw{ inc };
+use My::Module::TestPlugin;	# Imports prs() and xqt()
+
+use constant PLUGIN	=> 'App::AckX::Preflight::Plugin::File';
 
 my @got;
 my @want;
 
 
-@got = PACKAGE->__options();
+@got = PLUGIN->__options();
 is_deeply \@got,
     [ qw{ file=s } ],
     'Options'
@@ -94,22 +97,6 @@ is_deeply \@got,
 
 
 done_testing;
-
-sub prs {
-    local @ARGV = @_;
-    my $opt = __getopt_for_plugin( PACKAGE );
-    return ( $opt, @ARGV );
-}
-
-sub xqt {
-    local @ARGV = @_;
-    my $aaxp = 'App::AckX::Preflight' eq ref $ARGV[0] ?
-	shift @ARGV :
-	App::AckX::Preflight->new();
-    my $opt = HASH_REF eq ref $ARGV[0] ? shift @ARGV : {};
-    PACKAGE->__process( $aaxp, $opt );
-    return @ARGV;
-}
 
 1;
 

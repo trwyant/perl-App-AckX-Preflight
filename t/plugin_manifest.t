@@ -13,7 +13,10 @@ use Getopt::Long qw{ :config
     no_auto_version no_ignore_case no_auto_abbrev pass_through };
 use Test::More 0.88;	# Because of done_testing();
 
-use constant PACKAGE	=> 'App::AckX::Preflight::Plugin::Manifest';
+use lib qw{ inc };
+use My::Module::TestPlugin;	# Imports prs() and xqt()
+
+use constant PLUGIN	=> 'App::AckX::Preflight::Plugin::Manifest';
 
 my @got;
 my @want;
@@ -25,7 +28,7 @@ my @manifest_perl = grep {
     m| \A script/ |smx
 } @manifest;
 
-@got = PACKAGE->__options();
+@got = PLUGIN->__options();
 is_deeply \@got,
     [ qw{ manifest! manifest-default! } ],
     'Options'
@@ -128,37 +131,6 @@ SKIP: {
 
 
 done_testing;
-
-{
-    my $psr;
-
-    BEGIN {
-	$psr = Getopt::Long::Parser->new();
-	$psr->configure( qw{
-	    no_auto_version no_ignore_case no_auto_abbrev pass_through
-	    },
-	);
-    }
-
-    sub prs {
-	local @ARGV = @_;
-	my $opt = {};
-	$psr->getoptions( $opt, PACKAGE->__options() );
-	return ( $opt, @ARGV );
-    }
-}
-
-use constant HASH_REF	=> ref {};
-
-sub xqt {
-    local @ARGV = @_;
-    my $aaxp = 'App::AckX::Preflight' eq ref $ARGV[0] ?
-	shift @ARGV :
-	App::AckX::Preflight->new();
-    my $opt = HASH_REF eq ref $ARGV[0] ? shift @ARGV : {};
-    PACKAGE->__process( $aaxp, $opt );
-    return @ARGV;
-}
 
 1;
 

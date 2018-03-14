@@ -4,6 +4,7 @@ eg/ACKX-REF
 inc/My/Module/Build.pm
 inc/My/Module/Meta.pm
 inc/My/Module/Preflight.pm
+inc/My/Module/TestPlugin.pm
 lib/App/AckX/Preflight.pm
 lib/App/AckX/Preflight/Util.pm
 lib/App/AckX/Preflight/Plugin.pm
