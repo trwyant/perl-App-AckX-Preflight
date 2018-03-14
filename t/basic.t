@@ -17,25 +17,28 @@ can_ok 'App::AckX::Preflight::Util', qw{
 require_ok 'App::AckX::Preflight'
     or BAIL_OUT $@;
 
-can_ok 'App::AckX::Preflight', qw{ new __getopt global home run }
+can_ok 'App::AckX::Preflight', qw{ new global home run }
     or BAIL_OUT;
 
 require_ok 'App::AckX::Preflight::Plugin'
     or BAIL_OUT $@;
 
-can_ok 'App::AckX::Preflight::Plugin', qw{ __options __process }
+can_ok 'App::AckX::Preflight::Plugin',
+    qw{ __options __peek_opt __process }
     or BAIL_OUT;
 
 require_ok 'App::AckX::Preflight::Plugin::File'
     or BAIL_OUT $@;
 
-can_ok 'App::AckX::Preflight::Plugin::File', qw{ __options __process }
+can_ok 'App::AckX::Preflight::Plugin::File',
+    qw{ __options __peek_opt __process }
     or BAIL_OUT;
 
 require_ok 'App::AckX::Preflight::Plugin::Manifest'
     or BAIL_OUT $@;
 
-can_ok 'App::AckX::Preflight::Plugin::Manifest', qw{ __options __process }
+can_ok 'App::AckX::Preflight::Plugin::Manifest',
+    qw{ __options __peek_opt __process }
     or BAIL_OUT;
 
 
