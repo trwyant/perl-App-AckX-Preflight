@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use App::Ack ();
-use Carp;
+# use Carp ();
 use Exporter qw{ import };
 
 our $VERSION = '0.000_001';

@@ -7,7 +7,7 @@ use warnings;
 
 use App::Ack;
 use App::AckX::Preflight::Util qw{ :all };
-use Carp;
+# use Carp ();
 
 use parent qw{ App::AckX::Preflight::Plugin };
 

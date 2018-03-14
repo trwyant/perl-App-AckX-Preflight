@@ -7,7 +7,7 @@ use warnings;
 
 use App::Ack ();
 use App::AckX::Preflight::Util qw{ :all };
-use Carp;
+use Carp ();
 use Cwd ();
 use File::Basename ();
 use File::Spec;
@@ -53,7 +53,7 @@ use constant MAX_DEPTH		=> do {
 
 	foreach ( keys %arg ) {
 	    exists $default{$_}
-		or croak "Argument '$_' not supported";
+		or Carp::croak "Argument '$_' not supported";
 	}
 
 	foreach ( keys %default ) {
@@ -63,7 +63,7 @@ use constant MAX_DEPTH		=> do {
 
 	foreach ( qw{ global home } ) {
 	    -d $arg{$_}
-		or croak "Argument '$_' must be a directory";
+		or Carp::croak "Argument '$_' must be a directory";
 	}
 
 	return bless \%arg, ref $class || $class;

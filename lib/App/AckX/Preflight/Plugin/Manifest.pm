@@ -17,7 +17,7 @@ use App::Ack::Filter::IsPath;
 use App::Ack::Filter::Match;
 use App::Ack::Resource;
 use App::AckX::Preflight::Util qw{ __open_for_read };
-use Carp;
+# use Carp ();
 
 use parent qw{ App::AckX::Preflight::Plugin };
 
