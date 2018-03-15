@@ -196,61 +196,77 @@ sub __execute {
 
 	    unless ( $self->{filters} ) {
 
-		local @ARGV = @ARGV;
+		# The only way to get access to App::Ack's filter
+		# mechanism is to rummage in its guts.
 
-		my @arg_sources = App::Ack::ConfigLoader::retrieve_arg_sources();
+		local @ARGV = @ARGV;	# For App::Ack::ConfigLoader
 
+		my @arg_sources =
+		    App::Ack::ConfigLoader::retrieve_arg_sources();
+
+		# We need to get rid of any App::AckX::Preflight options
+		# before we actually parse the args. But we can't know
+		# (in principal) what these are. We are really only
+		# interested in type definitions, but since the types
+		# are options in themselves we need to figure out for
+		# ourselves what's defined so we can go through @ARGV
+		# and strain out unknowns, but recognize that (e.g.)
+		# --perl is a synonym for --type=perl, and retain it.
+		# The sources are undocumented unblessed hashes, so this
+		# is the crux of the gut-rummaging.
 		my %known_type;
 		my $argv;
-		use constant TYPE_RE => qr{
-		    \A --? type- ( add | set | del )
-			( = ( [^:]+) | \z ) }smx;
 
 		foreach my $as ( @arg_sources ) {
 		    'ARGV' eq $as->{name}
 			and $argv = $as;
-		    my @contents = @{ $as->{contents} };
-		    while ( @contents ) {
-			local $_ = shift @contents;
-			if ( $_ =~ TYPE_RE ) {
-			    my $verb = $1;
-			    my $type = $3;
-			    unless ( $type ) {
-				local $_ = shift @contents;
-				m/ \A ( [^:]+ ) /smx
-				    or next;
-				$type = $1;
-			    }
-			    if ( 'del' eq $verb ) {
-				delete $known_type{$type};
-			    } else {
-				$known_type{$type} = 1;
-			    }
-			}
-		    }
+		    my $add = sub {
+			my ( $type ) = split qr{ : }smx, $_[1], 2;
+			$known_type{$type} = 1;
+			return;
+		    };
+		    __getopt(
+			[ @{ $as->{contents} } ],
+			'type-add=s'	=> $add,
+			'type-set=s'	=> $add,
+			'type-del=s'	=> sub {
+			    my ( $type ) = split qr{ : }smx, $_[1], 2;
+			    delete $known_type{$type};
+			    return;
+			},
+		    );
+
 		}
 
 		if ( $argv ) {
-		    my @contents = @{ $argv->{contents} };
+
 		    my @rslt;
-		    while ( @contents ) {
-			local $_ = shift @contents;
-			if ( m/ \A --? type ( = | \z ) /smx ) {
-			    push @rslt, $_;
-			    $1
-				or push @rslt, shift @contents;
-			} elsif ( m/ \A --? ( [[:alpha:]0-9]+ ) \z /smx &&
-			    $known_type{$1} ) {
-			    push @rslt, $_;
-			} elsif ( $_ =~ TYPE_RE ) {
-			    push @rslt, $_;
-			}
-		    }
+		    my $keep_val = sub {
+			push @rslt, "--$_[0]=$_[1]";
+			return;
+		    };
+		    my $keep_bool = sub {
+			$_[1]
+			    and push @rslt, "--$_[0]";
+			return;
+		    };
+		    __getopt(
+			$argv->{contents},
+			'type-add=s'	=> $keep_val,
+			'type-set=s'	=> $keep_val,
+			'type-del=s'	=> $keep_val,
+			'type=s'	=> $keep_val,
+			map { $_ => $keep_bool } sort keys %known_type
+		    );
 		    @{ $argv->{contents} } = @rslt;
+
 		}
 
+		# OK. Now that the arguments sources are pristine, we
+		# can actually process them.
 		my $opt = App::Ack::ConfigLoader::process_args( @arg_sources );
 
+		# The filters are all we're interested in.
 		$self->{filters} = $opt->{filters};
 	    }
 
@@ -286,14 +302,9 @@ sub __find_config_files {
     my $opt = __getopt( qw{ ackxprc=s ignore-ackxp-defaults! } );
 
     # I want to leave --env/--noenv in the command line for ack, but I
-    # need to know its value. Fortunately ack does not allow option
-    # abbreviation, so I can (I hope!) just traverse the command line
-    # and recognize it in-place myself;
+    # need to know its value.
     my $use_env = 1;
-    {
-	local @ARGV = @ARGV;
-	__getopt( 'env!' => \$use_env );
-    }
+    __getopt( [ @ARGV ], 'env!' => \$use_env );
 
     my @files;
 

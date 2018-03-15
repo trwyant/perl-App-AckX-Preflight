@@ -41,8 +41,9 @@ use constant SCALAR_REF	=> ref \0;
     sub __getopt {
 	my ( @opt_spec ) = @_;
 	$psr ||= _get_option_parser();
+	my $source = ARRAY_REF eq ref $opt_spec[0] ? shift @opt_spec : \@ARGV;
 	my $opt = HASH_REF eq ref $opt_spec[0] ? shift @opt_spec : {};
-	$psr->getoptions( $opt, @opt_spec )
+	$psr->getoptionsfromarray( $source, $opt, @opt_spec )
 	    or __die( 'Invalid option on command line' );
 	return $opt;
     }
@@ -64,8 +65,7 @@ sub __getopt_for_plugin {
 	__getopt( $opt, @spec );
     }
     if ( my @spec = $plugin->__peek_opt() ) {
-	local @ARGV = @ARGV;
-	__getopt( $opt, @spec );
+	__getopt( [ @ARGV ], $opt, @spec );
     }
     return $opt;
 }
@@ -114,10 +114,13 @@ This subroutine is really just an alias for C<App::Ack::die()>.
  my $opt = __getopt( qw{ foo! bar=s } );
 
 This subroutine is intended for the use of plug-ins that want to process
-their own options. It simply calls C<Getopt::Long::GetOptions>, with the
-package configured appropriately for our use. Any arguments actually
-processed will be removed from C<@ARGV>. The return is a reference to
-the options hash.
+their own options. It actually calls C<getoptionsfromarray()>, with the
+array being the first argument if it is an array reference, or C<\@ARGV>
+if not, and the options hash being the next argument if it is a hash
+reference, and an empty hash if not. All other arguments are
+L<Getopt::Long|Getopt::Long> option specifications. Any options actually
+processed are removed from the array. The return is a reference to the
+options hash.
 
 The actual configuration used is
 
