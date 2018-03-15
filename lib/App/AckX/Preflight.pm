@@ -202,29 +202,29 @@ sub __execute {
 
 		my %known_type;
 		my $argv;
+		use constant TYPE_RE => qr{
+		    \A --? type- ( add | set | del )
+			( = ( [^:]+) | \z ) }smx;
 
 		foreach my $as ( @arg_sources ) {
-		    if ( 'ARGV' eq $as->{name} ) {
-			$argv = $as;
-		    } else {
-			my @contents = @{ $as->{contents} };
-			while ( @contents ) {
-			    local $_ = shift @contents;
-			    if ( m/ \A --? type- ( add | set | del )
-				( = ( [^:]+) | \z ) /smx ) {
-				my $verb = $1;
-				my $type = $3;
-				unless ( $type ) {
-				    local $_ = shift @contents;
-				    m/ \A ( [^:]+ ) /smx
-					or next;
-				    $type = $1;
-				}
-				if ( 'del' eq $verb ) {
-				    delete $known_type{$type};
-				} else {
-				    $known_type{$type} = 1;
-				}
+		    'ARGV' eq $as->{name}
+			and $argv = $as;
+		    my @contents = @{ $as->{contents} };
+		    while ( @contents ) {
+			local $_ = shift @contents;
+			if ( $_ =~ TYPE_RE ) {
+			    my $verb = $1;
+			    my $type = $3;
+			    unless ( $type ) {
+				local $_ = shift @contents;
+				m/ \A ( [^:]+ ) /smx
+				    or next;
+				$type = $1;
+			    }
+			    if ( 'del' eq $verb ) {
+				delete $known_type{$type};
+			    } else {
+				$known_type{$type} = 1;
 			    }
 			}
 		    }
@@ -241,6 +241,8 @@ sub __execute {
 				or push @rslt, shift @contents;
 			} elsif ( m/ \A --? ( [[:alpha:]0-9]+ ) \z /smx &&
 			    $known_type{$1} ) {
+			    push @rslt, $_;
+			} elsif ( $_ =~ TYPE_RE ) {
 			    push @rslt, $_;
 			}
 		    }
