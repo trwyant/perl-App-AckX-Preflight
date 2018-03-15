@@ -1,6 +1,7 @@
 Build.PL
 Changes
-eg/ACKX-REF
+eg/ACKXP-REF
+eg/README
 inc/My/Module/Build.pm
 inc/My/Module/Meta.pm
 inc/My/Module/Preflight.pm

@@ -1,0 +1,13 @@
+This examples directory contains the following files:
+
+ACKXP-REF
+    This is a file suitable as input to the File plug-in. It contains a
+    pattern to recognize literal Perl reference types, whether single-
+    or double-quoted or as barewords follwed by a fat comma. For
+    example, ackxp --file eg/ACKXP-REF will find all literal Perl
+    reference types used in this distro.
+
+README
+    This file.
+
+# ex: set filetype=text textwidth=72 autoindent :
