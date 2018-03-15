@@ -10,7 +10,7 @@ use App::Ack ();
 use Exporter qw{ import };
 use Getopt::Long 2.33;
 
-our $VERSION = '0.000_001';
+our $VERSION = '0.000_002';
 
 our @EXPORT_OK = qw{
     __die

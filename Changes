@@ -1,2 +1,41 @@
+0.000_002	2018-03-14	T. R. Wyant
+    Add --help, with optional arguments: 'config' for config sources;
+    'plugins' to list plugins, and plugin name for help on that plugin.
+
+    Move option processing code to ::Util.
+
+    Add plug-in method __peek_opt(). This is like __options(), but any
+    options found are NOT removed from @ARGV.
+
+    Add the Manifest plug-in, which searches the files found in the
+    MANIFEST file. This supports type processing if it is available.
+
+    Add App::AckX::Preflight methods __filter_available() and
+    __filter_files(). The former returns a Boolean true if
+    App::Ack-style file filtering is available to plugins, and false if
+    not. The latter actually filters a list of input files, returning
+    those that match. If filtering is not available, __filter_files()
+    just returns its arguments.
+
+    Go to object-oriented calls for plugin methods. Provide a plugin
+    superclass, but this is not needed as long as the plugin conforms to
+    the interface.
+
+    Ensure script/ackxp is installed.
+
+    Subclass App::AckX::Preflight for testing, as an alternative to
+    hammering varous subroutines.
+
+    Consider all instances of --env/--noenv, not just '--noenv' itself.
+
+    Move common code to ::Util
+
+    Add support for configuration files. These are modeled after ack's,
+    but the names are variants on 'ackxprc'.
+
+    Martial plugins based on the last (right-most) relevant option, not
+    the first. Also consider negated options.
+
+
 0.000_001	2018-03-08	T. R. Wyant
     Initial commit.
