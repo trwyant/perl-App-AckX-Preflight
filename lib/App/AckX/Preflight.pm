@@ -90,7 +90,12 @@ sub run {
     ref $self
 	or $self = $self->new();
 
-    __getopt(
+    my $opt = {
+	'ack-filters'	=> $self->__filter_available(),
+    };
+
+    __getopt( $opt,
+	qw{ ack-filters! },
 	version	=> sub {
 	    print <<"EOD";
 @{[ __PACKAGE__ ]} $VERSION
@@ -135,6 +140,8 @@ EOD
 	},
     );
 
+    $self->{use_ack_filters} = $opt->{ 'ack-filters' };
+
     $self->__process_config_files( $self->__find_config_files() );
 
     foreach my $p_rec ( $self->__marshal_plugins ) {
@@ -153,7 +160,7 @@ sub __execute {
 	or __die( "Failed to exec $arg[0]: $!" );
 }
 
-# We go through this to defined __filter_files because we are rummaging
+# We go through this to define __filter_files because we are rummaging
 # around in the internals of App::Ack, and who knows what may break?
 {	# Localize $@
 
@@ -193,6 +200,12 @@ sub __execute {
 	    ref $self
 		or Carp::confess(
 		'__filter_files() may not be called as static method' );
+
+	    if ( defined $self->{use_ack_filters} &&
+		! $self->{use_ack_filters} ) {
+		__warn( 'ack-style file filters disabled' );
+		return @files;
+	    }
 
 	    unless ( $self->{filters} ) {
 
@@ -262,8 +275,8 @@ sub __execute {
 
 		}
 
-		# OK. Now that the arguments sources are pristine, we
-		# can actually process them.
+		# OK. Now that the argument sources are pristine, we can
+		# actually process them.
 		my $opt = App::Ack::ConfigLoader::process_args( @arg_sources );
 
 		# The filters are all we're interested in.
@@ -289,7 +302,12 @@ sub __execute {
 	1;
     } or do {
 	*__filter_files = sub {	# sub __filter_files
-	    my ( undef, @files ) = @_;
+	    my ( $self, @files ) = @_;
+
+
+	    $self->{use_ack_filters}
+		and __warn( 'ack-style file filters unavailable' );
+
 	    return @files;
 	};
 
@@ -615,10 +633,36 @@ filters are not supported, returns all file names.
  App::Ack::Preflight->run();
  $aaxp->run();
 
-This method handles the C<--help>, C<--man>, and C<--version> options if
-they are specified. The C<--help> option and its synonym C<--man>
-display the POD in the top-level script by default. They also take an
-optional argument as follows:
+This method first handles C<App::AckX::Preflight>-specific options,
+which are removed from the command passed to F<ack> unless otherwise
+documented:
+
+=over
+
+=item C<--ack-filters>
+
+This Boolean option requests the use of ack-style file filtering if it
+is available and if any plug-in requests it.
+
+The default is the value of L<__filter_available()|/__filter_available>.
+
+It is anticipated that the main use of this will be to disable filtering
+in case it turns out to be problematic.
+
+=item C<--env>
+
+This Boolean option requests the use of the environment (i.e.
+environment variables, configuration files) to configure
+C<App::AckX::Preflight>. This option is passed on to F<ack> itself.
+
+The default is C<--env>, but this can be negated with C<--noenv>.
+
+=item C<--help>
+
+This options causes the POD of the top-level script (as determined by
+C<$0>) to be displayed. The script then exits.
+
+This option can also be given one of the following arguments:
 
 =over
 
@@ -639,6 +683,17 @@ plugin will be displayed.
 =back
 
 All other arguments to C<--help> are invalid and result in an error.
+
+=item C<--man>
+
+This is a synonym for C<--help>, and takes the same optional arguments.
+
+=item C<--version>
+
+This option causes the versions of C<App::AckX::Preflight>,
+L<App::Ack|App::Ack>, and Perl to be displayed. The script then exits.
+
+=back
 
 This method then reads all the configuration files, calls the plugins,
 and then C<exec()>s F<ack>, passing it C<@ARGV> as it stands after all
