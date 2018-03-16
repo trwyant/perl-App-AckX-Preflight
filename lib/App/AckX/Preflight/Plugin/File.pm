@@ -31,8 +31,7 @@ sub __process {
     # We can't have --match if we have --file, since --file is
     # implemented using --match.
     defined $opt->{match}
-	and __die(
-	'Options --file and --match are mutually exclusive.' );
+	and __err_exclusive( qw{ file match } );
 
     # Read the file, or die.
     my $fh = __open_for_read( $opt->{file} );

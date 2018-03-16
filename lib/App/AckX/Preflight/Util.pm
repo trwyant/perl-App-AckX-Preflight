@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use App::Ack ();
-# use Carp ();
+use Carp ();
 use Exporter qw{ import };
 use Getopt::Long 2.33;
 
@@ -14,6 +14,7 @@ our $VERSION = '0.000_003';
 
 our @EXPORT_OK = qw{
     __die
+    __err_exclusive
     __getopt
     __getopt_for_plugin
     __open_for_read
@@ -47,6 +48,13 @@ use constant SCALAR_REF	=> ref \0;
 	    or __die( 'Invalid option on command line' );
 	return $opt;
     }
+}
+
+sub __err_exclusive {	## no critic (RequireFinalReturn)
+    my @arg = @_;
+    2 == @arg
+	or Carp::confess( '__err_exclusive() requires 2 arguments' );
+    __die( "Options --$arg[0] and --$arg[1] are mutually exclusive." );
 }
 
 sub _get_option_parser {
@@ -108,6 +116,15 @@ default.
  __die( 'Goodbye, cruel world!' );
 
 This subroutine is really just an alias for C<App::Ack::die()>.
+
+=head2 __err_exclusive
+
+ __err_exclusive( 'foo', 'bar' );
+ # ackxp: Options --foo and --bar are mutually exclusive.
+
+This subroutine dies with an error saying that the two arguments are
+mutually exclusive options. The arguments are the bare names of the
+options; the leading double dash is provided by this code.
 
 =head2 __getopt
 
