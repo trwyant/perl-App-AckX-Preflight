@@ -1,3 +1,20 @@
+0.000_003	2018-03-15	T. R. Wyant
+    Add --ack-filters, so they can be disabled using --no-ack-filters.
+    This defaults to __filter_available(). Its anticipated use is to
+    bypass this functionality if it turns out to be broken.
+
+    Use actual argument parsing for filter set-up. The previous code
+    hand-rummaged through @ARGV.
+
+    Also make ::Util::__getopt() use getoptionsfromarray(), with a reference
+    to an array being the optional first argument. This saves at least some
+    of the localization of @ARGV. Whether that's worth doing I don't know,
+    but I did it.
+
+    Process type definitions on the command line.
+
+    Add eg/README, mv eg/ACKX{,P}-REF
+
 0.000_002	2018-03-14	T. R. Wyant
     Add --help, with optional arguments: 'config' for config sources;
     'plugins' to list plugins, and plugin name for help on that plugin.

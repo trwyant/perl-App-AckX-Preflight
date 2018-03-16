@@ -15,7 +15,7 @@ use Module::Pluggable::Object 5.2;
 use Pod::Usage ();
 use Text::ParseWords ();
 
-our $VERSION = '0.000_002';
+our $VERSION = '0.000_003';
 our $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
 
 use constant IS_VMS	=> 'VMS' eq $^O;
