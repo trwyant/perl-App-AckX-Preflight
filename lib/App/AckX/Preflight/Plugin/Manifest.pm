@@ -23,6 +23,7 @@ use parent qw{ App::AckX::Preflight::Plugin };
 
 our $VERSION = '0.000_003';
 
+use constant IN_SERVICE	=> 0;
 use constant MANIFEST	=> 'MANIFEST';
 
 sub __options {
@@ -65,6 +66,9 @@ App::AckX::Preflight::Plugin::Manifest - Provide --manifest for ackxp
  ackxp --manifest-default
 
 =head1 DESCRIPTION
+
+B<This plugin is no longer in service.> It is replaced by
+L<App::AckX::Preflight::Plugin::FilesFrom|App::AckX::Preflight::Plugin::FilesFrom>.
 
 This L<App::AckX::Preflight|App::AckX::Preflight> plug-in provides the
 ability to add the contents of the MANIFEST files to the command line.

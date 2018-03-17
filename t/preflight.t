@@ -21,7 +21,7 @@ my @got;
 is_deeply [ My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::File
-	App::AckX::Preflight::Plugin::Manifest
+	App::AckX::Preflight::Plugin::FilesFrom
 	} ],
     'Plugins';
 

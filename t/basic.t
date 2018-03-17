@@ -34,6 +34,13 @@ can_ok 'App::AckX::Preflight::Plugin::File',
     qw{ IN_SERVICE __options __peek_opt __process }
     or BAIL_OUT;
 
+require_ok 'App::AckX::Preflight::Plugin::FilesFrom'
+    or BAIL_OUT $@;
+
+can_ok 'App::AckX::Preflight::Plugin::FilesFrom',
+    qw{ IN_SERVICE __options __peek_opt __process }
+    or BAIL_OUT;
+
 require_ok 'App::AckX::Preflight::Plugin::Manifest'
     or BAIL_OUT $@;
 
