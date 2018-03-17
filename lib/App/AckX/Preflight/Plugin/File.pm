@@ -14,7 +14,7 @@ use parent qw{ App::AckX::Preflight::Plugin };
 our $VERSION = '0.000_003';
 
 sub __options {
-    return( qw{ file=s } );
+    return( qw{ file=s literal|Q! } );
 }
 
 sub __peek_opt {
@@ -39,11 +39,9 @@ sub __process {
 
     # Find any patterns in the file.
     while ( <$fh> ) {
-	m/ \S /smx
-	    and not m/ \A \s* [#] /smx
-	    or next;
 	chomp;
-	push @pattern, $_;
+	push @pattern, '' eq $_ ? '(?#)' :
+	    $opt->{literal} ? quotemeta $_ : $_;
     }
 
     close $fh;
@@ -52,18 +50,19 @@ sub __process {
     @pattern
 	or __die( "No patterns found in $opt->{file}" );
 
+
     # If we got more than one pattern
     if ( 1 < @pattern ) {
 
 	# The Regex we need to build requires 5.009005, really.
-	'5.010' gt $]
+	'5.009005' gt $]
 	    and __die(
 	    "Perl $] does not support multiple patterns in a file" );
 
 	# Enclose the individual patterns in (?: ... ) unless it
-	# looks like they already are.
+	# looks like they are already parenthesized.
 	@pattern = map {
-	    m/ \A [(] [?] [[:lower:]]* : /smx ? $_ :  "(?:$_)" } @pattern;
+	    m/ \A [(] .* [)] \z /smx ? $_ :  "(?:$_)" } @pattern;
 
 	# Manufacture a --match, and inject it into the arguments.
 	local $" = '|';
@@ -99,23 +98,25 @@ ability to load match patterns from a file.
 
 In order to get this functionality, the user must specify the C<--file>
 command line option, giving as its value the name of the file. The
-C<--file> option is incompatible with the C<--match> option.
+C<--file> option is incompatible with the C<--match> option. If the
+C<--literal> option is used (or its synonym C<-Q>), the patterns are
+taken literally.
 
-Each line of the file which contains non-white-space characters and
-whose first such character is not a C<'#'> represents a pattern. Each
-file must contain at least one pattern.
+Each line of the file represents a pattern. An empty file results in an
+exception. An empty pattern matches the empty string, and therefore any
+line in the file.
 
 Files containing more than one pattern can only be processed when
-running under at least Perl 5.10.0. An attempt to use such a file under
+running under at least Perl 5.9.5. An attempt to use such a file under
 an earlier Perl will result in an exception.
 
 Multiple patterns are joined via a branch reset; that is, something like
 C<(?!pattern_1|pattern_2...)>. Each pattern is enclosed in C<(?:...)> to
 prevent embedded alternations from being misinterpreted, unless the
-pattern itself starts with C<'(?:'>.  It is the responsibility of the
-author of the file to ensure that these manipulations of the file's
-contents result in a valid regular expression that has the desired
-functionality. I<Caveat coder.>
+pattern itself starts with C<'('> and ends with C<')'>.  It is the
+responsibility of the author of the file to ensure that these
+manipulations of the file's contents result in a valid regular
+expression that has the desired functionality. I<Caveat coder.>
 
 =head1 SEE ALSO
 

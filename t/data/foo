@@ -1,3 +1,1 @@
-# Match word 'foo', case-blind.
-
 (?i:\bfoo\b)

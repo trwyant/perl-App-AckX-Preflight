@@ -22,8 +22,15 @@ my @want;
 
 @got = PLUGIN->__options();
 is_deeply \@got,
-    [ qw{ file=s } ],
+    [ qw{ file=s literal|Q! } ],
     'Options'
+    or diag explain 'Got ', @got;
+
+
+@got = PLUGIN->__peek_opt();
+is_deeply \@got,
+    [ qw{ match=s } ],
+    'Peek options'
     or diag explain 'Got ', @got;
 
 
@@ -60,6 +67,19 @@ is_deeply \@got, \@want,
 is_deeply \@got,
     [ qw{ --match (?i:\bfoo\b) } ],
     'Process --file=t/data/foo'
+    or diag explain 'Got ', \@got;
+
+
+@got = prs( qw{ --file=t/data/foo --literal } ),
+@want = ( { file => 't/data/foo', literal => 1 } );
+is_deeply \@got, \@want,
+    q<Parse '--file=t/data/foo --literal'>
+    or diag explain 'Got ', \@got;
+
+@got = xqt( @want );
+is_deeply \@got,
+    [ qw{ --match \(\?i\:\\\\bfoo\\\\b\) } ],
+    'Process --file=t/data/foo --literal'
     or diag explain 'Got ', \@got;
 
 
