@@ -478,7 +478,7 @@ sub __marshal_plugins {
 	$mpo ||= Module::Pluggable::Object->new(	# Oh, for state()
 	    $self->__module_pluggable_object_new_args(),
 	);
-	return $mpo->plugins();
+	return( grep { $_->IN_SERVICE() } $mpo->plugins() );
     }
 }
 

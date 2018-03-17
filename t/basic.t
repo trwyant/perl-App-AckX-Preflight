@@ -24,21 +24,21 @@ require_ok 'App::AckX::Preflight::Plugin'
     or BAIL_OUT $@;
 
 can_ok 'App::AckX::Preflight::Plugin',
-    qw{ __options __peek_opt __process }
+    qw{ IN_SERVICE __options __peek_opt __process }
     or BAIL_OUT;
 
 require_ok 'App::AckX::Preflight::Plugin::File'
     or BAIL_OUT $@;
 
 can_ok 'App::AckX::Preflight::Plugin::File',
-    qw{ __options __peek_opt __process }
+    qw{ IN_SERVICE __options __peek_opt __process }
     or BAIL_OUT;
 
 require_ok 'App::AckX::Preflight::Plugin::Manifest'
     or BAIL_OUT $@;
 
 can_ok 'App::AckX::Preflight::Plugin::Manifest',
-    qw{ __options __peek_opt __process }
+    qw{ IN_SERVICE __options __peek_opt __process }
     or BAIL_OUT;
 
 

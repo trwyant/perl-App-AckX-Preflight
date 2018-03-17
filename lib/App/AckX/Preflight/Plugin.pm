@@ -9,6 +9,8 @@ use Carp ();
 
 our $VERSION = '0.000_003';
 
+use constant IN_SERVICE	=> 1;
+
 sub __options {
     return;
 }
@@ -64,6 +66,16 @@ interface.
 =head1 METHODS
 
 This class supports the following package-private methods:
+
+=head2 IN_SERVICE
+
+This Boolean method can be a manifest constant. It is true indicating
+that a plug-in is to be actually used. What this really is is a way to
+rename or supersede plug-ins without actually removing them from the
+system, since not all CPAN clients remove stuff.
+
+The inherited value is true. You would normally only override this when
+a plug-in is no longer to be used.
 
 =head2 __options
 
