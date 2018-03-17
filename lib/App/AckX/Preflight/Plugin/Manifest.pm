@@ -21,7 +21,7 @@ use App::AckX::Preflight::Util qw{ __open_for_read };
 
 use parent qw{ App::AckX::Preflight::Plugin };
 
-our $VERSION = '0.000_003';
+our $VERSION = '0.000_004';
 
 use constant IN_SERVICE	=> 0;
 use constant MANIFEST	=> 'MANIFEST';

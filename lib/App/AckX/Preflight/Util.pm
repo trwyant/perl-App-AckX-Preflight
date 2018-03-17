@@ -10,7 +10,7 @@ use Carp ();
 use Exporter qw{ import };
 use Getopt::Long 2.33;
 
-our $VERSION = '0.000_003';
+our $VERSION = '0.000_004';
 
 our @EXPORT_OK = qw{
     __die
