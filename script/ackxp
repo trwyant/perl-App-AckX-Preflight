@@ -29,6 +29,15 @@ The following options are interpreted directly. Others may be
 interpreted by plug-ins or by F<ack>. See the relevant documentation for
 these.
 
+=head2 -ack-filters
+
+This option enables or disables ack-style file filtering for plug-ins
+that use it.
+
+The default is C<-ack-filters> if ack-style filtering is available, and
+C<-no-ack-filters> otherwise. The main anticipated use of this option is
+turning the filter code off if it causes trouble.
+
 =head2 -help
 
 This option displays the documentation for this script. The script then

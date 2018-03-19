@@ -100,7 +100,7 @@ In order to get this functionality, the user must specify the C<--file>
 command line option, giving as its value the name of the file. The
 C<--file> option is incompatible with the C<--match> option. If the
 C<--literal> option is used (or its synonym C<-Q>), the patterns are
-taken literally.
+taken literally -- that is, metacharacters are escaped.
 
 Each line of the file represents a pattern. An empty file results in an
 exception. An empty pattern matches the empty string, and therefore any
