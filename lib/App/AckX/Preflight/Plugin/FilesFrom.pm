@@ -18,6 +18,7 @@ use App::Ack::Filter::Match;
 use App::Ack::Resource;
 use App::AckX::Preflight::Util qw{ __open_for_read };
 # use Carp ();
+use File::Spec;
 
 use parent qw{ App::AckX::Preflight::Plugin };
 
@@ -42,8 +43,11 @@ sub __process {
     defined $opt->{'files-from'}
 	or return;
 
+    my $basename = ( File::Spec->splitpath( $opt->{'files-from'} ) )[2];
 
-    if ( MANIFEST eq $opt->{'files-from'} ) {
+    if ( MANIFEST eq $basename &&
+	( $opt->{manifest} || !  defined $opt->{manifest} )
+    ) {
 	require ExtUtils::Manifest;
 	push @ARGV, $aaxp->__filter_files(
 	    sort keys %{ ExtUtils::Manifest::maniread() },
@@ -72,10 +76,10 @@ App::AckX::Preflight::Plugin::FilesFrom - Provide smarter --flies-from
 =head1 DESCRIPTION
 
 This L<App::AckX::Preflight|App::AckX::Preflight> plug-in provides a
-smarter version of the C<--files-from> functionality. The file that
-provides the list of files to processed is specified as a value to the
-C<--files-from> option, just as for F<ack>. The alleged smarts consist
-of the following:
+smarter version of the C<--files-from> functionality. The value of the
+C<--files-from> option provides the name of the file whose contents
+represent the names of the files to process, just as for F<ack>. The
+alleged smarts consist of the following:
 
 =over
 
@@ -86,9 +90,14 @@ C<--perl>), then only files of the given type will be processed.
 
 =item * Special handling of MANIFEST
 
-If the specified file is F<MANIFEST> it is assumed to be a Perl-format
-manifest file, and it is read with C<ExtUtils::Manifest::maniread()>
-rather than directly. This eliminates any comments.
+If the base name of the specified file is F<MANIFEST> it is assumed to
+be a Perl-format manifest file, and it is read with
+C<ExtUtils::Manifest::maniread()> rather than directly. This eliminates
+any comments. Note that this really only works if you are in the same
+directory as the F<MANIFEST>, since it specifies relative files.
+
+If need be, you can specify C<--nomanifest> to disable this special
+handling.
 
 =item * Optional --manifest processing
 
@@ -100,7 +109,7 @@ user. This can profitably be put in a configuration file because:
 
 =item - The C<--files-from> option overrides C<--manifest>;
 
-=item - It can be turned off using C<--no-manifest>.
+=item - It can be turned off using C<--nomanifest>.
 
 =back
 
