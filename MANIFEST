@@ -26,6 +26,7 @@ t/data/foo
 t/data/fubar
 t/data/global/ackxprc
 t/data/home/_ackxprc
+t/data/relative
 t/data/tests
 t/data/project/_ackxprc
 t/execute.PL

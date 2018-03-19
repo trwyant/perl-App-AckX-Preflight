@@ -31,7 +31,7 @@ my @manifest_perl = grep {
 
 @got = PLUGIN->__options();
 is_deeply \@got,
-    [ qw{ files-from=s manifest! } ],
+    [ qw{ files-from=s manifest! relative! } ],
     'Options'
     or diag explain 'Got ', @got;
 
@@ -126,6 +126,17 @@ SKIP: {
 	q<Process '--manifest --perl'>
 	or diag explain 'Got ', \@got;
 }
+
+
+@got = prs( qw{ --files-from t/data/relative --relative } );
+@want = ( { qw{ files-from t/data/relative relative 1 } } );
+is_deeply \@got, \@want,
+    q<Parse '--files-from t/data/relative --relative'>
+    or diag explain 'Got ', \@got;
+@got = xqt( @want );
+is_deeply \@got, [ qw{ t/data/foo t/data/fubar } ],
+    q<Process '--files-from t/data/relative --relative'>
+    or diag explain 'Got ', \@got;
 
 
 SKIP: {

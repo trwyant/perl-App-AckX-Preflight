@@ -27,8 +27,7 @@ our $VERSION = '0.000_004';
 use constant MANIFEST	=> 'MANIFEST';
 
 sub __options {
-#    return( qw{ manifest! manifest-default! } );
-    return( qw{ files-from=s manifest! } );
+    return( qw{ files-from=s manifest! relative! } );
 }
 
 
@@ -43,20 +42,30 @@ sub __process {
     defined $opt->{'files-from'}
 	or return;
 
-    my $basename = ( File::Spec->splitpath( $opt->{'files-from'} ) )[2];
+    my ( $devname, $dirname, $basename ) = File::Spec->splitpath(
+	File::Spec->rel2abs( $opt->{ 'files-from' } ) );
+    $devname
+	and $dirname = File::Spec->catfile( $devname, $dirname );
 
+    my @files;
     if ( MANIFEST eq $basename &&
 	( $opt->{manifest} || !  defined $opt->{manifest} )
     ) {
 	require ExtUtils::Manifest;
-	push @ARGV, $aaxp->__filter_files(
-	    sort keys %{ ExtUtils::Manifest::maniread() },
-	);
+	@files = sort keys %{ ExtUtils::Manifest::maniread() };
+	defined $opt->{relative}
+	    or $opt->{relative} = 1;
     } else {
 	my $fh = __open_for_read( $opt->{'files-from'} );
-	push @ARGV, $aaxp->__filter_files( map { chomp; $_ } <$fh> );
+	@files = map { chomp; $_ } <$fh>;
 	close $fh;
     }
+
+    $opt->{relative}
+	and @files = map { File::Spec->abs2rel( $_ ) }
+	    map { File::Spec->rel2abs( $_, $dirname ) } @files;
+
+    push @ARGV, $aaxp->__filter_files( @files );
 
     return;
 }
@@ -93,8 +102,8 @@ C<--perl>), then only files of the given type will be processed.
 If the base name of the specified file is F<MANIFEST> it is assumed to
 be a Perl-format manifest file, and it is read with
 C<ExtUtils::Manifest::maniread()> rather than directly. This eliminates
-any comments. Note that this really only works if you are in the same
-directory as the F<MANIFEST>, since it specifies relative files.
+any comments. Also, the C<--relative> option (see below) is asserted by
+default in this case.
 
 If need be, you can specify C<--nomanifest> to disable this special
 handling.
@@ -112,6 +121,13 @@ user. This can profitably be put in a configuration file because:
 =item - It can be turned off using C<--nomanifest>.
 
 =back
+
+=item * Optional relative file name remapping
+
+If your input file contains file names relative to the location of the
+input file, and if you are processing it from some other location, you
+can specify the C<--relative> option. This causes the plug-in to process
+them into file names relative to the current directory.
 
 =back
 
