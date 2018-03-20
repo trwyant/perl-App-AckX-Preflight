@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight;
+use App::AckX::Preflight::Util qw{ :ref };
 use Cwd qw{ abs_path };
 use ExtUtils::Manifest qw{ maniread };
 use Test::More 0.88;	# Because of done_testing();
@@ -16,7 +17,7 @@ use My::Module::Preflight;
 delete @ENV{ qw{ ACKXPRC ACKXP_OPTIONS } };
 my @manifest = sort keys %{ maniread() };
 
-my @got;
+my $got;
 
 is_deeply [ My::Module::Preflight->__plugins() ],
     [ qw{
@@ -53,17 +54,48 @@ SKIP: {
 
 # Test combining plug-ins.
 
-@got = @{ xqt( qw{ --noenv --manifest --file t/data/foo } ) };
-is_deeply \@got,
+$got = xqt( qw{ --noenv --manifest --file t/data/foo } );
+is_deeply $got,
     [ qw{ ack --match (?i:\bfoo\b) --noenv }, @manifest ],
     '--manifest --file t/data/foo'
-    or diag 'Got ', explain \@got;
+    or diag 'got ', explain $got;
 
 is_deeply xqt( qw{ --noenv --ackxprc t/data/ackxprc } ),
     [ qw{ ack --from=t/data/ackxprc --noenv } ],
     '--ackxprc t/data/ackxprc';
 
+$got = xqt( qw{ --files-from t/data/relative --relative } ),
+is_deeply $got,
+    [ qw{ ack t/data/foo t/data/fubar } ],
+    '--files-from t/data/relative --relative'
+    or diag 'got ', explain $got;
+
+$got = xqt( qw{ --disable FilesFrom --files-from t/data/relative } );
+is_deeply $got,
+    [ qw{ ack --files-from t/data/relative } ],
+    '--disable FilesFrom --files-from t/data/relative'
+    or diag 'Got ', explain $got;
+
 {
+    local $@ = undef;
+
+    $got = eval { xqt( qw{ --disable Fubar } ); 'No exception' } || $@;
+    like $got, qr{ \b \QUnknown plugin\E \b }smx,
+	'Disable unknown plugin gave correct exception';
+
+    $got = eval { xqt( qw{ --enable Fubar } ); 'No exception' } || $@;
+    like $got, qr{ \b \QUnknown plugin\E \b }smx,
+	'Enable unknown plugin gave correct exception';
+
+    $got = eval {
+	xqt( qw{ --disable Fubar --enable Baz } );
+	'No exception'
+    } || $@;
+    like $got, qr{ \b \QUnknown plugins\E \b }smx,
+	'Multiple unknown plugins gave correct exception';
+}
+
+SKIP: {
     my $aaxp = My::Module::Preflight->new(
 	global	=> abs_path( 't/data/global' ),
 	home	=> abs_path( 't/data/home' ),
@@ -71,7 +103,8 @@ is_deeply xqt( qw{ --noenv --ackxprc t/data/ackxprc } ),
 
     my $ackxprc = abs_path( 't/data/project/_ackxprc' );
 
-    chdir 't/data/project';
+    chdir 't/data/project'
+	or skip "Failed to cd to t/data/project: $!", 2;
 
     local $ENV{ACKXP_OPTIONS} = '--ackxp-options=ACKXP_OPTIONS';
 
@@ -101,11 +134,13 @@ done_testing;
 
 sub xqt {
     local @ARGV = @_;
-    my $invocant = ref $ARGV[0] ?
+    my $invocant = 'My::Module::Preflight' eq ref $ARGV[0] ?
 	shift @ARGV :
 	My::Module::Preflight->new();
 
-    return [ $invocant->run() ];
+    my $arg = ARRAY_REF eq ref @ARGV ? shift @ARGV : [];
+
+    return [ $invocant->run( @{ $arg } ) ];
 
 }
 

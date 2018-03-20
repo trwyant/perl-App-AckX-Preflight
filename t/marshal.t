@@ -22,6 +22,21 @@ is_deeply [ sort My::Module::Preflight->__plugins() ],
     'Plugins'
 	or diag explain [ App::AckX::Preflight->__plugins() ];
 
+{
+    # DANGER WILL ROBINSON! ENCAPSULATION VIOLATION!
+    my $aapx = bless {
+	disable	=> {
+	    'App::AckX::Preflight::Plugin::File'	=> 1,
+	},
+    }, PACKAGE;
+    is_deeply [ sort $aapx->__plugins() ],
+	[ qw{
+	    App::AckX::Preflight::Plugin::FilesFrom
+	    } ],
+	'Plugins with File disabled'
+	    or diag explain [ App::AckX::Preflight->__plugins() ];
+}
+
 is_deeply marshal( qw{ A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
@@ -77,8 +92,9 @@ done_testing;
 
 sub marshal {
     local @ARGV = @_;
+    my $invocant = ref @ARGV ? shift @ARGV : PACKAGE;
     return [
-	map { $_->{package} } PACKAGE->__marshal_plugins(),
+	map { $_->{package} } $invocant->__marshal_plugins(),
     ];
 };
 

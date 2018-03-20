@@ -26,9 +26,9 @@ BEGIN {
 	and require Win32;
 }
 
-use constant SEARCH_PATH	=> join '::', __PACKAGE__, 'Plugin';
+use constant PLUGIN_SEARCH_PATH	=> join '::', __PACKAGE__, 'Plugin';
 use constant MAX_DEPTH		=> do {
-    my @parts = split qr{ :: }smx, SEARCH_PATH;
+    my @parts = split qr{ :: }smx, PLUGIN_SEARCH_PATH;
     1 + @parts;
 };
 
@@ -63,6 +63,8 @@ use constant MAX_DEPTH		=> do {
 		or Carp::croak "Argument '$_' must be a directory";
 	}
 
+	$arg{disable} = {};
+
 	return bless \%arg, ref $class || $class;
     }
 
@@ -91,8 +93,24 @@ sub run {
 	'ack-filters'	=> $self->__filter_available(),
     };
 
+    $self->{disable} = {};
+
     __getopt( $opt,
 	qw{ ack-filters! },
+	'disable=s'	=> sub {
+	    my ( undef, $plugin ) = @_;
+	    $plugin =~ m/ :: /smx
+		or $plugin = join '::', PLUGIN_SEARCH_PATH, $plugin;
+	    $self->{disable}{$plugin} = 1;
+	    return;
+	},
+	'enable=s'	=> sub {
+	    my ( undef, $plugin ) = @_;
+	    $plugin =~ m/ :: /smx
+		or $plugin = join '::', PLUGIN_SEARCH_PATH, $plugin;
+	    $self->{disable}{$plugin} = 0;
+	    return;
+	},
 	version	=> sub {
 	    print <<"EOD";
 @{[ __PACKAGE__ ]} $VERSION
@@ -468,7 +486,24 @@ sub __marshal_plugins {
 	$mpo ||= Module::Pluggable::Object->new(	# Oh, for state()
 	    $self->__module_pluggable_object_new_args(),
 	);
-	return( grep { $_->IN_SERVICE() } $mpo->plugins() );
+	my %disable;
+	ref $self
+	    and %disable = %{ $self->{disable} };
+	my @rslt;
+	foreach my $plugin ( $mpo->plugins() ) {
+	    delete $disable{$plugin}
+		and next;
+	    $plugin->IN_SERVICE()
+		or next;
+	    push @rslt, $plugin;
+	}
+	if ( my @invalid = sort keys %disable ) {
+	    @invalid > 1
+		or __die( "Unknown plugin @invalid" );
+	    local $" = ', ';
+	    __die( "Unknown plugins @invalid" );
+	}
+	return @rslt;
     }
 }
 
@@ -479,7 +514,7 @@ sub __module_pluggable_object_new_args {
 	max_depth	=> MAX_DEPTH,
 	package		=> __PACKAGE__,
 	require		=> 1,
-	search_path	=> SEARCH_PATH,
+	search_path	=> PLUGIN_SEARCH_PATH,
     );
 }
 
@@ -638,6 +673,27 @@ The default is the value of L<__filter_available()|/__filter_available>.
 
 It is anticipated that the main use of this will be to disable filtering
 in case it turns out to be problematic.
+
+=item C<--disable>
+
+ --disable=plugin_name
+
+This option disables the named plugin. The name is either the complete
+class name or the name without the C<'App::AckX::Preflight::Plugin::'>
+prefix.
+
+An exception occurs if the name of an unknown plugin is given.
+
+=item C<--enable>
+
+ --enable=plugin_name
+
+This option enables the named plug-in. That is, it undoes a previous
+C<--disable>; specifying this will not make an unavailable plug-in
+available. The name is either the complete class name or the name
+without the C<'App::AckX::Preflight::Plugin::'> prefix.
+
+An exception occurs if the name of an unknown plugin is given.
 
 =item C<--env>
 
