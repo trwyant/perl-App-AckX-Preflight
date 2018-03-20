@@ -15,6 +15,7 @@ our $VERSION = '0.000_004';
 our @EXPORT_OK = qw{
     __die
     __err_exclusive
+    __file_id
     __getopt
     __getopt_for_plugin
     __open_for_read
@@ -34,7 +35,17 @@ use constant ARRAY_REF	=> ref [];
 use constant HASH_REF	=> ref {};
 use constant SCALAR_REF	=> ref \0;
 
+use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
+    qw{ dos os2 MSWin32 VMS } }->{$^O};
+
 *__die = \&App::Ack::die;	# sub __die
+
+sub __file_id {
+    my ( $path ) = @_;
+    return FILE_ID_IS_INODE ?
+	join( ':', ( stat $path )[ 0, 1 ] ) :
+	Cwd::abs_path( $path );
+}
 
 {
     my $psr;	# Oh, for 5.10 and 'state'.
@@ -125,6 +136,24 @@ This subroutine is really just an alias for C<App::Ack::die()>.
 This subroutine dies with an error saying that the two arguments are
 mutually exclusive options. The arguments are the bare names of the
 options; the leading double dash is provided by this code.
+
+=head2 __file_id
+
+ my $file_id = __file_id( $file_name );
+
+This subroutine returns a unique ID for a file. If two files have the
+same ID it means that they are the same file. The user of this ID should
+treat it as an opaque string.
+
+That being said, the return is normally the file's device and inode
+numbers (as reported by C<stat()>), joined by a colon (C<':'>), except
+for systems where F<perlport> says this is not meaningful or reliable.
+For such systems it is the full path name of the file as determined by
+L<Cwd::abs_path()|Cwd/abs_path>.
+
+In this implementation, the device and inode are used for all values of
+C<$^O> except C<'dos'>, C<'os2'>, C<'VMS'>, and C<'MSWin32'>. I am
+somewhat surprised not to find C<'cygwin'> on the F<perlport> list.
 
 =head2 __getopt
 

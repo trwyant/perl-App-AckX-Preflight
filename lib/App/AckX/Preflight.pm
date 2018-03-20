@@ -26,9 +26,6 @@ BEGIN {
 	and require Win32;
 }
 
-use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
-    qw{ dos MSWin32 VMS } }->{$^O};
-
 use constant SEARCH_PATH	=> join '::', __PACKAGE__, 'Plugin';
 use constant MAX_DEPTH		=> do {
     my @parts = split qr{ :: }smx, SEARCH_PATH;
@@ -361,7 +358,7 @@ sub __find_config_files {
     # Built-in defaults (unless --ignore-ackxp-defaults)
 
     my %seen;
-    return ( grep { ! $seen{_file_id( $_ )}++ } @files );
+    return ( grep { ! $seen{__file_id( $_ )}++ } @files );
 }
 
 sub _file_from_env {	## no critic (RequireArgUnpacking)
@@ -400,13 +397,6 @@ sub _file_from_parts {
     @f > 1
 	and __die( "Both @f found; delete one" );
     return $f[0];
-}
-
-sub _file_id {
-    my ( $path ) = @_;
-    return FILE_ID_IS_INODE ?
-	join( ':', ( stat $path )[ 0, 1 ] ) :
-	Cwd::abs_path( $path );
 }
 
 # Its own code so we can test it.
