@@ -49,7 +49,6 @@ is_deeply \@got, [ qw{
 	t/marshal.t
 	t/plugin_file.t
 	t/plugin_files_from.t
-	t/plugin_manifest.t
 	t/preflight.t
     } ],
     q<Process '--files-from=t/data/tests'>
@@ -93,7 +92,6 @@ is_deeply \@got, [ qw{
 	t/marshal.t
 	t/plugin_file.t
 	t/plugin_files_from.t
-	t/plugin_manifest.t
 	t/preflight.t
     } ],
     q<Process '--files-from=t/data/tests --manifest'>

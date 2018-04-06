@@ -11,7 +11,6 @@ lib/App/AckX/Preflight/Util.pm
 lib/App/AckX/Preflight/Plugin.pm
 lib/App/AckX/Preflight/Plugin/File.pm
 lib/App/AckX/Preflight/Plugin/FilesFrom.pm
-lib/App/AckX/Preflight/Plugin/Manifest.pm
 LICENSES/Artistic
 LICENSES/Copying
 Makefile.PL
@@ -34,7 +33,6 @@ t/execute.t
 t/marshal.t
 t/plugin_file.t
 t/plugin_files_from.t
-t/plugin_manifest.t
 t/preflight.t
 xt/author/changes.t
 xt/author/critic.t
