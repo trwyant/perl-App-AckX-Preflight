@@ -131,8 +131,9 @@ them into file names relative to the current directory.
 
 =back
 
-I am not sure of the status of the L<App::Ack|App::Ack> interface I am
-using to make this happen, so this may cause problems down the road.
+I am not sure of the support status of the L<App::Ack|App::Ack>
+interface I am using to make filtering happen, so this may cause
+problems down the road.
 
 =head1 SEE ALSO
 
