@@ -22,7 +22,7 @@ use File::Spec;
 
 use parent qw{ App::AckX::Preflight::Plugin };
 
-our $VERSION = '0.000_005';
+our $VERSION = '0.000_006';
 
 use constant MANIFEST	=> 'MANIFEST';
 
