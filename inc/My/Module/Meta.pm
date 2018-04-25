@@ -86,7 +86,7 @@ sub requires {
 	'ExtUtils::Manifest'		=> 0,
 	'File::Basename'		=> 0,
 	'File::Spec'			=> 0,
-	'Getopt::Long'			=> 2.33,
+	'Getopt::Long'			=> 2.39,	# getoptionsfromarray
 	'Module::Pluggable::Object'	=> 5.2,
 	'Pod::Usage'			=> 0,
 	'Text::ParseWords'		=> 0,

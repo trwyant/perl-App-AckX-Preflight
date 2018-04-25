@@ -8,7 +8,7 @@ use warnings;
 use App::Ack ();
 use Carp ();
 use Exporter qw{ import };
-use Getopt::Long 2.33;
+use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
 
 our $VERSION = '0.000_005';
 
