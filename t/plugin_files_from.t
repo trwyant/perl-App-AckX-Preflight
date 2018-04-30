@@ -31,7 +31,7 @@ my @manifest_perl = grep {
 
 @got = PLUGIN->__options();
 is_deeply \@got,
-    [ qw{ files-from=s manifest! relative! } ],
+    [ qw{ files-from|x=s manifest! relative! } ],
     'Options'
     or diag explain 'Got ', @got;
 

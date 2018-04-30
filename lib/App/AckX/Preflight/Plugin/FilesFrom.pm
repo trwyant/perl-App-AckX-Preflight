@@ -27,7 +27,7 @@ our $VERSION = '0.000_006';
 use constant MANIFEST	=> 'MANIFEST';
 
 sub __options {
-    return( qw{ files-from=s manifest! relative! } );
+    return( qw{ files-from|x=s manifest! relative! } );
 }
 
 
@@ -80,6 +80,7 @@ App::AckX::Preflight::Plugin::FilesFrom - Provide smarter --flies-from
 =head1 SYNOPSIS
 
  ackxp --files-from file-list.txt
+ ackxp -x file-list.txt # same as above
  ackxp --manifest
 
 =head1 DESCRIPTION
