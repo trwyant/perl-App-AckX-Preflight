@@ -284,10 +284,12 @@ sub __execute {
 			'type-set=s'	=> $keep_val,
 			'type-del=s'	=> $keep_val,
 			'type=s'	=> $keep_val,
-			map { $_ => $keep_bool } sort keys %known_type
+			map {
+			    $_		=> $keep_bool,	## no critic (ProhibitCommaSeparatedStatements)
+			    "no$_"	=> $keep_bool,
+			} sort keys %known_type
 		    );
 		    @{ $argv->{contents} } = @rslt;
-
 		}
 
 		# OK. Now that the argument sources are pristine, we can
@@ -298,15 +300,38 @@ sub __execute {
 		$self->{filters} = $opt->{filters};
 	    }
 
+	    # App::Ack's matching is not a simple as just looking for a
+	    # match. The following mimics that actual matching logic
+	    # within the framework of the App::AckX::Preflight code.
+
+	    # The first step in mimicing App::Ack is to separate the
+	    # filters into two collections: direct and inverted. For the
+	    # inverted filters we collect the direct version of the
+	    # filter.
+	    my $direct_filter = App::Ack::Filter::Collection->new();
+	    my $inverse_filter = App::Ack::Filter::Collection->new();
+	    foreach my $filter ( @{ $self->{filters} } ) {
+		if ( $filter->is_inverted() ) {
+		    $inverse_filter->add( $filter->invert() );
+		} else {
+		    $direct_filter->add( $filter );
+		}
+	    }
+
+	    # The second and last step in mimicing App::Ack is to do the
+	    # match. Files are accepted (by App::Ack's logic) if and
+	    # only if
+	    # - they match a direct filter;
+	    # - they do not match the direct version of an inverted
+	    #   filter.
 	    my @rslt;
 	    foreach my $file ( @files ) {
 		my $r = App::Ack::Resource->new( $file );
-		foreach my $filter ( @{ $self->{filters} } ) {
-		    $filter->filter( $r )
-			or next;
-		    push @rslt, $file;
-		    last;
-		}
+		$direct_filter->filter( $r )
+		    or next;
+		$inverse_filter->filter( $r )
+		    and next;
+		push @rslt, $file;
 	    }
 
 	    return @rslt;
