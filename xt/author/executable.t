@@ -27,10 +27,13 @@ sub is_executable {
     my @stat = stat $_;
     $stat[2] & oct(111)
 	and return 1;
-    open my $fh, '<', $_ or die "Unable to open $_: $!\n";
-    local $_ = <$fh>;
-    close $fh;
-    return m{ \A [#]! .* perl }smx;
+# I now think the following is irrelevant, because the shebang line only
+# gets read if the execute bit is on.
+#    open my $fh, '<', $_ or die "Unable to open $_: $!\n";
+#    local $_ = <$fh>;
+#    close $fh;
+#    return m{ \A [#]! .* perl }smx;
+    return;
 }
 
 1;

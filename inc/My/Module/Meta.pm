@@ -20,6 +20,7 @@ sub new {
 sub build_requires {
     return +{
 	'lib'		=> 0,		# To load inc/ stuff.
+	'Scalar::Util'	=> 0,		# For blessed(), openhandle().
 	'Test::More'	=> 0.88,	# Because of done_testing().
     };
 }

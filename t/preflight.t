@@ -23,23 +23,24 @@ is_deeply [ My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::FilesFrom
+	App::AckX::Preflight::Plugin::PerlFile
 	} ],
     'Plugins';
 
 is_deeply xqt( qw{ --noenv A B C } ),
-    [ qw{ ack --noenv A B C } ],
+    [ qw{ perl -S ack --noenv A B C } ],
     'No reversal by default';
 
 is_deeply xqt( qw{ --noenv --nomanifest A B C } ),
-    [ qw{ ack --noenv A B C } ],
+    [ qw{ perl -S ack --noenv A B C } ],
     '--nomanifest';
 
 is_deeply xqt( qw{ --noenv --manifest A B C } ),
-    [ qw{ ack --noenv A B C }, @manifest ],
+    [ qw{ perl -S ack --noenv A B C }, @manifest ],
     '--manifest';
 
 is_deeply xqt( qw{ --noenv --file t/data/foo } ),
-    [ qw{ ack --match (?i:\bfoo\b) --noenv } ],
+    [ qw{ perl -S ack --match (?i:\bfoo\b) --noenv } ],
     '--file t/data/foo';
 
 SKIP: {
@@ -48,7 +49,7 @@ SKIP: {
 	or skip( "Perl 5.10 required; this is $]", 1 );
 
     is_deeply xqt( qw{ --noenv --file t/data/fubar } ),
-	[ qw{ ack --match (?|(?i:\bfu\b)|(?i:\bbar\b)) --noenv } ],
+	[ qw{ perl -S ack --match (?|(?i:\bfu\b)|(?i:\bbar\b)) --noenv } ],
 	'--file t/data/fubar';
 }
 
@@ -56,23 +57,29 @@ SKIP: {
 
 $got = xqt( qw{ --noenv --manifest --file t/data/foo } );
 is_deeply $got,
-    [ qw{ ack --match (?i:\bfoo\b) --noenv }, @manifest ],
+    [ qw{ perl -S ack --match (?i:\bfoo\b) --noenv }, @manifest ],
     '--manifest --file t/data/foo'
     or diag 'got ', explain $got;
 
 is_deeply xqt( qw{ --noenv --ackxprc t/data/ackxprc } ),
-    [ qw{ ack --from=t/data/ackxprc --noenv } ],
+    [ qw{ perl -S ack --from=t/data/ackxprc --noenv } ],
     '--ackxprc t/data/ackxprc';
 
 $got = xqt( qw{ --files-from t/data/relative --relative } ),
 is_deeply $got,
-    [ qw{ ack t/data/foo t/data/fubar } ],
+    [ qw{ perl -S ack t/data/foo t/data/fubar } ],
     '--files-from t/data/relative --relative'
     or diag 'got ', explain $got;
 
 $got = xqt( qw{ --disable FilesFrom --files-from t/data/relative } );
 is_deeply $got,
-    [ qw{ ack --files-from t/data/relative } ],
+    [ qw{
+	perl
+	-S
+	ack
+	--files-from
+	t/data/relative
+	} ],
     '--disable FilesFrom --files-from t/data/relative'
     or diag 'Got ', explain $got;
 
@@ -109,7 +116,10 @@ SKIP: {
     local $ENV{ACKXP_OPTIONS} = '--ackxp-options=ACKXP_OPTIONS';
 
     is_deeply xqt( $aaxp, qw{ --command-line } ),
-	[ qw{ ack
+	[ qw{
+	    perl
+	    -S
+	    ack
 	    --global=t/data/global/ackxprc
 	    --home=t/data/home/_ackxprc
 	    --project=t/data/project/_ackxprc
@@ -121,7 +131,10 @@ SKIP: {
     local $ENV{ACKXPRC} = $ackxprc;
 
     is_deeply xqt( $aaxp, qw{ --command-line } ),
-	[ qw{ ack
+	[ qw{
+	    perl
+	    -S
+	    ack
 	    --global=t/data/global/ackxprc
 	    --project=t/data/project/_ackxprc
 	    --ackxp-options=ACKXP_OPTIONS
@@ -129,6 +142,34 @@ SKIP: {
 	'ACKXPRC plus deduplicaiton'
 	    or diag 'Got ', explain xqt( $aaxp, qw{ fubar } );
 }
+
+$got = xqt( qw{ --perl-code } ),
+is_deeply $got,
+    [ qw{
+	perl
+	-Mblib
+	-MApp::AckX::Preflight::Resource
+	-MApp::AckX::Preflight::via::PerlFile=code
+	-S
+	ack
+	--project=t/data/project/_ackxprc
+	} ],
+    '--perl-code'
+	or diag 'Got ', explain $got;
+
+$got = xqt( qw{ --perl-pod } ),
+is_deeply $got,
+    [ qw{
+	perl
+	-Mblib
+	-MApp::AckX::Preflight::Resource
+	-MApp::AckX::Preflight::via::PerlFile=pod
+	-S
+	ack
+	--project=t/data/project/_ackxprc
+	} ],
+    '--perl-code'
+	or diag 'Got ', explain $got;
 
 done_testing;
 

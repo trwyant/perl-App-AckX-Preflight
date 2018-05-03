@@ -18,6 +18,7 @@ is_deeply [ sort My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::FilesFrom
+	App::AckX::Preflight::Plugin::PerlFile
 	} ],
     'Plugins'
 	or diag explain [ App::AckX::Preflight->__plugins() ];
@@ -32,6 +33,7 @@ is_deeply [ sort My::Module::Preflight->__plugins() ],
     is_deeply [ sort $aapx->__plugins() ],
 	[ qw{
 	    App::AckX::Preflight::Plugin::FilesFrom
+	    App::AckX::Preflight::Plugin::PerlFile
 	    } ],
 	'Plugins with File disabled'
 	    or diag explain [ App::AckX::Preflight->__plugins() ];
@@ -41,6 +43,7 @@ is_deeply marshal( qw{ A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::FilesFrom
+	App::AckX::Preflight::Plugin::PerlFile
 	} ],
     'Default order';
 
@@ -48,6 +51,7 @@ is_deeply marshal( qw{ --manifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::FilesFrom
 	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::PerlFile
 	} ],
     '--manifest pulls FilesFrom to front';
 
@@ -55,6 +59,7 @@ is_deeply marshal( qw{ --nomanifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::FilesFrom
 	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::PerlFile
 	} ],
     '--nomanifest pulls FilesFrom to front';
 
@@ -62,6 +67,7 @@ is_deeply marshal( qw{ --no-manifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::FilesFrom
 	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::PerlFile
 	} ],
     '--no-manifest pulls FilesFrom to front';
 
@@ -69,6 +75,7 @@ is_deeply marshal( qw{ --manifest --file x A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::FilesFrom
 	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::PerlFile
 	} ],
     '--manifest --file x pulls FilesFrom to front';
 
@@ -76,6 +83,7 @@ is_deeply marshal( qw{ --file x --manifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::FilesFrom
+	App::AckX::Preflight::Plugin::PerlFile
 	} ],
     '--file x --manifest uses that order';
 
@@ -83,8 +91,17 @@ is_deeply marshal( qw{ --manifest --file x --no-manifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::FilesFrom
+	App::AckX::Preflight::Plugin::PerlFile
 	} ],
-    '--reverse --file x --no-reverse pulls File to front';
+    '--manifest --file x --no-manifest pulls File to front';
+
+is_deeply marshal( qw{ --perl-code A B C } ),
+    [ qw{
+	App::AckX::Preflight::Plugin::PerlFile
+	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::FilesFrom
+	} ],
+    '--perl-code pulls PerlFile to front';
 
 done_testing;
 

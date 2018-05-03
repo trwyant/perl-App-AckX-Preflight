@@ -7,10 +7,13 @@ inc/My/Module/Meta.pm
 inc/My/Module/Preflight.pm
 inc/My/Module/TestPlugin.pm
 lib/App/AckX/Preflight.pm
-lib/App/AckX/Preflight/Util.pm
 lib/App/AckX/Preflight/Plugin.pm
 lib/App/AckX/Preflight/Plugin/File.pm
 lib/App/AckX/Preflight/Plugin/FilesFrom.pm
+lib/App/AckX/Preflight/Plugin/PerlFile.pm
+lib/App/AckX/Preflight/Resource.pm
+lib/App/AckX/Preflight/Util.pm
+lib/App/AckX/Preflight/via/PerlFile.pm
 LICENSES/Artistic
 LICENSES/Copying
 Makefile.PL
@@ -25,6 +28,8 @@ t/data/foo
 t/data/fubar
 t/data/global/ackxprc
 t/data/home/_ackxprc
+t/data/perl_file.PL
+t/data/perl_file.txt
 t/data/relative
 t/data/tests
 t/data/project/_ackxprc
@@ -33,6 +38,7 @@ t/execute.t
 t/marshal.t
 t/plugin_file.t
 t/plugin_files_from.t
+t/plugin_perl_file.t
 t/preflight.t
 xt/author/changes.t
 xt/author/critic.t

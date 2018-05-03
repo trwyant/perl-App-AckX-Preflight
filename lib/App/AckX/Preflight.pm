@@ -11,12 +11,15 @@ use Carp ();
 use Cwd ();
 use File::Basename ();
 use File::Spec;
+use List::Util ();
 use Module::Pluggable::Object 5.2;
 use Pod::Usage ();
 use Text::ParseWords ();
 
 our $VERSION = '0.000_006';
 our $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
+
+use constant DEVELOPMENT => grep { m{ \b blib \b }smx } @INC;
 
 use constant IS_VMS	=> 'VMS' eq $^O;
 use constant IS_WINDOWS	=> { map { $_ => 1 } qw{ dos MSWin32 } }->{$^O};
@@ -63,7 +66,7 @@ use constant MAX_DEPTH		=> do {
 		or Carp::croak "Argument '$_' must be a directory";
 	}
 
-	$arg{disable} = {};
+	$arg{disable}	= {};
 
 	return bless \%arg, ref $class || $class;
     }
@@ -81,6 +84,12 @@ use constant MAX_DEPTH		=> do {
 	    or $self = \%default;
 	return $self->{home};
     }
+}
+
+sub __inject {
+    my ( $self, @arg ) = @_;
+    push @{ $self->{inject} }, @arg;
+    return;
 }
 
 sub run {
@@ -165,7 +174,20 @@ EOD
 	$plugin->__process( $self, $opt );
     }
 
-    return $self->__execute( ack => @ARGV );
+    my @inject = @{ $self->{inject} };
+
+    if ( DEVELOPMENT &&
+	List::Util::any { m/ \A -MApp::AckX::Preflight\b /smx } @inject
+    ) {
+	List::Util::any { m/ \A -MApp::AckX::Preflight::via\b /smx } @inject
+	    and splice @inject, 0, 0, '-MApp::AckX::Preflight::Resource';
+	splice @inject, 0, 0, '-Mblib';
+    }
+
+
+    return $self->__execute(
+	perl		=> @inject,
+	qw{ -S ack }	=> @ARGV );
 }
 
 sub __execute {
@@ -290,11 +312,15 @@ sub __execute {
 			} sort keys %known_type
 		    );
 		    @{ $argv->{contents} } = @rslt;
+
 		}
 
 		# OK. Now that the argument sources are pristine, we can
 		# actually process them.
 		my $opt = App::Ack::ConfigLoader::process_args( @arg_sources );
+
+		# NOTE that at this point %App::Ack::mappings has been
+		# loaded with all known filters if we want to use them.
 
 		# The filters are all we're interested in.
 		$self->{filters} = $opt->{filters};
@@ -446,6 +472,13 @@ sub _file_from_parts {
 sub __marshal_plugins {
     my ( $self ) = @_;
 
+    # Under the presumption that we are getting ready to actually run
+    # the plugins, we clear the __inject() data. Obviously we can't do
+    # this if we're being called as a static method for testing.
+    if ( ref $self ) {
+	$self->{inject}	= [];
+    }
+
     # Go through all the plugins and index them by the options they
     # support.
     my %opt_to_plugin;
@@ -461,7 +494,7 @@ sub __marshal_plugins {
 		my $os = $_;			# Don't want alias
 		$os =~ s/ \A -+ //smx;		# Optional leading dash
 		$os =~ s/ ( [:=+!] ) .* //smx;	# Argument spec.
-		my $negated = '!' eq $1;
+		my $negated = defined $1 && '!' eq $1;
 		foreach my $o ( split qr{ [|] }smx, $os ) {
 		    push @{ $opt_to_plugin{$o} ||= [] }, $p_rec;
 		    if ( $negated ) {
@@ -588,7 +621,9 @@ All the interesting functionality is provided by a plugin system.
 
 =head1 METHODS
 
-This class supports the following public methods:
+This class supports the following methods. Methods whose names begin
+with a double underscore C<'__'> are intended for the use of plugins
+only.
 
 =head2 new
 
@@ -637,24 +672,6 @@ and chosen to be compatible with L<App::Ack|App::Ack>:
 If C<new()> is called as a normal method it clones its invocant,
 applying the arguments (if any) after the clone.
 
-=head2 global
-
- say App::Ack::Preflight->global();
- say $aaxp->global();
-
-If called on an object, this method returns the value of the C<{global}>
-attribute, whether explicit or defaulted. If called statically, it
-returns the default value of the C<{global}> attribute.
-
-=head2 home
-
- say App::Ack::Preflight->home();
- say $aaxp->home();
-
-If called on an object, this method returns the value of the C<{home}>
-attribute, whether explicit or defaulted. If called statically, it
-returns the default value of the C<{home}> attribute.
-
 =head2 __filter_available
 
  $self->__filter_available()
@@ -677,6 +694,35 @@ L<App::Ack|App::Ack> filters are supported (see
 L<__filter_available()|/__filter_available>), the return is the names of
 those files that passed the filters specified on the command line. If
 filters are not supported, returns all file names.
+
+=head2 global
+
+ say App::Ack::Preflight->global();
+ say $aaxp->global();
+
+If called on an object, this method returns the value of the C<{global}>
+attribute, whether explicit or defaulted. If called statically, it
+returns the default value of the C<{global}> attribute.
+
+=head2 home
+
+ say App::Ack::Preflight->home();
+ say $aaxp->home();
+
+If called on an object, this method returns the value of the C<{home}>
+attribute, whether explicit or defaulted. If called statically, it
+returns the default value of the C<{home}> attribute.
+
+=head2 __inject
+
+ $self->__inject( qw{ -MFoo::Bar } )
+
+A plug-in would call this method to inject options into the F<perl>
+command used to C<exec()> F<ack>.
+
+B<Note> that if B<any> C<@INC> entry matches C</\bblib\b/>, B<and> any
+injected item matches C</\A-MApp::AckX::Preflight\b/>, C<-Mblib> will be
+injected before the first such item.
 
 =head2 run
 

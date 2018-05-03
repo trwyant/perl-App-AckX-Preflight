@@ -41,6 +41,13 @@ can_ok 'App::AckX::Preflight::Plugin::FilesFrom',
     qw{ IN_SERVICE __options __peek_opt __process }
     or BAIL_OUT;
 
+require_ok 'App::AckX::Preflight::Plugin::PerlFile'
+    or BAIL_OUT $@;
+
+can_ok 'App::AckX::Preflight::Plugin::PerlFile',
+    qw{ IN_SERVICE __options __peek_opt __process }
+    or BAIL_OUT;
+
 done_testing;
 
 1;
