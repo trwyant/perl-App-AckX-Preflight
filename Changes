@@ -1,3 +1,14 @@
+0.000_007	2018-05-03	T. R. Wyant
+    Add the PerlFile plugin. This supports options -perl-code and
+    -perl-pod, which causes only those portions of a Perl file to be
+    searched. This is accomplished by having a PerlIO::via object filter
+    out the unwanted lines. I had to hot-patch the App::Ack::Resource
+    open() method to get this loaded.
+
+    Handle inverted types (e.g. --noperl).
+
+    Recognize -x as synonym of --files-from
+
 0.000_006	2018-04-25	T. R. Wyant
     Bump Getopt::Long requirement to 2.39.  This is needed to get
     Getopt::Long::Parser->getoptionsfromarray().

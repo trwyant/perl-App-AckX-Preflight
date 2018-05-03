@@ -7,7 +7,7 @@ use warnings;
 
 use App::Ack::Resource;
 
-our $VERSION = '0.000_006';
+our $VERSION = '0.000_007';
 
 {
 
