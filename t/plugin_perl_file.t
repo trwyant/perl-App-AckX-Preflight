@@ -19,13 +19,13 @@ use constant PERL_CODE	=> <<'EOD';
    3: use strict;
    4: use warnings;
    5: 
-  10: =cut
 EOD
 use constant PERL_POD	=> <<'EOD';
    6: =head1 TEST
    7: 
    8: This is a test. It is only a test.
    9: 
+  10: =cut
 EOD
 use constant TEXT_FILE	=> 't/data/perl_file.txt';
 use constant TEXT_CONTENT	=> <<'EOD';

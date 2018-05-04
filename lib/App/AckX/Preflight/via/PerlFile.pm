@@ -34,11 +34,18 @@ sub FILL {
     {
 	defined( my $line = <$fh> )
 	    or last;
-	if ( $line =~ m/ \A = ( cut \b )? /smx ) {
-	    $self->{in} = $1 ? 'code' : 'pod';
+	if ( $line =~ m/ \A = cut \b /smx ) {
+	    $self->{in} = 'code';
+	    $CONTENT_TYPE{pod}
+		and return $line;
+	} elsif ( $line =~ m/ \A = [A-Za-z] /smx ) {
+	    $self->{in} = 'pod';
+	    $CONTENT_TYPE{$self->{in}}
+		and return $line;
+	} else {
+	    $CONTENT_TYPE{$self->{in}}
+		and return $line;
 	}
-	$CONTENT_TYPE{$self->{in}}
-	    and return $line;
 	redo;
     }
     return;
