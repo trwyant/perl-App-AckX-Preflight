@@ -9,7 +9,7 @@ use Carp;
 
 our $VERSION = '0.000_007';
 
-our %CONTENT_TYPE = ( code => 1 );
+my %WANT = ( code => 1 );
 
 {
     my %valid = map { $_ => 1 } qw{ code pod };
@@ -19,7 +19,7 @@ our %CONTENT_TYPE = ( code => 1 );
 	foreach my $type ( @arg ) {
 	    $valid{$type}
 		or croak "Perl file content type '$type' invalid";
-	    %CONTENT_TYPE = ( $type => 1 );
+	    %WANT = ( $type => 1 );
 	}
 	return;
     }
@@ -36,14 +36,14 @@ sub FILL {
 	    or last;
 	if ( $line =~ m/ \A = cut \b /smx ) {
 	    $self->{in} = 'code';
-	    $CONTENT_TYPE{pod}
+	    $WANT{pod}
 		and return $line;
 	} elsif ( $line =~ m/ \A = [A-Za-z] /smx ) {
 	    $self->{in} = 'pod';
-	    $CONTENT_TYPE{$self->{in}}
+	    $WANT{$self->{in}}
 		and return $line;
 	} else {
-	    $CONTENT_TYPE{$self->{in}}
+	    $WANT{$self->{in}}
 		and return $line;
 	}
 	redo;
