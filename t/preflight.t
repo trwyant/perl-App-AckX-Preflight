@@ -157,6 +157,20 @@ is_deeply $got,
     '--perl-code'
 	or diag 'Got ', explain $got;
 
+$got = xqt( qw{ --perl-data } ),
+is_deeply $got,
+    [ qw{
+	perl
+	-Mblib
+	-MApp::AckX::Preflight::Resource
+	-MApp::AckX::Preflight::via::PerlFile=data
+	-S
+	ack
+	--project=t/data/project/_ackxprc
+	} ],
+    '--perl-data'
+	or diag 'Got ', explain $got;
+
 $got = xqt( qw{ --perl-pod } ),
 is_deeply $got,
     [ qw{
@@ -169,6 +183,42 @@ is_deeply $got,
 	--project=t/data/project/_ackxprc
 	} ],
     '--perl-pod'
+	or diag 'Got ', explain $got;
+
+{
+    $got = xqt( qw{ --perl-code --perl-pod } );
+
+    # We need the following 'no warnings' to prevent Perl from
+    # complaining about the comma in '...=code,pod' below.
+    # <rant>NO, I'M NOT TRYING TO DELIMIT A qw{} LIST WITH COMMAS. IF I
+    # WANTED A COMMA-DELIMITED LIST I WOULD NOT HAVE USED qw{} IN THE
+    # FIRST PLACE.</rant>.
+    # There. I feel much better now.
+    no warnings qw{ qw };
+
+    is_deeply $got,
+	[ qw{
+	    perl
+	    -Mblib
+	    -MApp::AckX::Preflight::Resource
+	    -MApp::AckX::Preflight::via::PerlFile=code,pod
+	    -S
+	    ack
+	    --project=t/data/project/_ackxprc
+	    } ],
+	'--perl-code --perl-pod'
+	    or diag 'Got ', explain $got;
+}
+
+$got = xqt( qw{ --perl-code --perl-data --perl-pod } ),
+is_deeply $got,
+    [ qw{
+	perl
+	-S
+	ack
+	--project=t/data/project/_ackxprc
+	} ],
+    '--perl-code --perl-data --perl-pod optimized out'
 	or diag 'Got ', explain $got;
 
 done_testing;

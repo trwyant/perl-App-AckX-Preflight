@@ -9,18 +9,21 @@ use Carp;
 
 our $VERSION = '0.000_007';
 
-my %WANT = ( code => 1 );
+my %WANT;
 
 {
-    my %valid = map { $_ => 1 } qw{ code pod };
+    my %valid = map { $_ => 1 } qw{ code data pod };
 
     sub import {
 	my ( undef, @arg ) = @_;
+	%WANT = ();
 	foreach my $type ( @arg ) {
 	    $valid{$type}
 		or croak "Perl file content type '$type' invalid";
-	    %WANT = ( $type => 1 );
+	    $WANT{$type} = 1;
 	}
+	keys %WANT
+	    or $WANT{code} = 1;
 	return;
     }
 }
@@ -28,6 +31,8 @@ my %WANT = ( code => 1 );
 sub type {
     return ( qw{ perl } );
 }
+
+my %is_data = map {; "__${_}__\n" => 1 } qw{ DATA END };
 
 sub FILL {
     my ( $self, $fh ) = @_;
@@ -38,14 +43,16 @@ sub FILL {
 	    $self->{in} = 'code';
 	    $WANT{pod}
 		and return $line;
+	    redo;
 	} elsif ( $line =~ m/ \A = [A-Za-z] /smx ) {
 	    $self->{in} = 'pod';
-	    $WANT{$self->{in}}
-		and return $line;
-	} else {
-	    $WANT{$self->{in}}
-		and return $line;
+	} elsif ( 'pod' eq $self->{in} ) {
+	    # Nothing else can be in POD
+	} elsif ( $is_data{$line} ) {
+	    $self->{in} = $self->{cut} = 'data';
 	}
+	$WANT{$self->{in}}
+	    and return $line;
 	redo;
     }
     return;
@@ -56,6 +63,7 @@ sub PUSHED {
     my ( $class ) = @_;
     return bless {
 	in	=> 'code',
+	cut	=> 'code',
     }, ref $class || $class;
 }
 
@@ -90,9 +98,46 @@ required for L<PerlIO::via|PerlIO::via> support:
 
 =head2 import
 
-The only valid arguments are C<'code'> or C<'pod'>. The last-seen
-determines what sort of data are returned, with the default being
-C<'code'>.
+Nothing is actually exported by this module. The arguments determine
+what sort of lines are returned to F<ack>. Valid arguments are:
+
+=over
+
+=item code
+
+Anything that is not data or POD.
+
+=item data
+
+Anything including or after the first line consisting solely of
+C<__DATA__> or C<__END__>. Unlike what happens when you read the
+C<< <DATA> >> file handle, the C<__DATA__> or C<__END__> itself is
+included in this section. But these are not detected in POD.
+
+=item pod
+
+Per F<perlpodspec>, POD begins with any line that looks like
+C</\A=[A-Za-z]/>, and ends with a line that looks like C</\A=cut\b/>.
+
+A couple surprising things (at least to the author) are observed with
+Perl C<5.26.2>:
+
+=over
+
+=item Perl does not detect __DATA__ or __END__ inside POD;
+
+=item perldoc detects POD inside here documents.
+
+=back
+
+This code behaves the same way. In the case pf POD inside here
+documents, it would probably behave as documented even if F<perldoc> did
+not.
+
+=back
+
+More than one of the above can be specified. Specifying all three is in
+expensive way to read the whole file.
 
 =head2 type
 

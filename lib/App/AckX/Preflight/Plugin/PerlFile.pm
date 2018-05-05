@@ -12,18 +12,32 @@ use parent qw{ App::AckX::Preflight::Plugin };
 our $VERSION = '0.000_007';
 
 sub __options {
-    return( qw{ perl-code perl-pod } );
+    return( qw{ perl-code perl-pod perl-data } );
 }
 
-sub __process {
-    my ( undef, $aaxp, $opt ) = @_;
-    my $uses = grep { $opt->{$_} } __options()
-	or return;
-    2 == $uses
-	and __err_exclusive( __options() );
-    my $type = $opt->{ 'perl-code' } ? 'code' : 'pod';
-    $aaxp->__inject( "-MApp::AckX::Preflight::via::PerlFile=$type" );
-    return;
+{
+    my %option_to_type = map {; "perl-$_" => $_ } qw{ code pod data };
+
+    sub __process {
+	my ( undef, $aaxp, $opt ) = @_;
+
+	# If we have none of the options we have to implement, we do not
+	# need to install ourselves in ack.
+	my @type = map { $option_to_type{$_} }
+	    grep { $opt->{$_} }
+	    sort keys %option_to_type
+	    or return;
+
+	# If all types of data are specified we want the entire contents
+	# of the file. Instead of asking our filter to return everything
+	# we just don't install the filter in the first place.
+	@type == keys %option_to_type
+	    and return;
+
+	local $" = ',';
+	$aaxp->__inject( "-MApp::AckX::Preflight::via::PerlFile=@type" );
+	return;
+    }
 }
 
 1;

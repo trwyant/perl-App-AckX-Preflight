@@ -13,21 +13,34 @@ use Scalar::Util qw{ blessed openhandle };
 use Test::More 0.88;	# Because of done_testing();
 
 use constant PERL_FILE	=> 't/data/perl_file.PL';
+
 use constant PERL_CODE	=> <<'EOD';
    1: #!/usr/bin/env perl
-   2: 
+   2:
    3: use strict;
    4: use warnings;
-   5: 
+   5:
 EOD
+
+use constant PERL_DATA	=> <<'EOD';
+   6: __END__
+   7:
+   8: This is data, kinda sorta.
+   9:
+EOD
+
 use constant PERL_POD	=> <<'EOD';
-   6: =head1 TEST
-   7: 
-   8: This is a test. It is only a test.
-   9: 
-  10: =cut
+  10: =head1 TEST
+  11:
+  12: This is a test. It is only a test.
+  13:
+  14: =cut
 EOD
+
+use constant PERL_CODE_POD => PERL_CODE . PERL_POD;
+
 use constant TEXT_FILE	=> 't/data/perl_file.txt';
+
 use constant TEXT_CONTENT	=> <<'EOD';
    1: There was a young lady named Bright,
    2: Who could travel much faster than light.
@@ -52,6 +65,14 @@ is slurp( $perl_resource ), PERL_CODE, 'Only code, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
 
+App::AckX::Preflight::via::PerlFile->import( 'data' );
+
+is slurp( PERL_FILE ), PERL_DATA, 'Only data, reading directly';
+
+is slurp( $perl_resource ), PERL_DATA, 'Only data, reading resource';
+
+is slurp( $text_resource ), TEXT_CONTENT, 'Only data, text resource';
+
 App::AckX::Preflight::via::PerlFile->import( 'pod' );
 
 is slurp( PERL_FILE ), PERL_POD, 'Only POD, reading directly';
@@ -59,6 +80,14 @@ is slurp( PERL_FILE ), PERL_POD, 'Only POD, reading directly';
 is slurp( $perl_resource ), PERL_POD, 'Only POD, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only POD, text resource';
+
+App::AckX::Preflight::via::PerlFile->import( 'code', 'pod' );
+
+is slurp( PERL_FILE ), PERL_CODE_POD, 'Code and POD, reading directly';
+
+is slurp( $perl_resource ), PERL_CODE_POD, 'Code and POD, reading resource';
+
+is slurp( $text_resource ), TEXT_CONTENT, 'Code and POD, text resource';
 
 done_testing;
 
@@ -76,7 +105,12 @@ sub slurp {
     }
     my $rslt;
     while ( <$fh> ) {
-	$rslt .= sprintf '%4d: %s', $., $_;
+	s/ \s+ \z //smx;
+	if ( '' eq $_ ) {
+	    $rslt .= sprintf "%4d:\n", $.;
+	} else {
+	    $rslt .= sprintf "%4d: %s\n", $., $_;
+	}
     }
     if ( blessed( $file ) ) {
 	$file->close();
