@@ -88,6 +88,7 @@ sub requires {
 	'File::Basename'		=> 0,
 	'File::Spec'			=> 0,
 	'Getopt::Long'			=> 2.39,	# getoptionsfromarray
+	'List::Util'			=> 1.45,	# uniqstr
 	'Module::Pluggable::Object'	=> 5.2,
 	'Pod::Usage'			=> 0,
 	'Text::ParseWords'		=> 0,
