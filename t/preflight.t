@@ -168,7 +168,7 @@ is_deeply $got,
 	ack
 	--project=t/data/project/_ackxprc
 	} ],
-    '--perl-code'
+    '--perl-pod'
 	or diag 'Got ', explain $got;
 
 done_testing;
