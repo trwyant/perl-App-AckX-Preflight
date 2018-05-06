@@ -9,6 +9,7 @@ use App::Ack::Filter::Extension;
 use App::Ack::Resource;
 use App::AckX::Preflight::Resource;
 use App::AckX::Preflight::Syntax::Java;
+use App::AckX::Preflight::Util qw{ :syntax };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
@@ -101,10 +102,10 @@ my $java_resource = App::Ack::Resource->new( JAVA_FILE );
 
 my $text_resource = App::Ack::Resource->new( TEXT_FILE );
 
-SYNTAX_FILTER->import( '-syntax=code' );
+SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
 
 ok ! SYNTAX_FILTER->__want_everything(),
-    q<'code' is not everything>;
+    sprintf q<'%s' is not everything>, SYNTAX_CODE;
 
 is slurp( JAVA_FILE ), JAVA_CODE, 'Only code, reading directly';
 
@@ -112,10 +113,10 @@ is slurp( $java_resource ), JAVA_CODE, 'Only code, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
 
-SYNTAX_FILTER->import( '-syntax=com' );
+SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_COMMENT );
 
 ok ! SYNTAX_FILTER->__want_everything(),
-    q<'com' is not everything>;
+    sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
 
 is slurp( JAVA_FILE ), JAVA_COMMENTS, 'Only comments, reading directly';
 
@@ -123,27 +124,30 @@ is slurp( $java_resource ), JAVA_COMMENTS, 'Only comments, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
 
-SYNTAX_FILTER->import( qw{ -syntax doc } );
+SYNTAX_FILTER->import( '-syntax', SYNTAX_DOCUMENTATION );
 
 ok ! SYNTAX_FILTER->__want_everything(),
-    q<'doc' is not everything>;
+    sprintf q<'%s' is not everything>, SYNTAX_DOCUMENTATION;
 
-is slurp( JAVA_FILE ), JAVA_DOC, 'Only doc, reading directly';
+is slurp( JAVA_FILE ), JAVA_DOC, 'Only documentation, reading directly';
 
-is slurp( $java_resource ), JAVA_DOC, 'Only doc, reading resource';
+is slurp( $java_resource ), JAVA_DOC, 'Only documentation, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only doc, text resource';
+is slurp( $text_resource ), TEXT_CONTENT, 'Only documentation, text resource';
 
-SYNTAX_FILTER->import( qw{ -syntax code:doc } );
+SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_CODE, SYNTAX_DOCUMENTATION );
 
 ok !SYNTAX_FILTER->__want_everything(),
-    q<'code:doc' is not everything>;
+    sprintf q<'%s:%s' is not everything>, SYNTAX_CODE, SYNTAX_DOCUMENTATION;
 
-is slurp( JAVA_FILE ), JAVA_CODE_DOC, 'Code and doc, reading directly';
+is slurp( JAVA_FILE ), JAVA_CODE_DOC,
+    'Code and documentation, reading directly';
 
-is slurp( $java_resource ), JAVA_CODE_DOC, 'Code and doc, reading resource';
+is slurp( $java_resource ), JAVA_CODE_DOC,
+    'Code and documentation, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Code and doc, text resource';
+is slurp( $text_resource ), TEXT_CONTENT,
+    'Code and documentation, text resource';
 
 done_testing;
 

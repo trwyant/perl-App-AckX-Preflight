@@ -177,7 +177,7 @@ is_deeply $got,
 	perl
 	-Mblib
 	-MApp::AckX::Preflight::Resource
-	-MApp::AckX::Preflight::Syntax=-syntax=doc
+	-MApp::AckX::Preflight::Syntax=-syntax=documentation
 	-S
 	ack
 	--project=t/data/project/_ackxprc
@@ -192,7 +192,7 @@ is_deeply $got,
 	    perl
 	    -Mblib
 	    -MApp::AckX::Preflight::Resource
-	    -MApp::AckX::Preflight::Syntax=-syntax=code:doc
+	    -MApp::AckX::Preflight::Syntax=-syntax=code:documentation
 	    -S
 	    ack
 	    --project=t/data/project/_ackxprc
@@ -207,7 +207,7 @@ is_deeply $got,
 	perl
 	-Mblib
 	-MApp::AckX::Preflight::Resource
-	-MApp::AckX::Preflight::Syntax=-syntax=code:data:doc
+	-MApp::AckX::Preflight::Syntax=-syntax=code:data:documentation
 	-S
 	ack
 	--project=t/data/project/_ackxprc

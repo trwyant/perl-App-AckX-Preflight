@@ -91,6 +91,7 @@ sub requires {
 	'List::Util'			=> 1.45,	# uniqstr
 	'Module::Pluggable::Object'	=> 5.2,
 	'Pod::Usage'			=> 0,
+	'Text::Abbrev'			=> 0,
 	'Text::ParseWords'		=> 0,
 	'constant'			=> 0,
 	'parent'			=> 0,

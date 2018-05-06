@@ -9,6 +9,7 @@ use App::Ack::Filter::Extension;
 use App::Ack::Resource;
 use App::AckX::Preflight::Resource;
 use App::AckX::Preflight::Syntax::Perl;
+use App::AckX::Preflight::Util qw{ :syntax };
 use Scalar::Util qw{ blessed openhandle };
 use Test::More 0.88;	# Because of done_testing();
 
@@ -44,7 +45,7 @@ use constant PERL_DOC	=> <<'EOD';
   14: =cut
 EOD
 
-use constant PERL_CODE_POD => PERL_CODE . PERL_DOC;
+use constant PERL_CODE_DOC => PERL_CODE . PERL_DOC;
 
 use constant TEXT_FILE	=> 't/data/text_file.txt';
 
@@ -64,10 +65,10 @@ my $perl_resource = App::Ack::Resource->new( PERL_FILE );
 
 my $text_resource = App::Ack::Resource->new( TEXT_FILE );
 
-SYNTAX_FILTER->import( '-syntax=code' );
+SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
 
 ok ! SYNTAX_FILTER->__want_everything(),
-    q<'code' is not everything>;
+    sprintf q<'%s' is not everything>, SYNTAX_CODE;
 
 is slurp( PERL_FILE ), PERL_CODE, 'Only code, reading directly';
 
@@ -75,21 +76,21 @@ is slurp( $perl_resource ), PERL_CODE, 'Only code, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
 
-SYNTAX_FILTER->import( '-syntax=com' );
+SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_COMMENT );
 
 ok ! SYNTAX_FILTER->__want_everything(),
-    q<'com' is not everything>;
+    sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
 
-is slurp( PERL_FILE ), PERL_COMMENTS, 'Only code, reading directly';
+is slurp( PERL_FILE ), PERL_COMMENTS, 'Only comments, reading directly';
 
-is slurp( $perl_resource ), PERL_COMMENTS, 'Only code, reading resource';
+is slurp( $perl_resource ), PERL_COMMENTS, 'Only comments, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
+is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
 
-SYNTAX_FILTER->import( qw{ -syntax data } );
+SYNTAX_FILTER->import( '-syntax', SYNTAX_DATA );
 
 ok ! SYNTAX_FILTER->__want_everything(),
-    q<'data' is not everything>;
+    sprintf q<'%s' is not everything>, SYNTAX_DATA;
 
 is slurp( PERL_FILE ), PERL_DATA, 'Only data, reading directly';
 
@@ -97,27 +98,30 @@ is slurp( $perl_resource ), PERL_DATA, 'Only data, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only data, text resource';
 
-SYNTAX_FILTER->import( qw{ -syntax doc } );
+SYNTAX_FILTER->import( '-syntax', SYNTAX_DOCUMENTATION );
 
 ok ! SYNTAX_FILTER->__want_everything(),
-    q<'doc' is not everything>;
+    sprintf q<'%s' is not everything>, SYNTAX_DOCUMENTATION;
 
-is slurp( PERL_FILE ), PERL_DOC, 'Only POD, reading directly';
+is slurp( PERL_FILE ), PERL_DOC, 'Only documentation, reading directly';
 
-is slurp( $perl_resource ), PERL_DOC, 'Only POD, reading resource';
+is slurp( $perl_resource ), PERL_DOC, 'Only documentation, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only POD, text resource';
+is slurp( $text_resource ), TEXT_CONTENT, 'Only documentation, text resource';
 
-SYNTAX_FILTER->import( qw{ -syntax code:doc } );
+SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_CODE, SYNTAX_DOCUMENTATION );
 
 ok ! SYNTAX_FILTER->__want_everything(),
-    q<'code:doc' is not everything>;
+    sprintf q<'%s:%s' is not everything>, SYNTAX_CODE, SYNTAX_DOCUMENTATION;
 
-is slurp( PERL_FILE ), PERL_CODE_POD, 'Code and POD, reading directly';
+is slurp( PERL_FILE ), PERL_CODE_DOC,
+    'Code and documentation, reading directly';
 
-is slurp( $perl_resource ), PERL_CODE_POD, 'Code and POD, reading resource';
+is slurp( $perl_resource ), PERL_CODE_DOC,
+    'Code and documentation, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Code and POD, text resource';
+is slurp( $text_resource ), TEXT_CONTENT,
+    'Code and documentation, text resource';
 
 done_testing;
 

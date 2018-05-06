@@ -43,9 +43,9 @@ use constant HASH_REF	=> ref {};
 use constant SCALAR_REF	=> ref \0;
 
 use constant SYNTAX_CODE		=> 'code';
-use constant SYNTAX_COMMENT		=> 'com';
+use constant SYNTAX_COMMENT		=> 'comment';
 use constant SYNTAX_DATA		=> 'data';
-use constant SYNTAX_DOCUMENTATION	=> 'doc';
+use constant SYNTAX_DOCUMENTATION	=> 'documentation';
 use constant SYNTAX_OTHER		=> 'other';
 
 use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
@@ -233,7 +233,7 @@ to C<'code'>.
 =head2 SYNTAX_COMMENT
 
 This is the recommended syntax filter specification for comments, and is
-set to C<'com'>.
+set to C<'comment'>.
 
 =head2 SYNTAX_DATA
 
@@ -243,7 +243,7 @@ is set to C<'data'>.
 =head2 SYNTAX_DOCUMENTATION
 
 This is the recommended syntax filter specification for inline
-documentation, and is set to C<'doc'>.
+documentation, and is set to C<'documentation'>.
 
 =head2 SYNTAX_OTHER
 

@@ -8,6 +8,7 @@ use warnings;
 use App::AckX::Preflight::Syntax;
 use Carp;
 use List::Util 1.45 ();
+use Text::Abbrev ();
 
 use parent qw{ App::AckX::Preflight::Plugin };
 
@@ -17,15 +18,27 @@ sub __options {
     return( qw{ syntax=s@ } );
 }
 
-sub __normalize_options {
-    my ( undef, $opt ) = @_;
+{
+    my $syntax_abbrev;
 
-    if ( $opt->{syntax} ) {
-	@{ $opt->{syntax} } = List::Util::uniqstr(
-	    map { split qr{ \s* [:;,] \s* }smx } @{ $opt->{syntax} } );
+    sub __normalize_options {
+	my ( undef, $opt ) = @_;
+
+	$syntax_abbrev ||= Text::Abbrev::abbrev(
+	    List::Util::uniqstr(
+		map { $_->__handles_syntax() }
+		App::AckX::Preflight::Syntax->__plugins() ) );
+
+	if ( $opt->{syntax} ) {
+	    @{ $opt->{syntax} } = sort { $a cmp $b } List::Util::uniqstr(
+		map { $syntax_abbrev->{$_} || 
+		    _err_unsupported_syntax_type( $_ ) }
+		map { split qr{ \s* [:;,] \s* }smx }
+		@{ $opt->{syntax} } );
+	}
+
+	return;
     }
-
-    return;
 }
 
 sub __process {
@@ -34,31 +47,17 @@ sub __process {
 	and @{ $opt->{syntax} }
 	or return;
 
-    # Validate the arguments to -syntax. All such must be processed by
-    # at least one plugin.
-    {
-	my %syntax = map { $_ => 1 } @{ $opt->{syntax} };
-
-	foreach my $plugin ( App::AckX::Preflight::Syntax->__plugins() ) {
-	    foreach my $type ( $plugin->__handles_syntax() ) {
-		delete $syntax{$type};
-	    }
-	}
-
-	local $" = ', ';
-	keys %syntax
-	    and croak "Unsupported syntax types: @{[ sort keys %syntax ]}";
-    }
-
-    {
-	my @want_syntax = sort @{ $opt->{syntax} };
-	local $" = ':';
-	$aaxp->__inject(
-	    "-MApp::AckX::Preflight::Syntax=-syntax=@want_syntax" );
-    }
+    local $" = ':';
+    $aaxp->__inject(
+	"-MApp::AckX::Preflight::Syntax=-syntax=@{ $opt->{syntax} }" );
 
     return;
 
+}
+
+sub _err_unsupported_syntax_type {
+    my ( $type ) = @_;
+    croak "Unsupported syntax type '$type'";
 }
 
 
@@ -68,28 +67,59 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Plugin::Syntax - <<< replace boilerplate >>>
+App::AckX::Preflight::Plugin::Syntax - Provide --syntax for ackxp
 
 =head1 SYNOPSIS
 
-<<< replace boilerplate >>>
+None. The user has no direct interaction with this module.
 
 =head1 DESCRIPTION
 
-<<< replace boilerplate >>>
+This L<App::AckX::Preflight|App::AckX::Preflight> plug-in provides the
+ability to restrict the search to lines of a file that match one or more
+syntax types which may (or may not) be defined for that file's file
+type.
 
-=head1 METHODS
+This functionality depends on the C<--syntax> option, which can take one
+or more of the following values:
 
-This class supports the following public methods:
+=over
 
-=head1 ATTRIBUTES
+=item code
 
-This class has the following attributes:
+This is probably self-explanatory.
 
+=item comment
+
+This is also probably self-explanatory. In file types with C-style
+comments, only full-line comments will appear here.
+
+=item data
+
+This is intended to represent inlined data. For Perl it would represent
+C<__DATA__> or C<__END__>. Here documents would not normally count as
+data.
+
+=item documentation
+
+This is structured inline documentation. For Perl it would be POD. For
+Java it would be Javadoc, which would B<not> also be considered a
+comment, even though functionally that is exactly what it is.
+
+=back
+
+Values can be abbreviated, as long as the abbreviation is unique.
+
+These syntax types are implemented in subclasses of
+L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax>. These
+B<should> adhere to the above-defined types. Additional types might be
+implemented, but the implementor is urged to think long and hard before
+doing so. See the documentation for these for what file types are
+actually supported, and what syntax types are available for each.
 
 =head1 SEE ALSO
 
-<<< replace or remove boilerplate >>>
+L<App::AckX::Preflight|App::AckX::Preflight>.
 
 =head1 SUPPORT
 
