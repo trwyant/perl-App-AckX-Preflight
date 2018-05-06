@@ -24,16 +24,29 @@ our @EXPORT_OK = qw{
     ARRAY_REF
     HASH_REF
     SCALAR_REF
+
+    SYNTAX_CODE
+    SYNTAX_COMMENT
+    SYNTAX_DATA
+    SYNTAX_DOCUMENTATION
+    SYNTAX_OTHER
 };
 
 our %EXPORT_TAGS = (
-    all	=> \@EXPORT_OK,
-    ref	=> [ grep { m/ _REF \z /smx } @EXPORT_OK ],
+    all		=> \@EXPORT_OK,
+    ref		=> [ grep { m/ _REF \z /smx } @EXPORT_OK ],
+    syntax	=> [ grep { m/ \A SYNTAX_ /smx } @EXPORT_OK ],
 );
 
 use constant ARRAY_REF	=> ref [];
 use constant HASH_REF	=> ref {};
 use constant SCALAR_REF	=> ref \0;
+
+use constant SYNTAX_CODE		=> 'code';
+use constant SYNTAX_COMMENT		=> 'com';
+use constant SYNTAX_DATA		=> 'data';
+use constant SYNTAX_DOCUMENTATION	=> 'doc';
+use constant SYNTAX_OTHER		=> 'other';
 
 use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
     qw{ dos os2 MSWin32 VMS } }->{$^O};
@@ -212,6 +225,32 @@ This is set to C<ref []>.
 
 This is set to C<ref \0>.
 
+=head2 SYNTAX_CODE
+
+This is the recommended syntax filter specification for code, and is set
+to C<'code'>.
+
+=head2 SYNTAX_COMMENT
+
+This is the recommended syntax filter specification for comments, and is
+set to C<'com'>.
+
+=head2 SYNTAX_DATA
+
+This is the recommended syntax filter specification for inline data, and
+is set to C<'data'>.
+
+=head2 SYNTAX_DOCUMENTATION
+
+This is the recommended syntax filter specification for inline
+documentation, and is set to C<'doc'>.
+
+=head2 SYNTAX_OTHER
+
+This is the recommended syntax filter specification for anything else,
+and is set to C<'other'>.
+
+
 =head1 EXPORT TAGS
 
 The following export tags can be used.
@@ -223,6 +262,10 @@ This tag exports everything that can be exported.
 =head2 ref
 
 This tag exports everything that ends in C<'_REF'>.
+
+=head2 syntax
+
+This tag exports everything that starts with C<'SYNTAX_'>.
 
 =head1 SEE ALSO
 

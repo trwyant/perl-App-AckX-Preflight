@@ -51,7 +51,7 @@ my %WANT_SYNTAX;
 sub import {
     my ( $class, @arg ) = @_;
     my $opt = $class->__getopt( \@arg );
-    %WANT_SYNTAX = map { $_ => 1 } $opt->{syntax} ? @{ $opt->{syntax} } : 'code';
+    %WANT_SYNTAX = map { $_ => 1 } @{ $opt->{syntax} || [] };
     return;
 }
 

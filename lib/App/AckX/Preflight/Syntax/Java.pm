@@ -7,12 +7,13 @@ use warnings;
 
 use parent qw{ App::AckX::Preflight::Syntax };
 
+use App::AckX::Preflight::Util qw{ :syntax };
 use Carp;
 
 our $VERSION = '0.000_007';
 
 sub __handles_syntax {
-    return( qw{ code com doc } );
+    return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION );
 }
 
 sub __handles_type {
@@ -27,16 +28,18 @@ sub FILL {
 	    or last;
 	if ( $line =~ m< [*] / >smx ) {
 	    my $was = $self->{in};
-	    $self->{in} = 'code';
+	    $self->{in} = SYNTAX_CODE;
 	    # We have to hand-dispatch the line because although the
 	    # next line is code, the end of the block comment is doc.
 	    $self->{want}{$was}
 		and return $line;
 	    redo;
 	} elsif ( $line =~ m< \A \s* / ( [*]+ ) >smx ) {
-	    $self->{in} = 1 < length $1 ? 'doc' : 'com';
-	} elsif ( 'code' eq $self->{in} && $line =~ m< \A \s* // >smx ) {
-	    $self->{want}{com}
+	    $self->{in} = 1 < length $1 ?
+		SYNTAX_DOCUMENTATION :
+		SYNTAX_COMMENT;
+	} elsif ( SYNTAX_CODE eq $self->{in} && $line =~ m< \A \s* // >smx ) {
+	    $self->{want}{ SYNTAX_COMMENT() }
 		and return $line;
 	    redo;
 	}
@@ -51,7 +54,7 @@ sub PUSHED {
 #   my ( $class, $mode, $fh ) = @_;
     my ( $class ) = @_;
     return bless {
-	in	=> 'code',
+	in	=> SYNTAX_CODE,
 	want	=> $class->__want_syntax(),
     }, ref $class || $class;
 }

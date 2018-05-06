@@ -7,12 +7,18 @@ use warnings;
 
 use parent qw{ App::AckX::Preflight::Syntax };
 
+use App::AckX::Preflight::Util qw{ :syntax };
 use Carp;
 
 our $VERSION = '0.000_007';
 
 sub __handles_syntax {
-    return( qw{ code com data doc } );
+    return(
+	SYNTAX_CODE,
+	SYNTAX_COMMENT,
+	SYNTAX_DATA,
+	SYNTAX_DOCUMENTATION,
+    );
 }
 
 sub __handles_type {
@@ -33,20 +39,20 @@ sub __handles_type {
 		# We have to hand-dispatch the line because although the
 		# next line is whatever we were working on before the
 		# POD was encountered, the '=cut' itself is POD.
-		$self->{want}{doc}
+		$self->{want}{ SYNTAX_DOCUMENTATION() }
 		    and return $line;
 		redo;
 	    } elsif ( $line =~ m/ \A = [A-Za-z] /smx ) {
 		$self->{cut} = $self->{in};
-		$self->{in} = 'doc';
-	    } elsif ( 'doc' eq $self->{in} ) {
+		$self->{in} = SYNTAX_DOCUMENTATION;
+	    } elsif ( SYNTAX_DOCUMENTATION eq $self->{in} ) {
 		# Nothing else can be in POD
-	    } elsif ( 'code' eq $self->{in} && $line =~ m/ \A \s* \# /smx ) {
-		$self->{want}{com}
+	    } elsif ( SYNTAX_CODE eq $self->{in} && $line =~ m/ \A \s* \# /smx ) {
+		$self->{want}{ SYNTAX_COMMENT() }
 		    and return $line;
 		redo;
 	    } elsif ( $is_data{$line} ) {
-		$self->{in} = 'data';
+		$self->{in} = SYNTAX_DATA;
 	    }
 	    $self->{want}{$self->{in}}
 		and return $line;
@@ -60,7 +66,7 @@ sub PUSHED {
 #   my ( $class, $mode, $fh ) = @_;
     my ( $class ) = @_;
     return bless {
-	in	=> 'code',
+	in	=> SYNTAX_CODE,
 	want	=> $class->__want_syntax(),
     }, ref $class || $class;
 }
