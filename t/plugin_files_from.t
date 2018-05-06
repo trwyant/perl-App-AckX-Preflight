@@ -26,7 +26,7 @@ my $cwd = getcwd();
 my @manifest = sort keys %{ maniread() };
 my @manifest_perl = grep {
     m/ [.] (?i: pl | pm | t ) \z /smx ||
-    m| \A script/ |smx
+    m< \A (?: script | tools ) / >smx
 } @manifest;
 
 @got = PLUGIN->__options();

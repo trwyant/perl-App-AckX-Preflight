@@ -1,4 +1,4 @@
-package App::AckX::Preflight::Syntax::Java;
+package App::AckX::Preflight::Syntax::Shell;
 
 use 5.008008;
 
@@ -13,12 +13,12 @@ use Carp;
 our $VERSION = '0.000_007';
 
 sub __handles_syntax {
-    return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION );
+    return( SYNTAX_CODE, SYNTAX_COMMENT );
 }
 
 sub __handles_type {
     # TODO make this configurable
-    return( qw{ java } );
+    return( qw{ shell } );
 }
 
 sub FILL {
@@ -26,24 +26,10 @@ sub FILL {
     {
 	defined( my $line = <$fh> )
 	    or last;
-	if ( $line =~ m< [*] / >smx ) {
-	    my $was = $self->{in};
-	    $self->{in} = SYNTAX_CODE;
-	    # We have to hand-dispatch the line because although the
-	    # next line is code, the end of the block comment is doc.
-	    $self->{want}{$was}
-		and return $line;
-	    redo;
-	} elsif ( $line =~ m< \A \s* / ( [*]+ ) >smx ) {
-	    $self->{in} = 1 < length $1 ?
-		SYNTAX_DOCUMENTATION :
-		SYNTAX_COMMENT;
-	} elsif ( SYNTAX_CODE eq $self->{in} && $line =~ m< \A \s* // >smx ) {
-	    $self->{want}{ SYNTAX_COMMENT() }
-		and return $line;
-	    redo;
-	}
-	$self->{want}{$self->{in}}
+	my $type = $line =~ m/ \A \s* \# /smx ?
+	    SYNTAX_COMMENT :
+	    SYNTAX_CODE;
+	$self->{want}{$type}
 	    and return $line;
 	redo;
     }
@@ -54,7 +40,6 @@ sub PUSHED {
 #   my ( $class, $mode, $fh ) = @_;
     my ( $class ) = @_;
     return bless {
-	in	=> SYNTAX_CODE,
 	want	=> $class->__want_syntax(),
     }, ref $class || $class;
 }
@@ -66,7 +51,7 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Syntax::Java - App::AckX::Preflight syntax filter for Java.
+App::AckX::Preflight::Syntax::Shell - App::AckX::Preflight syntax filter for Shell.
 
 =head1 SYNOPSIS
 
@@ -75,7 +60,7 @@ No direct user interaction.
 =head1 DESCRIPTION
 
 This L<PerlIO::via|PerlIO::via> I/O layer is intended to be used by
-L<App::AckX::Preflight|App::AckX::Preflight> to process a Java file,
+L<App::AckX::Preflight|App::AckX::Preflight> to process a Shell file,
 returning only those lines the user has requested.
 
 The supported syntax types are:
@@ -84,9 +69,7 @@ The supported syntax types are:
 
 =item code
 
-=item comment (both block and single-line)
-
-=item documentation (Javadoc; block comments introduced by '/**')
+=item comment
 
 =back
 
@@ -128,7 +111,7 @@ Thomas R. Wyant, III F<wyant at cpan dot org>
 Copyright (C) 2018 by Thomas R. Wyant, III
 
 This program is free software; you can redistribute it and/or modify it
-under the same terms as Java 5.10.0. For more details, see the full text
+under the same terms as Shell 5.10.0. For more details, see the full text
 of the licenses in the directory LICENSES.
 
 This program is distributed in the hope that it will be useful, but

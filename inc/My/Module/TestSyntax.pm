@@ -15,8 +15,6 @@ our @EXPORT = qw{ slurp };
 
 sub slurp {
     my ( $file ) = @_;
-    my $caller = caller;
-    my $syntax = $caller->SYNTAX_FILTER();
     my $fh;
     if ( blessed( $file ) ) {
 	$fh = $file->open()
@@ -24,6 +22,8 @@ sub slurp {
     } elsif ( openhandle( $file ) ) {
 	$fh = $file;
     } else {
+	my $caller = caller;
+	my $syntax = $caller->SYNTAX_FILTER();
 	open $fh, "<:via($syntax)", $file
 	    or die "Failed to open $file: $!\n";
     }

@@ -96,11 +96,11 @@ The supported syntax types are:
 
 =item code
 
-=item com (i.e. comments)
+=item comment (i.e. comments)
 
 =item data (non-POD stuff after __DATA__ and/or __END__)
 
-=item doc (i.e. POD)
+=item documentation (i.e. POD)
 
 =back
 

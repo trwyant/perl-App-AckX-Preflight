@@ -17,6 +17,7 @@ lib/App/AckX/Preflight/Resource.pm
 lib/App/AckX/Preflight/Syntax.pm
 lib/App/AckX/Preflight/Syntax/Java.pm
 lib/App/AckX/Preflight/Syntax/Perl.pm
+lib/App/AckX/Preflight/Syntax/Shell.pm
 lib/App/AckX/Preflight/Util.pm
 LICENSES/Artistic
 LICENSES/Copying
@@ -34,6 +35,7 @@ t/data/global/ackxprc
 t/data/home/_ackxprc
 t/data/java_file.java
 t/data/perl_file.PL
+t/data/shell_file.sh
 t/data/text_file.txt
 t/data/relative
 t/data/tests
@@ -47,6 +49,8 @@ t/plugin_syntax.t
 t/preflight.t
 t/syntax_java.t
 t/syntax_perl.t
+t/syntax_shell.t
+tools/number
 xt/author/changes.t
 xt/author/critic.t
 xt/author/executable.t
