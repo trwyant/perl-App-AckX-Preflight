@@ -12,7 +12,7 @@ use Carp;
 our $VERSION = '0.000_007';
 
 sub __handles_syntax {
-    return( qw{ code doc } );
+    return( qw{ code com doc } );
 }
 
 sub __handles_type {
@@ -26,14 +26,19 @@ sub FILL {
 	defined( my $line = <$fh> )
 	    or last;
 	if ( $line =~ m< [*] / >smx ) {
+	    my $was = $self->{in};
 	    $self->{in} = 'code';
 	    # We have to hand-dispatch the line because although the
 	    # next line is code, the end of the block comment is doc.
-	    $self->{want}{doc}
+	    $self->{want}{$was}
 		and return $line;
 	    redo;
-	} elsif ( $line =~ m< \A \s* / [*] >smx ) {
-	    $self->{in} = 'doc';
+	} elsif ( $line =~ m< \A \s* / ( [*]+ ) >smx ) {
+	    $self->{in} = 1 < length $1 ? 'doc' : 'com';
+	} elsif ( 'code' eq $self->{in} && $line =~ m< \A \s* // >smx ) {
+	    $self->{want}{com}
+		and return $line;
+	    redo;
 	}
 	$self->{want}{$self->{in}}
 	    and return $line;
@@ -76,7 +81,9 @@ The supported syntax types are:
 
 =item code
 
-=item doc
+=item com (both block and single-line)
+
+=item doc (Javadoc; block comments introduced by '/**')
 
 =back
 

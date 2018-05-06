@@ -33,6 +33,9 @@ use constant JAVA_CODE	=> <<'EOD';
   24:
   25: }
   26:
+EOD
+
+use constant JAVA_COMMENTS	=> <<'EOD';
   27: // ex: set textwidth=72 :
 EOD
 
@@ -78,7 +81,6 @@ use constant JAVA_CODE_DOC => <<'EOD';
   24:
   25: }
   26:
-  27: // ex: set textwidth=72 :
 EOD
 
 use constant TEXT_FILE	=> 't/data/text_file.txt';
@@ -110,6 +112,17 @@ is slurp( $java_resource ), JAVA_CODE, 'Only code, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
 
+SYNTAX_FILTER->import( '-syntax=com' );
+
+ok ! SYNTAX_FILTER->__want_everything(),
+    q<'com' is not everything>;
+
+is slurp( JAVA_FILE ), JAVA_COMMENTS, 'Only comments, reading directly';
+
+is slurp( $java_resource ), JAVA_COMMENTS, 'Only comments, reading resource';
+
+is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
+
 SYNTAX_FILTER->import( qw{ -syntax doc } );
 
 ok ! SYNTAX_FILTER->__want_everything(),
@@ -123,14 +136,14 @@ is slurp( $text_resource ), TEXT_CONTENT, 'Only doc, text resource';
 
 SYNTAX_FILTER->import( qw{ -syntax code:doc } );
 
-ok SYNTAX_FILTER->__want_everything(),
-    q<'code:doc' is everything>;
+ok !SYNTAX_FILTER->__want_everything(),
+    q<'code:doc' is not everything>;
 
-is slurp( JAVA_FILE ), JAVA_CODE_DOC, 'Code and POD, reading directly';
+is slurp( JAVA_FILE ), JAVA_CODE_DOC, 'Code and doc, reading directly';
 
-is slurp( $java_resource ), JAVA_CODE_DOC, 'Code and POD, reading resource';
+is slurp( $java_resource ), JAVA_CODE_DOC, 'Code and doc, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Code and POD, text resource';
+is slurp( $text_resource ), TEXT_CONTENT, 'Code and doc, text resource';
 
 done_testing;
 

@@ -19,11 +19,14 @@ use constant SYNTAX_FILTER	=> 'App::AckX::Preflight::Syntax::Perl';
 use constant PERL_FILE	=> 't/data/perl_file.PL';
 
 use constant PERL_CODE	=> <<'EOD';
-   1: #!/usr/bin/env perl
    2:
    3: use strict;
    4: use warnings;
    5:
+EOD
+
+use constant PERL_COMMENTS	=> <<'EOD';
+   1: #!/usr/bin/env perl
 EOD
 
 use constant PERL_DATA	=> <<'EOD';
@@ -69,6 +72,17 @@ ok ! SYNTAX_FILTER->__want_everything(),
 is slurp( PERL_FILE ), PERL_CODE, 'Only code, reading directly';
 
 is slurp( $perl_resource ), PERL_CODE, 'Only code, reading resource';
+
+is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
+
+SYNTAX_FILTER->import( '-syntax=com' );
+
+ok ! SYNTAX_FILTER->__want_everything(),
+    q<'com' is not everything>;
+
+is slurp( PERL_FILE ), PERL_COMMENTS, 'Only code, reading directly';
+
+is slurp( $perl_resource ), PERL_COMMENTS, 'Only code, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
 

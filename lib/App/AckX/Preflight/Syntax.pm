@@ -179,6 +179,11 @@ filter. These can be anything, but for sanity's sake the following list
 
 This should be self-explanatory.
 
+=item com
+
+This is comments, both single-line and block comments that occupy whole
+lines. Inline documentation should be C<'doc'> if that can be managed.
+
 =item data
 
 This should represent data embedded in the program. In the case of Perl,

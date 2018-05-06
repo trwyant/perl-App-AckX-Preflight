@@ -12,7 +12,7 @@ use Carp;
 our $VERSION = '0.000_007';
 
 sub __handles_syntax {
-    return( qw{ code data doc } );
+    return( qw{ code com data doc } );
 }
 
 sub __handles_type {
@@ -41,6 +41,10 @@ sub __handles_type {
 		$self->{in} = 'doc';
 	    } elsif ( 'doc' eq $self->{in} ) {
 		# Nothing else can be in POD
+	    } elsif ( 'code' eq $self->{in} && $line =~ m/ \A \s* \# /smx ) {
+		$self->{want}{com}
+		    and return $line;
+		redo;
 	    } elsif ( $is_data{$line} ) {
 		$self->{in} = 'data';
 	    }
@@ -85,6 +89,8 @@ The supported syntax types are:
 =over
 
 =item code
+
+=item com (i.e. comments)
 
 =item data (non-POD stuff after __DATA__ and/or __END__)
 
