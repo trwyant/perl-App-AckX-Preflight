@@ -23,7 +23,7 @@ is_deeply [ My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::FilesFrom
-	App::AckX::Preflight::Plugin::PerlFile
+	App::AckX::Preflight::Plugin::Syntax
 	} ],
     'Plugins';
 
@@ -143,82 +143,76 @@ SKIP: {
 	    or diag 'Got ', explain xqt( $aaxp, qw{ fubar } );
 }
 
-$got = xqt( qw{ --perl-code } ),
+$got = xqt( qw{ --syntax=code } );
 is_deeply $got,
     [ qw{
 	perl
 	-Mblib
 	-MApp::AckX::Preflight::Resource
-	-MApp::AckX::Preflight::via::PerlFile=code
+	-MApp::AckX::Preflight::Syntax=-syntax=code
 	-S
 	ack
 	--project=t/data/project/_ackxprc
 	} ],
-    '--perl-code'
+    '--syntax=code'
 	or diag 'Got ', explain $got;
 
-$got = xqt( qw{ --perl-data } ),
+$got = xqt( qw{ --syntax data } );
 is_deeply $got,
     [ qw{
 	perl
 	-Mblib
 	-MApp::AckX::Preflight::Resource
-	-MApp::AckX::Preflight::via::PerlFile=data
+	-MApp::AckX::Preflight::Syntax=-syntax=data
 	-S
 	ack
 	--project=t/data/project/_ackxprc
 	} ],
-    '--perl-data'
+    '--syntax=data'
 	or diag 'Got ', explain $got;
 
-$got = xqt( qw{ --perl-pod } ),
+$got = xqt( qw{ --syntax doc } );
 is_deeply $got,
     [ qw{
 	perl
 	-Mblib
 	-MApp::AckX::Preflight::Resource
-	-MApp::AckX::Preflight::via::PerlFile=pod
+	-MApp::AckX::Preflight::Syntax=-syntax=doc
 	-S
 	ack
 	--project=t/data/project/_ackxprc
 	} ],
-    '--perl-pod'
+    '--syntax=doc'
 	or diag 'Got ', explain $got;
 
 {
-    $got = xqt( qw{ --perl-code --perl-pod } );
-
-    # We need the following 'no warnings' to prevent Perl from
-    # complaining about the comma in '...=code,pod' below.
-    # <rant>NO, I'M NOT TRYING TO DELIMIT A qw{} LIST WITH COMMAS. IF I
-    # WANTED A COMMA-DELIMITED LIST I WOULD NOT HAVE USED qw{} IN THE
-    # FIRST PLACE.</rant>.
-    # There. I feel much better now.
-    no warnings qw{ qw };
-
+    $got = xqt( qw{ --syntax code;doc } );
     is_deeply $got,
 	[ qw{
 	    perl
 	    -Mblib
 	    -MApp::AckX::Preflight::Resource
-	    -MApp::AckX::Preflight::via::PerlFile=code,pod
+	    -MApp::AckX::Preflight::Syntax=-syntax=code:doc
 	    -S
 	    ack
 	    --project=t/data/project/_ackxprc
 	    } ],
-	'--perl-code --perl-pod'
+	'--syntax code;doc'
 	    or diag 'Got ', explain $got;
 }
 
-$got = xqt( qw{ --perl-code --perl-data --perl-pod } ),
+$got = xqt( qw{ --syntax=code:data:doc } );
 is_deeply $got,
     [ qw{
 	perl
+	-Mblib
+	-MApp::AckX::Preflight::Resource
+	-MApp::AckX::Preflight::Syntax=-syntax=code:data:doc
 	-S
 	ack
 	--project=t/data/project/_ackxprc
 	} ],
-    '--perl-code --perl-data --perl-pod optimized out'
+    '--syntax=code:data:doc'
 	or diag 'Got ', explain $got;
 
 done_testing;

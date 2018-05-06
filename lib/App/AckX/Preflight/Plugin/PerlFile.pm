@@ -11,6 +11,8 @@ use parent qw{ App::AckX::Preflight::Plugin };
 
 our $VERSION = '0.000_007';
 
+use constant IN_SERVICE	=> 0;
+
 sub __options {
     return( qw{ perl-code perl-pod perl-data } );
 }

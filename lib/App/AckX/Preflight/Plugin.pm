@@ -11,6 +11,10 @@ our $VERSION = '0.000_007';
 
 use constant IN_SERVICE	=> 1;
 
+sub __normalize_options {
+    return;
+}
+
 sub __options {
     return;
 }
@@ -76,6 +80,15 @@ system, since not all CPAN clients remove stuff.
 
 The inherited value is true. You would normally only override this when
 a plug-in is no longer to be used.
+
+=head2 __normalize_options
+
+ $plugin_class->__normalize_options( \%opt );
+
+This static method normalizes the options in the given hash, massaging
+them as needed by the plug-in. If the plug-in has no options, or if the
+output of C<getoptionsfromarray()> is sufficient, there is no need to
+override this method.
 
 =head2 __options
 

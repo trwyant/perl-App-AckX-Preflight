@@ -48,6 +48,37 @@ can_ok 'App::AckX::Preflight::Plugin::PerlFile',
     qw{ IN_SERVICE __options __peek_opt __process }
     or BAIL_OUT;
 
+ok !App::AckX::Preflight::Plugin::PerlFile->IN_SERVICE,
+    'App::AckX::Preflight::Plugin::PerlFile is not in service';
+
+require_ok 'App::AckX::Preflight::Plugin::Syntax'
+    or BAIL_OUT $@;
+
+can_ok 'App::AckX::Preflight::Plugin::Syntax',
+    qw{ IN_SERVICE __options __peek_opt __process }
+    or BAIL_OUT;
+
+require_ok 'App::AckX::Preflight::Syntax'
+    or BAIL_OUT $@;
+
+can_ok 'App::AckX::Preflight::Syntax',
+    qw{ IN_SERVICE IS_EXHAUSTIVE __getopt __handles_syntax __handles_type }
+    or BAIL_OUT;
+
+require_ok 'App::AckX::Preflight::Syntax::Java'
+    or BAIL_OUT $@;
+
+can_ok 'App::AckX::Preflight::Syntax::Java',
+    qw{ IN_SERVICE IS_EXHAUSTIVE __getopt __handles_syntax __handles_type }
+    or BAIL_OUT;
+
+require_ok 'App::AckX::Preflight::Syntax::Perl'
+    or BAIL_OUT $@;
+
+can_ok 'App::AckX::Preflight::Syntax::Perl',
+    qw{ IN_SERVICE IS_EXHAUSTIVE __getopt __handles_syntax __handles_type }
+    or BAIL_OUT;
+
 done_testing;
 
 1;

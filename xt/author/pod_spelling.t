@@ -26,6 +26,7 @@ ASCIIbetical
 ASCIIbetically
 getopt
 hoc
+Javadoc
 merchantability
 preflight
 VMS

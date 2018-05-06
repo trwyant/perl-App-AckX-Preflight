@@ -176,11 +176,11 @@ EOD
 
     my @inject = @{ $self->{inject} };
 
+    List::Util::any { m/ \A -MApp::AckX::Preflight::Syntax \b /smx } @inject
+	and splice @inject, 0, 0, '-MApp::AckX::Preflight::Resource';
     if ( DEVELOPMENT &&
 	List::Util::any { m/ \A -MApp::AckX::Preflight\b /smx } @inject
     ) {
-	List::Util::any { m/ \A -MApp::AckX::Preflight::via\b /smx } @inject
-	    and splice @inject, 0, 0, '-MApp::AckX::Preflight::Resource';
 	splice @inject, 0, 0, '-Mblib';
     }
 

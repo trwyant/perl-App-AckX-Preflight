@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use App::Ack::Resource;
+use App::AckX::Preflight::Syntax;
 
 our $VERSION = '0.000_007';
 
@@ -43,20 +44,20 @@ our $VERSION = '0.000_007';
 		and goto $open;
 	}
 
-	# Scan the loaded modules for any of our PerlIO::via modules.
-	foreach my $relative_path ( keys %INC ) {
-	    $relative_path =~ m{ \b App / AckX / Preflight / via / ( \w+
-		) [.] pm \z }smx
-		or next;
+	# Foreach of the syntax filter plug-ins
+	foreach my $class ( App::AckX::Preflight::Syntax->__plugins() ) {
 
 	    # See if this resource is of the type serviced by this
-	    # module.
-	    my $class = "App::AckX::Preflight::via::$1";
-	    $self->__ackx_preflight__is_type( $class->type() )
+	    # module. If not, try the next.
+	    $self->__ackx_preflight__is_type( $class->__handles_type() )
 		or next;
 
-	    # If so, open the file, inserting the PerlIO::via module
-	    # into the mix.
+	    # If we want everything we don't need the filter.
+	    $class->__want_everything()
+		and goto $open;
+
+	    # Open the file, inserting the PerlIO::via module into the
+	    # mix.
 	    if ( !$self->{opened} ) {
 		if ( open $self->{fh},
 		    "<:via($class)",
@@ -72,8 +73,7 @@ our $VERSION = '0.000_007';
 	    return $self->{fh};
 	}
 
-	# If no PerlIO::via module found, use the normal open()
-	# machinery.
+	# If no syntax filter found, use the normal open() machinery.
 	goto $open;
     };
 }

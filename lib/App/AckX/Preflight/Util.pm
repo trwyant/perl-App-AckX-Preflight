@@ -86,6 +86,7 @@ sub __getopt_for_plugin {
     if ( my @spec = $plugin->__peek_opt() ) {
 	__getopt( [ @ARGV ], $opt, @spec );
     }
+    $plugin->__normalize_options( $opt );
     return $opt;
 }
 
