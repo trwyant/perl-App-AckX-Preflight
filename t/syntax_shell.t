@@ -102,13 +102,13 @@ ok SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is everything>, SYNTAX_CODE, SYNTAX_COMMENT;
 
 is slurp( SHELL_FILE ), SHELL_CODE_DOC,
-    'Code and documentation, reading directly';
+    'Code and comments, reading directly';
 
 is slurp( $java_resource ), SHELL_CODE_DOC,
-    'Code and documentation, reading resource';
+    'Code and comments, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT,
-    'Code and documentation, text resource';
+    'Code and comments, text resource';
 
 done_testing;
 
