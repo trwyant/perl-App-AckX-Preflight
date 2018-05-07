@@ -23,7 +23,7 @@ sub __handles_syntax {
 
 sub __handles_type {
     # TODO make this configurable
-    return( qw{ perl } );
+    return( qw{ perl perltest } );
 }
 
 {
