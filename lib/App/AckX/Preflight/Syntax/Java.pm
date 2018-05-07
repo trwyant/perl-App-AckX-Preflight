@@ -10,7 +10,7 @@ use parent qw{ App::AckX::Preflight::Syntax };
 use App::AckX::Preflight::Util qw{ :syntax };
 use Carp;
 
-our $VERSION = '0.000_007';
+our $VERSION = '0.000_008';
 
 sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION );

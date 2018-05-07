@@ -1,3 +1,14 @@
+0.000_008	2018-05-06	T. R. Wyant
+    Replace PerlFile plugin with generic Syntax plugin, supported by
+    PerlIO::via classes for each implemented language.  The idea is that
+    the kinds of things that get looked for are generic: code, comments,
+    documentation, data, and (potentially) other.
+
+    This was a fairly significant change that included:
+    - Ditching ::via::PerlFile in favor of ::Syntax::Perl
+    - Adding ::Syntax::Java and ::Syntax::Shell, more or less to
+      sanity-test the system.
+
 0.000_007	2018-05-03	T. R. Wyant
     Add the PerlFile plugin. This supports options -perl-code and
     -perl-pod, which causes only those portions of a Perl file to be

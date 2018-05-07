@@ -8,7 +8,7 @@ use warnings;
 use App::Ack::Resource;
 use App::AckX::Preflight::Syntax;
 
-our $VERSION = '0.000_007';
+our $VERSION = '0.000_008';
 
 {
 

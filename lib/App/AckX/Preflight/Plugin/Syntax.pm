@@ -12,7 +12,7 @@ use Text::Abbrev ();
 
 use parent qw{ App::AckX::Preflight::Plugin };
 
-our $VERSION = '0.000_007';
+our $VERSION = '0.000_008';
 
 # sub __normalize_options {...}
 *__normalize_options = \&App::AckX::Preflight::Syntax::__normalize_options;

@@ -11,7 +11,7 @@ use Module::Pluggable::Object 5.2;
 use List::Util 1.45 ();
 use Text::Abbrev ();
 
-our $VERSION = '0.000_007';
+our $VERSION = '0.000_008';
 
 our @EXPORT_OK = qw{
     __normalize_options

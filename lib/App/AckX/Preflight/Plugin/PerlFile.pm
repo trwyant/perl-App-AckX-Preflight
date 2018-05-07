@@ -9,7 +9,7 @@ use App::AckX::Preflight::Util qw{ __err_exclusive };
 
 use parent qw{ App::AckX::Preflight::Plugin };
 
-our $VERSION = '0.000_007';
+our $VERSION = '0.000_008';
 
 use constant IN_SERVICE	=> 0;
 
