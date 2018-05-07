@@ -25,7 +25,7 @@ sub slurp {
 	my $caller = caller;
 	my $syntax = $caller->SYNTAX_FILTER();
 	open $fh, "<:via($syntax)", $file
-	    or die "Failed to open $file: $!\n";
+	    or croak "Failed to open $file: $!\n";
     }
     my $rslt;
     while ( <$fh> ) {

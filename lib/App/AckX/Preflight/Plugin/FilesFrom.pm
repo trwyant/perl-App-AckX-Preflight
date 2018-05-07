@@ -20,7 +20,6 @@ use App::AckX::Preflight::Util qw{
     __open_for_read
     @CARP_NOT
 };
-# use Carp ();
 use File::Spec;
 
 use parent qw{ App::AckX::Preflight::Plugin };

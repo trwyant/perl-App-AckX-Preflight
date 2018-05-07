@@ -7,7 +7,6 @@ use warnings;
 
 use App::Ack ();
 use App::AckX::Preflight::Util qw{ :all };
-use Carp ();
 use Cwd ();
 use File::Basename ();
 use File::Spec;
@@ -53,7 +52,7 @@ use constant MAX_DEPTH		=> do {
 
 	foreach ( keys %arg ) {
 	    exists $default{$_}
-		or Carp::croak "Argument '$_' not supported";
+		or __die( "Argument '$_' not supported" );
 	}
 
 	foreach ( keys %default ) {
@@ -63,7 +62,7 @@ use constant MAX_DEPTH		=> do {
 
 	foreach ( qw{ global home } ) {
 	    -d $arg{$_}
-		or Carp::croak "Argument '$_' must be a directory";
+		or __die( "Argument '$_' must be a directory" );
 	}
 
 	$arg{disable}	= {};
@@ -235,7 +234,7 @@ sub __execute {
 	    my ( $self, @files ) = @_;
 
 	    ref $self
-		or Carp::confess(
+		or __die_hard(
 		'__filter_files() may not be called as static method' );
 
 	    if ( defined $self->{use_ack_filters} &&
@@ -449,8 +448,7 @@ sub _file_from_parts {
     my $names = ARRAY_REF eq ref $arg[-1] ? pop @arg : [ qw{ .ackxprc
 	_ackxprc } ];
     @arg
-	or Carp::confess(
-	'Progeamming error - No file parts specified' );
+	or __die_hard( 'No file parts specified' );
     my $path = @arg > 1 ? File::Spec->$method( @arg ) : $arg[0];
     -d $path
 	or return $path;

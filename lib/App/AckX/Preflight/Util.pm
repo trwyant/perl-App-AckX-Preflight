@@ -14,6 +14,7 @@ our $VERSION = '0.000_008';
 
 our @EXPORT_OK = qw{
     __die
+    __die_hard
     __err_exclusive
     __file_id
     __getopt
@@ -36,6 +37,7 @@ our @EXPORT_OK = qw{
 
 our %EXPORT_TAGS = (
     all		=> \@EXPORT_OK,
+    croak	=> [ qw{ __die __die_hard __warn } ],
     ref		=> [ grep { m/ _REF \z /smx } @EXPORT_OK ],
     syntax	=> [ grep { m/ \A SYNTAX_ /smx } @EXPORT_OK ],
 );
@@ -71,6 +73,16 @@ use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
 
 *__die = \&App::Ack::die;	# sub __die
 
+sub __die_hard {
+    my @arg = @_;
+    if ( @arg ) {
+	$arg[0] = "Programming error - $arg[0]";
+    } else {
+	@arg = ( 'Programming error' );
+    }
+    Carp::confess( @arg );
+}
+
 sub __file_id {
     my ( $path ) = @_;
     return FILE_ID_IS_INODE ?
@@ -95,7 +107,7 @@ sub __file_id {
 sub __err_exclusive {	## no critic (RequireFinalReturn)
     my @arg = @_;
     2 == @arg
-	or Carp::confess( '__err_exclusive() requires 2 arguments' );
+	or __die_hard( '__err_exclusive() requires 2 arguments' );
     __die( "Options --$arg[0] and --$arg[1] are mutually exclusive." );
 }
 
@@ -159,6 +171,13 @@ default.
  __die( 'Goodbye, cruel world!' );
 
 This subroutine is really just an alias for C<App::Ack::die()>.
+
+=head2 __die_hard
+
+ __die_hard( 'Spewing my guts' );
+
+This subroutine prefixes C<'Programming error - '> to its arguments and
+then calls C<Carp::confess()>.
 
 =head2 __err_exclusive
 
@@ -276,6 +295,11 @@ The following export tags can be used.
 =head2 all
 
 This tag exports everything that can be exported.
+
+=head2 croak
+
+This tag exports L<__die|/__die>, L<__die_hard|/__die_hard>, and
+L<__warn|/__warn>.
 
 =head2 ref
 

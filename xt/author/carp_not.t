@@ -9,6 +9,10 @@ use ExtUtils::Manifest qw{ maniread };
 use App::AckX::Preflight::Util qw{ @CARP_NOT };
 use Test::More 0.88;	# Because of done_testing();
 
+my %carp_allowed = map { $_ => 1 } qw{
+    App::AckX::Preflight::Util
+};
+
 my @modules;
 foreach my $fn ( sort keys %{ maniread() } ) {
     local $_ = $fn;
@@ -29,6 +33,20 @@ foreach my $fn ( sort keys %{ maniread() } ) {
 	my $stash = "${_}::";
 	no strict qw{ refs };
 	ok defined $$stash{CARP_NOT}, "$_ assigns \@CARP_NOT";
+    }
+
+    SKIP: {
+	$carp_allowed{$_}
+	    and skip "'use Carp;' is allowed in $_";
+
+	local $/ = undef;
+	open my $fh, '<', $fn
+	    or die "Failed to open $fn: $!";
+	my $content = <$fh>;
+	close $fh;
+
+	ok $content !~ m/ \b use \s+ Carp \b /smx,
+	    "$_ should not 'use Carp;'";
     }
 }
 is_deeply \@CARP_NOT, \@modules,

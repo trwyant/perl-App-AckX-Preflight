@@ -7,7 +7,6 @@ use warnings;
 
 use App::AckX::Preflight::Syntax;
 use App::AckX::Preflight::Util qw{ @CARP_NOT };
-use Carp;
 use List::Util 1.45 ();
 use Text::Abbrev ();
 

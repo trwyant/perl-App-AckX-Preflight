@@ -5,8 +5,7 @@ use 5.008008;
 use strict;
 use warnings;
 
-use Carp ();
-use App::AckX::Preflight::Util qw{ @CARP_NOT };
+use App::AckX::Preflight::Util qw{ :croak @CARP_NOT };
 
 our $VERSION = '0.000_008';
 
@@ -25,7 +24,7 @@ sub __peek_opt {
 }
 
 sub __process {
-    Carp::confess( '__process() must be overridden' );
+    __die_hard( '__process() must be overridden' );
 }
 
 1;

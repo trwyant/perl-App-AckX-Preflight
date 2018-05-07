@@ -11,7 +11,6 @@ use App::AckX::Preflight::Util qw{
     :syntax
     @CARP_NOT
 };
-use Carp;
 
 our $VERSION = '0.000_008';
 

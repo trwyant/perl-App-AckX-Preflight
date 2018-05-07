@@ -6,10 +6,10 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight::Util qw{
+    :croak
     :syntax
     @CARP_NOT
 };
-use Carp;
 use Module::Pluggable::Object 5.2;
 use List::Util 1.45 ();
 use Text::Abbrev ();
@@ -35,7 +35,7 @@ sub __getopt {
 	qw{ syntax=s@ } );
     if ( @{ $arg } ) {
 	local $" = ', ';
-	croak "Unsupported arguments @{ $arg }";
+	__die( "Unsupported arguments @{ $arg }" );
     }
     $class->__normalize_options( $opt );
     return $opt;
@@ -51,11 +51,12 @@ sub import {
 }
 
 sub __handles_syntax {
-    confess 'Programming error - __handles_syntax() must be overridden';
+    __die_hard(
+	'__handles_syntax() must be overridden' );
 }
 
 sub __handles_type {
-    confess 'Programming error - __handles_type() must be overridden';
+    __die_hard( '__handles_type() must be overridden' );
 }
 
 {
@@ -75,7 +76,7 @@ sub __handles_type {
 	if ( $opt->{syntax} ) {
 	    @{ $opt->{syntax} } = sort { $a cmp $b } List::Util::uniqstr(
 		map { $syntax_abbrev->{$_} || 
-		    croak "Unsupported syntax type '$_'" }
+		    __die( "Unsupported syntax type '$_'" ) }
 		map { split qr{ \s* [:;,] \s* }smx }
 		@{ $opt->{syntax} } );
 	}
