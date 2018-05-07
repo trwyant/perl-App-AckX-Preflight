@@ -14,31 +14,11 @@ use parent qw{ App::AckX::Preflight::Plugin };
 
 our $VERSION = '0.000_007';
 
+# sub __normalize_options {...}
+*__normalize_options = \&App::AckX::Preflight::Syntax::__normalize_options;
+
 sub __options {
     return( qw{ syntax=s@ } );
-}
-
-{
-    my $syntax_abbrev;
-
-    sub __normalize_options {
-	my ( undef, $opt ) = @_;
-
-	$syntax_abbrev ||= Text::Abbrev::abbrev(
-	    List::Util::uniqstr(
-		map { $_->__handles_syntax() }
-		App::AckX::Preflight::Syntax->__plugins() ) );
-
-	if ( $opt->{syntax} ) {
-	    @{ $opt->{syntax} } = sort { $a cmp $b } List::Util::uniqstr(
-		map { $syntax_abbrev->{$_} || 
-		    _err_unsupported_syntax_type( $_ ) }
-		map { split qr{ \s* [:;,] \s* }smx }
-		@{ $opt->{syntax} } );
-	}
-
-	return;
-    }
 }
 
 sub __process {
@@ -53,11 +33,6 @@ sub __process {
 
     return;
 
-}
-
-sub _err_unsupported_syntax_type {
-    my ( $type ) = @_;
-    croak "Unsupported syntax type '$type'";
 }
 
 
@@ -105,6 +80,12 @@ data.
 This is structured inline documentation. For Perl it would be POD. For
 Java it would be Javadoc, which would B<not> also be considered a
 comment, even though functionally that is exactly what it is.
+
+=item other
+
+This is a catch-all category; you will have to consult the documentation
+for the individual syntax filters to see what (if anything) gets put
+into this category.
 
 =back
 

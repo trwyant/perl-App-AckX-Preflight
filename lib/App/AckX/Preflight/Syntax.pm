@@ -5,11 +5,17 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Util ();
+use App::AckX::Preflight::Util qw{ :syntax };
 use Carp;
 use Module::Pluggable::Object 5.2;
+use List::Util 1.45 ();
+use Text::Abbrev ();
 
 our $VERSION = '0.000_007';
+
+our @EXPORT_OK = qw{
+    __normalize_options
+};
 
 use constant IN_SERVICE		=> 1;
 use constant IS_EXHAUSTIVE	=> 1;
@@ -28,21 +34,7 @@ sub __getopt {
 	local $" = ', ';
 	croak "Unsupported arguments @{ $arg }";
     }
-    if ( $opt->{syntax} && @{ $opt->{syntax} } ) {
-	@{ $opt->{syntax} } = map { split qr{ [:;,] }smx }
-	    @{ $opt->{syntax} };
-	my %type_used = map { $_ => 1 } @{ $opt->{syntax} };
-	foreach my $plugin ( $class->__plugins() ) {
-	    foreach my $type ( $plugin->__handles_syntax() ) {
-		delete $type_used{$type};
-	    }
-	}
-	if ( keys %type_used ) {
-	    croak "Unsupported syntax types: @{[ sort keys %type_used ]}";
-	}
-    } else {
-	delete $opt->{syntax};
-    }
+    $class->__normalize_options( $opt );
     return $opt;
 }
 
@@ -61,6 +53,32 @@ sub __handles_syntax {
 
 sub __handles_type {
     confess 'Programming error - __handles_type() must be overridden';
+}
+
+{
+    my $syntax_abbrev;
+
+    sub __normalize_options {
+	my ( undef, $opt ) = @_;
+
+	$syntax_abbrev ||= Text::Abbrev::abbrev(
+	    SYNTAX_CODE,
+	    SYNTAX_COMMENT,
+	    SYNTAX_DATA,
+	    SYNTAX_DOCUMENTATION,
+	    SYNTAX_OTHER,
+	);
+
+	if ( $opt->{syntax} ) {
+	    @{ $opt->{syntax} } = sort { $a cmp $b } List::Util::uniqstr(
+		map { $syntax_abbrev->{$_} || 
+		    croak "Unsupported syntax type '$_'" }
+		map { split qr{ \s* [:;,] \s* }smx }
+		@{ $opt->{syntax} } );
+	}
+
+	return;
+    }
 }
 
 {
