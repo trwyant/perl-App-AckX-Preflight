@@ -10,7 +10,10 @@ require_ok 'App::AckX::Preflight::Util'
 
 can_ok 'App::AckX::Preflight::Util', qw{
     ARRAY_REF HASH_REF SCALAR_REF
-    __die __getopt __getopt_for_plugin __open_for_read __warn
+    SYNTAX_CODE SYNTAX_COMMENT SYNTAX_DATA SYNTAX_DOCUMENTATION
+	SYNTAX_OTHER
+    __die __err_exclusive __file_id
+    __getopt __getopt_for_plugin __open_for_read __warn
     }
     or BAIL_OUT;
 
@@ -20,64 +23,64 @@ require_ok 'App::AckX::Preflight'
 can_ok 'App::AckX::Preflight', qw{ new global home run }
     or BAIL_OUT;
 
-require_ok 'App::AckX::Preflight::Plugin'
-    or BAIL_OUT $@;
+note 'Plugins';
 
-can_ok 'App::AckX::Preflight::Plugin',
-    qw{ IN_SERVICE __options __peek_opt __process }
-    or BAIL_OUT;
+foreach ( qw{
+	App::AckX::Preflight::Plugin
+	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::FilesFrom
+	-App::AckX::Preflight::Plugin::PerlFile
+	App::AckX::Preflight::Plugin::Syntax
+    } ) {
 
-require_ok 'App::AckX::Preflight::Plugin::File'
-    or BAIL_OUT $@;
+    my $class = $_;
 
-can_ok 'App::AckX::Preflight::Plugin::File',
-    qw{ IN_SERVICE __options __peek_opt __process }
-    or BAIL_OUT;
+    my $in_service = ( $class =~ s/ \A - //smx ) ? 0 : 1;
 
-require_ok 'App::AckX::Preflight::Plugin::FilesFrom'
-    or BAIL_OUT $@;
+    require_ok $class
+	or BAIL_OUT $@;
 
-can_ok 'App::AckX::Preflight::Plugin::FilesFrom',
-    qw{ IN_SERVICE __options __peek_opt __process }
-    or BAIL_OUT;
+    can_ok $class, qw{
+	IN_SERVICE
+	__normalize_options
+	__options
+	__peek_opt
+	__process
+    };
 
-require_ok 'App::AckX::Preflight::Plugin::PerlFile'
-    or BAIL_OUT $@;
+    cmp_ok $class->IN_SERVICE, '==', $in_service,
+	"$class is@{[ $in_service ? ' ' : ' not ' ]}in service";
 
-can_ok 'App::AckX::Preflight::Plugin::PerlFile',
-    qw{ IN_SERVICE __options __peek_opt __process }
-    or BAIL_OUT;
+}
 
-ok !App::AckX::Preflight::Plugin::PerlFile->IN_SERVICE,
-    'App::AckX::Preflight::Plugin::PerlFile is not in service';
+note 'Syntax filters';
 
-require_ok 'App::AckX::Preflight::Plugin::Syntax'
-    or BAIL_OUT $@;
+foreach my $class ( qw{
+	App::AckX::Preflight::Syntax
+	App::AckX::Preflight::Syntax::Cc
+	App::AckX::Preflight::Syntax::Java
+	App::AckX::Preflight::Syntax::Perl
+	App::AckX::Preflight::Syntax::Shell
+    } ) {
 
-can_ok 'App::AckX::Preflight::Plugin::Syntax',
-    qw{ IN_SERVICE __options __peek_opt __process }
-    or BAIL_OUT;
+    require_ok $class
+	or BAIL_OUT $@;
 
-require_ok 'App::AckX::Preflight::Syntax'
-    or BAIL_OUT $@;
+    can_ok $class, qw{
+	IN_SERVICE
+	IS_EXHAUSTIVE
+	__getopt
+	__handles_syntax
+	__handles_type
+	import
+	__normalize_options
+	__plugins
+	__want_everything
+	__want_syntax
+    }
+	or BAIL_OUT;
 
-can_ok 'App::AckX::Preflight::Syntax',
-    qw{ IN_SERVICE IS_EXHAUSTIVE __getopt __handles_syntax __handles_type }
-    or BAIL_OUT;
-
-require_ok 'App::AckX::Preflight::Syntax::Java'
-    or BAIL_OUT $@;
-
-can_ok 'App::AckX::Preflight::Syntax::Java',
-    qw{ IN_SERVICE IS_EXHAUSTIVE __getopt __handles_syntax __handles_type }
-    or BAIL_OUT;
-
-require_ok 'App::AckX::Preflight::Syntax::Perl'
-    or BAIL_OUT $@;
-
-can_ok 'App::AckX::Preflight::Syntax::Perl',
-    qw{ IN_SERVICE IS_EXHAUSTIVE __getopt __handles_syntax __handles_type }
-    or BAIL_OUT;
+}
 
 done_testing;
 
