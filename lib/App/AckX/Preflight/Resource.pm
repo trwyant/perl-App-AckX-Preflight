@@ -7,6 +7,7 @@ use warnings;
 
 use App::Ack::Resource;
 use App::AckX::Preflight::Syntax;
+use App::AckX::Preflight::Util qw{ @CARP_NOT };
 
 our $VERSION = '0.000_008';
 

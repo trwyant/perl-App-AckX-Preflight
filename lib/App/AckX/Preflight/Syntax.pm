@@ -5,7 +5,10 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Util qw{ :syntax };
+use App::AckX::Preflight::Util qw{
+    :syntax
+    @CARP_NOT
+};
 use Carp;
 use Module::Pluggable::Object 5.2;
 use List::Util 1.45 ();

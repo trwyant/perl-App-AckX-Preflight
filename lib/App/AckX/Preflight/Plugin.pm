@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use Carp ();
+use App::AckX::Preflight::Util qw{ @CARP_NOT };
 
 our $VERSION = '0.000_008';
 

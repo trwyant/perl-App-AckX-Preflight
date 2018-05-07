@@ -16,7 +16,10 @@ use App::Ack::Filter::Is;
 use App::Ack::Filter::IsPath;
 use App::Ack::Filter::Match;
 use App::Ack::Resource;
-use App::AckX::Preflight::Util qw{ __open_for_read };
+use App::AckX::Preflight::Util qw{
+    __open_for_read
+    @CARP_NOT
+};
 # use Carp ();
 use File::Spec;
 

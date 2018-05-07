@@ -30,6 +30,8 @@ our @EXPORT_OK = qw{
     SYNTAX_DATA
     SYNTAX_DOCUMENTATION
     SYNTAX_OTHER
+
+    @CARP_NOT
 };
 
 our %EXPORT_TAGS = (
@@ -37,6 +39,22 @@ our %EXPORT_TAGS = (
     ref		=> [ grep { m/ _REF \z /smx } @EXPORT_OK ],
     syntax	=> [ grep { m/ \A SYNTAX_ /smx } @EXPORT_OK ],
 );
+
+our @CARP_NOT = qw{
+    App::AckX::Preflight
+    App::AckX::Preflight::Plugin
+    App::AckX::Preflight::Plugin::File
+    App::AckX::Preflight::Plugin::FilesFrom
+    App::AckX::Preflight::Plugin::PerlFile
+    App::AckX::Preflight::Plugin::Syntax
+    App::AckX::Preflight::Resource
+    App::AckX::Preflight::Syntax
+    App::AckX::Preflight::Syntax::Cc
+    App::AckX::Preflight::Syntax::Java
+    App::AckX::Preflight::Syntax::Perl
+    App::AckX::Preflight::Syntax::Shell
+    App::AckX::Preflight::Util
+};
 
 use constant ARRAY_REF	=> ref [];
 use constant HASH_REF	=> ref {};

@@ -7,7 +7,10 @@ use warnings;
 
 use parent qw{ App::AckX::Preflight::Syntax };
 
-use App::AckX::Preflight::Util qw{ :syntax };
+use App::AckX::Preflight::Util qw{
+    :syntax
+    @CARP_NOT
+};
 use Carp;
 
 our $VERSION = '0.000_008';
