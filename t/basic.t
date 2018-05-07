@@ -82,3 +82,5 @@ can_ok 'App::AckX::Preflight::Syntax::Perl',
 done_testing;
 
 1;
+
+# ex: set textwidth=72 :
