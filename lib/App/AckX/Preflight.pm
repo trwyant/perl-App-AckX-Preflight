@@ -104,7 +104,7 @@ sub run {
     $self->{disable} = {};
 
     __getopt( $opt,
-	qw{ ack-filters! },
+	qw{ ack-filters! verbose! },
 	'disable=s'	=> sub {
 	    my ( undef, $plugin ) = @_;
 	    $plugin =~ m/ :: /smx
@@ -183,6 +183,7 @@ EOD
 	splice @inject, 0, 0, '-Mblib';
     }
 
+    local $self->{verbose} = $opt->{verbose};
 
     return $self->__execute(
 	perl		=> @inject,
@@ -190,7 +191,20 @@ EOD
 }
 
 sub __execute {
-    my ( undef, @arg ) = @_;	# Invocant unused
+    my ( $self, @arg ) = @_;
+
+    if ( ref $self && $self->{verbose} ) {
+	my @out;
+	foreach my $in ( @arg ) {
+	    if ( $in =~ m/ [\s'"\\] /smx ) {
+		( my $temp = $in ) =~ s/ (?= ["\\] ) /\\/smxg;
+		push @out, qq<"$temp">;
+	    } else {
+		push @out, $in;
+	    }
+	}
+	print STDERR "\$ @out\n";
+    }
 
     exec { $arg[0] } @arg
 	or __die( "Failed to exec $arg[0]: $!" );
@@ -802,6 +816,12 @@ All other arguments to C<--help> are invalid and result in an error.
 =item C<--man>
 
 This is a synonym for C<--help>, and takes the same optional arguments.
+
+=item C<--verbose>
+
+This causes C<App::AckX::Preflight> to write certain information to
+standard error. The exact nature of this information is undocumented,
+and subject to change without notice.
 
 =item C<--version>
 
