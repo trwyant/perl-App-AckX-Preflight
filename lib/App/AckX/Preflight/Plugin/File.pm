@@ -13,7 +13,7 @@ use parent qw{ App::AckX::Preflight::Plugin };
 our $VERSION = '0.000_008';
 
 sub __options {
-    return( qw{ file=s literal|Q! } );
+    return( qw{ file=s } );
 }
 
 sub __peek_opt {
@@ -31,6 +31,9 @@ sub __process {
     # implemented using --match.
     defined $opt->{match}
 	and __err_exclusive( qw{ file match } );
+
+    # We need --literal if it is there.
+    __getopt( $opt, qw{ literal|Q! } );
 
     # Read the file, or die.
     my $fh = __open_for_read( $opt->{file} );

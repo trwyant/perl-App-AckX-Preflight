@@ -22,7 +22,7 @@ my @want;
 
 @got = PLUGIN->__options();
 is_deeply \@got,
-    [ qw{ file=s literal|Q! } ],
+    [ qw{ file=s } ],
     'Options'
     or diag explain 'Got ', @got;
 
@@ -71,7 +71,9 @@ is_deeply \@got,
 
 
 @got = prs( qw{ --file=t/data/foo --literal } ),
-@want = ( { file => 't/data/foo', literal => 1 } );
+# The following _is_ really what we want, because the --literal is not
+# parsed out of the command line until we know we have the --file.
+@want = ( { file => 't/data/foo' }, '--literal' );
 is_deeply \@got, \@want,
     q<Parse '--file=t/data/foo --literal'>
     or diag explain 'Got ', \@got;
