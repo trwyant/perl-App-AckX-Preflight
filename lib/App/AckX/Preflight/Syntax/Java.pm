@@ -5,7 +5,7 @@ use 5.008008;
 use strict;
 use warnings;
 
-use parent qw{ App::AckX::Preflight::Syntax };
+use parent qw{ App::AckX::Preflight::Syntax::_cc_like };
 
 use App::AckX::Preflight::Util qw{
     :syntax
@@ -20,47 +20,18 @@ sub __handles_syntax {
 
 sub __handles_type {
     # TODO make this configurable
-    return( qw{ java } );
+    # C++ uses the same comment syntax. In fact, Doxygen-format in-line
+    # documentation uses '/**' to introduce it.
+    return( qw{ java cpp } );
 }
 
-sub FILL {
-    my ( $self, $fh ) = @_;
-    {
-	defined( my $line = <$fh> )
-	    or last;
-	if ( $line =~ m< [*] / >smx ) {
-	    my $was = $self->{in};
-	    $self->{in} = SYNTAX_CODE;
-	    # We have to hand-dispatch the line because although the
-	    # next line is code, the end of the block comment is doc.
-	    $self->{want}{$was}
-		and return $line;
-	    redo;
-	} elsif ( $line =~ m< \A \s* / ( [*]+ ) >smx ) {
-	    $self->{in} = 1 < length $1 ?
-		SYNTAX_DOCUMENTATION :
-		SYNTAX_COMMENT;
-	} elsif ( SYNTAX_CODE eq $self->{in} && $line =~ m< \A \s* // >smx ) {
-	    $self->{want}{ SYNTAX_COMMENT() }
-		and return $line;
-	    redo;
-	}
-	$self->{want}{$self->{in}}
-	    and return $line;
-	redo;
-    }
-    return;
+sub __in_line_documentation_re {
+    return qr{ \A \s* / [*] [*] }smx;
 }
 
-sub PUSHED {
-#   my ( $class, $mode, $fh ) = @_;
-    my ( $class ) = @_;
-    return bless {
-	in	=> SYNTAX_CODE,
-	want	=> $class->__want_syntax(),
-    }, ref $class || $class;
+sub __single_line_comment_re {
+    return qr{ \A \s* // }smx;
 }
-
 
 1;
 
@@ -77,8 +48,8 @@ No direct user interaction.
 =head1 DESCRIPTION
 
 This L<PerlIO::via|PerlIO::via> I/O layer is intended to be used by
-L<App::AckX::Preflight|App::AckX::Preflight> to process a Java file,
-returning only those lines the user has requested.
+L<App::AckX::Preflight|App::AckX::Preflight> to process a Java or C++
+file, returning only those lines the user has requested.
 
 The supported syntax types are:
 

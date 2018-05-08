@@ -5,7 +5,7 @@ use 5.008008;
 use strict;
 use warnings;
 
-use parent qw{ App::AckX::Preflight::Syntax };
+use parent qw{ App::AckX::Preflight::Syntax::_cc_like };
 
 use App::AckX::Preflight::Util qw{
     :syntax
@@ -22,39 +22,6 @@ sub __handles_type {
     # TODO make this configurable
     return( qw{ cc } );
 }
-
-sub FILL {
-    my ( $self, $fh ) = @_;
-    {
-	defined( my $line = <$fh> )
-	    or last;
-	if ( $line =~ m< [*] / >smx ) {
-	    $self->{in} = SYNTAX_CODE;
-	    # We have to hand-dispatch the line because although the
-	    # next line is code, the end of the block comment is a
-	    # comment.
-	    $self->{want}{ SYNTAX_COMMENT() }
-		and return $line;
-	    redo;
-	} elsif ( $line =~ m< \A \s* / ( [*]+ ) >smx ) {
-	    $self->{in} = SYNTAX_COMMENT;
-	}
-	$self->{want}{$self->{in}}
-	    and return $line;
-	redo;
-    }
-    return;
-}
-
-sub PUSHED {
-#   my ( $class, $mode, $fh ) = @_;
-    my ( $class ) = @_;
-    return bless {
-	in	=> SYNTAX_CODE,
-	want	=> $class->__want_syntax(),
-    }, ref $class || $class;
-}
-
 
 1;
 

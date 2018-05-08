@@ -97,7 +97,10 @@ sub __handles_type {
 	    search_path	=> PLUGIN_SEARCH_PATH,
 	);
 	return (
-	    grep { $_->IN_SERVICE } $mpo->plugins() );
+	    grep {
+		$_->IN_SERVICE &&
+		m/ \b [[:alpha:]] \w* \z /smx
+	    } $mpo->plugins() );
     }
 }
 
@@ -137,7 +140,8 @@ L<PerlIO::via|PerlIO::via>-style input filters that return only lines of
 code that are of the requested syntax types.
 
 Syntax filters are required to be named
-C<App::AckX::Preflight::Syntax::something-or-other>. Because this is
+C<App::AckX::Preflight::Syntax::something-or-other>, where the
+C<something-or-other> may not begin with an underscore. Because this is
 Perl, they need not subclass this class, but if not they B<must> conform
 to its interface.
 

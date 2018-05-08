@@ -19,6 +19,7 @@ lib/App/AckX/Preflight/Syntax/Cc.pm
 lib/App/AckX/Preflight/Syntax/Java.pm
 lib/App/AckX/Preflight/Syntax/Perl.pm
 lib/App/AckX/Preflight/Syntax/Shell.pm
+lib/App/AckX/Preflight/Syntax/_cc_like.pm
 lib/App/AckX/Preflight/Util.pm
 LICENSES/Artistic
 LICENSES/Copying

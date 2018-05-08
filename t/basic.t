@@ -57,6 +57,7 @@ note 'Syntax filters';
 
 foreach my $class ( qw{
 	App::AckX::Preflight::Syntax
+	App::AckX::Preflight::Syntax::_cc_like
 	App::AckX::Preflight::Syntax::Cc
 	App::AckX::Preflight::Syntax::Java
 	App::AckX::Preflight::Syntax::Perl
