@@ -14,7 +14,7 @@ use Scalar::Util qw{ blessed openhandle };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
-use My::Module::TestSyntax;	# for slurp()
+use My::Module::TestSyntax;	# for slurp() and TEXT_*
 
 use constant SYNTAX_FILTER	=> 'App::AckX::Preflight::Syntax::Perl';
 use constant PERL_FILE	=> 't/data/perl_file.PL';
@@ -46,16 +46,6 @@ use constant PERL_DOC	=> <<'EOD';
 EOD
 
 use constant PERL_CODE_DOC => PERL_CODE . PERL_DOC;
-
-use constant TEXT_FILE	=> 't/data/text_file.txt';
-
-use constant TEXT_CONTENT	=> <<'EOD';
-   1: There was a young lady named Bright,
-   2: Who could travel much faster than light.
-   3:     She set out one day
-   4:     In a relative way
-   5: And returned the previous night.
-EOD
 
 $App::Ack::mappings{perl} = [
     App::Ack::Filter::Extension->new( qw{ PL } ),

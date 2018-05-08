@@ -11,7 +11,22 @@ use Scalar::Util qw{ blessed openhandle };
 
 our $VERSION = '0.000_008';
 
-our @EXPORT = qw{ slurp };
+our @EXPORT = qw{
+    slurp
+
+    TEXT_FILE
+    TEXT_CONTENT
+};
+
+use constant TEXT_FILE	=> 't/data/text_file.txt';
+
+use constant TEXT_CONTENT	=> <<'EOD';
+   1: There was a young lady named Bright,
+   2: Who could travel much faster than light.
+   3:     She set out one day
+   4:     In a relative way
+   5: And returned the previous night.
+EOD
 
 sub slurp {
     my ( $file ) = @_;

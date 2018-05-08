@@ -13,7 +13,7 @@ use App::AckX::Preflight::Util qw{ :syntax };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
-use My::Module::TestSyntax;	# for slurp()
+use My::Module::TestSyntax;	# for slurp() and TEXT_*
 
 use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Shell';
 
@@ -54,16 +54,6 @@ use constant SHELL_CODE_DOC => <<'EOD';
   12: # merchantability or fitness for a particular purpose.
   13:
   14: # ex: set textwidth=72 :
-EOD
-
-use constant TEXT_FILE	=> 't/data/text_file.txt';
-
-use constant TEXT_CONTENT	=> <<'EOD';
-   1: There was a young lady named Bright,
-   2: Who could travel much faster than light.
-   3:     She set out one day
-   4:     In a relative way
-   5: And returned the previous night.
 EOD
 
 $App::Ack::mappings{shell} = [
