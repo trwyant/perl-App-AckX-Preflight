@@ -14,7 +14,7 @@ use Module::Pluggable::Object 5.2;
 use List::Util 1.45 ();	# for uniqstr
 use Text::Abbrev ();
 
-our $VERSION = '0.000_008';
+our $VERSION = '0.000_009';
 
 our @EXPORT_OK = qw{
     __normalize_options

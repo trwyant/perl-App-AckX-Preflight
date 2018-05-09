@@ -1,3 +1,29 @@
+0.000_009	2018-05-08	T. R. Wyant
+    Keep ::Plugin::File from wrongly using --literal.
+
+    Add syntax filters for C and SQL.
+
+    Add C++ ('cpp') as a file type for the Java syntax filter.
+
+    Add .t ('perltest') as a file type for the Perl syntax filter. It
+    may be redundant, but it is also relevant.
+
+    Make file types processed by syntax filters configurable.
+    This is done with command-line options analogous to file type
+    definition, to wit:
+	--syntax-add=Filter:file-type...
+	    adds the file types to the filter;
+	--syntax-del=Filter:file-type...
+	    removes the file types from the filter;
+	--syntax-set=Filter:file-type...
+	    replaces all file types for the filter
+    The Filter argument is for App::AckX::Preflight::Syntax, and is omitted
+    if called directly on the filter.
+
+    Add --verbose to App::AckX::Preflight->run().  At the moment this
+    writes the generated command to standard error.  But the
+    documentation makes no commitments.
+
 0.000_008	2018-05-06	T. R. Wyant
     Replace PerlFile plugin with generic Syntax plugin, supported by
     PerlIO::via classes for each implemented language.  The idea is that
