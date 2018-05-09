@@ -5,7 +5,6 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::Ack;
 use App::AckX::Preflight::Util qw{ :all };
 
 use parent qw{ App::AckX::Preflight::Plugin };

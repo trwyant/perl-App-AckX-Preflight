@@ -5,17 +5,6 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::Ack::ConfigLoader;
-use App::Ack::Filter ();
-use App::Ack::Filter::Collection;
-use App::Ack::Filter::Default;
-use App::Ack::Filter::Extension;
-use App::Ack::Filter::FirstLineMatch;
-use App::Ack::Filter::Inverse;
-use App::Ack::Filter::Is;
-use App::Ack::Filter::IsPath;
-use App::Ack::Filter::Match;
-use App::Ack::Resource;
 use App::AckX::Preflight::Util qw{
     __open_for_read
     @CARP_NOT

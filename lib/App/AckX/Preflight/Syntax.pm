@@ -185,7 +185,6 @@ sub __handles_syntax {
 	$mpo ||= Module::Pluggable::Object->new(
 	    inner	=> 0,
 	    max_depth	=> PLUGIN_MAX_DEPTH,
-	    package	=> __PACKAGE__,
 	    require	=> 1,
 	    search_path	=> PLUGIN_SEARCH_PATH,
 	);

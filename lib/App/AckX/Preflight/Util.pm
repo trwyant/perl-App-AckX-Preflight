@@ -5,7 +5,6 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::Ack ();
 use Carp ();
 use Exporter qw{ import };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
@@ -74,7 +73,9 @@ use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
     qw{ dos os2 MSWin32 VMS } }->{$^O};
 
 sub __die {
-    goto $Carp::Verbose ? \&Carp::confess : \&App::Ack::die;
+    $Carp::Verbose
+	and goto &Carp::confess;
+    return CORE::die( _me(), ': ', @_, "\n" );
 }
 
 sub __die_hard {
@@ -108,7 +109,7 @@ sub __file_id {
     }
 }
 
-sub __err_exclusive {	## no critic (RequireFinalReturn)
+sub __err_exclusive {
     my @arg = @_;
     2 == @arg
 	or __die_hard( '__err_exclusive() requires 2 arguments' );
@@ -137,14 +138,20 @@ sub __getopt_for_plugin {
     return $opt;
 }
 
+sub _me {
+    return( ( File::Spec->splitpath( $0 ) )[2] );
+}
+
 sub __open_for_read {
     my ( $path ) = @_;
     open my $fh, '<:encoding(utf-8)', $path
-	or App::Ack::die( "Unable to open $path: $!" );
+	or __die( "Unable to open $path: $!" );
     return $fh;
 }
 
-*__warn = \&App::Ack::warn;	# sub __warn
+sub __warn {
+    return CORE::warn( _me(), ': ', @_, "\n" );
+}
 
 1;
 

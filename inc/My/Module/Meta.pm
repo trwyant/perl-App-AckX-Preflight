@@ -19,6 +19,7 @@ sub new {
 
 sub build_requires {
     return +{
+	'App::Ack::Filter::Extension'	=> 0,
 	'lib'		=> 0,		# To load inc/ stuff.
 	'Scalar::Util'	=> 0,		# For blessed(), openhandle().
 	'Test::More'	=> 0.88,	# Because of done_testing().
@@ -71,21 +72,12 @@ sub requires {
     return +{
 	'App::Ack'			=> 0,
 	'App::Ack::ConfigLoader'	=> 0,
-	'App::Ack::Filter'		=> 0,
 	'App::Ack::Filter::Collection'	=> 0,
-	'App::Ack::Filter::Default'	=> 0,
-	'App::Ack::Filter::Extension'	=> 0,
-	'App::Ack::Filter::FirstLineMatch'	=> 0,
-	'App::Ack::Filter::Inverse'	=> 0,
-	'App::Ack::Filter::Is'		=> 0,
-	'App::Ack::Filter::IsPath'	=> 0,
-	'App::Ack::Filter::Match'	=> 0,
 	'App::Ack::Resource'		=> 0,
 	'Carp'				=> 0,
 	'Cwd'				=> 0,
 	'Exporter'			=> 0,
 	'ExtUtils::Manifest'		=> 0,
-	'File::Basename'		=> 0,
 	'File::Spec'			=> 0,
 	'Getopt::Long'			=> 2.39,	# getoptionsfromarray
 	'List::Util'			=> 1.45,	# uniqstr

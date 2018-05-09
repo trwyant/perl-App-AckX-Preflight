@@ -8,7 +8,6 @@ use warnings;
 use App::Ack ();
 use App::AckX::Preflight::Util qw{ :all };
 use Cwd ();
-use File::Basename ();
 use File::Spec;
 use List::Util 1.45 ();	# for uniqstr, which this module does not use
 use Module::Pluggable::Object 5.2;
@@ -29,7 +28,7 @@ BEGIN {
 }
 
 use constant PLUGIN_SEARCH_PATH	=> join '::', __PACKAGE__, 'Plugin';
-use constant MAX_DEPTH		=> do {
+use constant PLUGIN_MAX_DEPTH	=> do {
     my @parts = split qr{ :: }smx, PLUGIN_SEARCH_PATH;
     1 + @parts;
 };
@@ -219,32 +218,40 @@ sub __execute {
     local $@ = undef;
 
     eval {
+
+	# The following are loaded explicitly because they are used
+	# explicitly.
+
 	require App::Ack::ConfigLoader;
 	App::Ack::ConfigLoader->can( 'retrieve_arg_sources' )
 	    and App::Ack::ConfigLoader->can( 'process_args' )
 	    or return;
-	require App::Ack::Filter;
-	# filter() not implemented on superclass
+
 	require App::Ack::Filter::Collection;
-	App::Ack::Filter::Collection->can( 'filter' )
+	App::Ack::Filter::Collection->can( 'new' )
+	    and App::Ack::Filter::Collection->can( 'filter' )
 	    or return;
-	require App::Ack::Filter::Default;
-	App::Ack::Filter::Default->can( 'filter' )
-	    or return;
-	require App::Ack::Filter::Extension;
-	App::Ack::Filter::Extension->can( 'filter' )
-	    or return;
-	require App::Ack::Filter::FirstLineMatch;
-	App::Ack::Filter::FirstLineMatch->can( 'filter' )
-	    or return;
-	require App::Ack::Filter::Inverse;
-	# etc
-	require App::Ack::Filter::Is;
-	require App::Ack::Filter::IsPath;
-	require App::Ack::Filter::Match;
+
 	require App::Ack::Resource;
 	App::Ack::Resource->can( 'new' )
 	    or return;
+
+
+	# Ack filters register themselves on load. You can't derive the
+	# registered name from the class name. So this is a way to get
+	# them registered. This will actually catch
+	# App::Ack::Filter::Collection as well, but I wanted its use out
+	# in the open. It also loads too much, but needs must.
+	#
+	# CAVEAT: force_search_all_paths is undocumented, but I need it
+	# to bypass Module::Pluggable's testing logic, which excludes
+	# plug-ins not in blib/.
+	Module::Pluggable::Object->new(
+	    inner	=> 0,
+	    require	=> 1,
+	    force_search_all_paths	=> 1,
+	    search_path	=> 'App::Ack::Filter',
+	)->plugins();
 
 	*__filter_files = sub {		# sub __filter_files
 	    my ( $self, @files ) = @_;
@@ -581,10 +588,8 @@ sub __marshal_plugins {
 
 sub __module_pluggable_object_new_args {
     return (
-	filename	=> __FILE__,
 	inner		=> 0,
-	max_depth	=> MAX_DEPTH,
-	package		=> __PACKAGE__,
+	max_depth	=> PLUGIN_MAX_DEPTH,
 	require		=> 1,
 	search_path	=> PLUGIN_SEARCH_PATH,
     );
