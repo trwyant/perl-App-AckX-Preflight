@@ -24,6 +24,7 @@ ack
 ackxp
 ASCIIbetical
 ASCIIbetically
+del
 getopt
 hoc
 Javadoc

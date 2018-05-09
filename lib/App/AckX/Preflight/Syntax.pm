@@ -11,7 +11,7 @@ use App::AckX::Preflight::Util qw{
     @CARP_NOT
 };
 use Module::Pluggable::Object 5.2;
-use List::Util 1.45 ();
+use List::Util 1.45 ();	# for uniqstr
 use Text::Abbrev ();
 
 our $VERSION = '0.000_008';
@@ -29,11 +29,25 @@ use constant PLUGIN_MAX_DEPTH	=> do {
     1 + @parts;
 };
 
+*__uniqstr = \&List::Util::uniqstr;	# sub __uniqstr {...}
+
+my $arg_sep_re = qr{ \s* [:;,] \s* }smx;
+
 sub __getopt {
-    my ( $class, $arg ) = @_;
-    my $opt = App::AckX::Preflight::Util::__getopt( $arg,
+    my ( $class, $arg, $opt ) = @_;
+    my $strict = ! $opt;
+    $opt ||= {};
+    my $mod_syntax = sub {
+	my ( $name, $val ) = @_;
+	push @{ $opt->{'syntax-mod'} ||= [] }, "-$name=$val";
+	return;
+    };
+    App::AckX::Preflight::Util::__getopt( $arg, $opt,
+	'syntax-add=s'	=> $mod_syntax,
+	'syntax-del=s'	=> $mod_syntax,
+	'syntax-set=s'	=> $mod_syntax,
 	qw{ syntax=s@ } );
-    if ( @{ $arg } ) {
+    if ( $strict && @{ $arg } ) {
 	local $" = ', ';
 	__die( "Unsupported arguments @{ $arg }" );
     }
@@ -47,6 +61,10 @@ sub import {
     my ( $class, @arg ) = @_;
     my $opt = $class->__getopt( \@arg );
     %WANT_SYNTAX = map { $_ => 1 } @{ $opt->{syntax} || [] };
+    foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
+	my ( $filter, $mod, @val ) = @{ $_ };
+	$filter->__handles_type_mod( $mod, @val );
+    }
     return;
 }
 
@@ -55,15 +73,52 @@ sub __handles_syntax {
 	'__handles_syntax() must be overridden' );
 }
 
-sub __handles_type {
-    __die_hard( '__handles_type() must be overridden' );
+{
+    my %handles_type;
+
+    sub __handles_type {
+	my ( $self ) = @_;
+	my $class = ref $self || $self;
+	return( @{ $handles_type{$class} ||= [] } );
+    }
+
+    sub __handles_type_mod {
+	my ( $self, $mod, @arg ) = @_;
+	my $class = ref $self || $self;
+	my $code = $class->can( "_handles_type_$mod" )
+	    or __die_hard( "Invalid modification type '$mod'" );
+	$code->( $class, @arg );
+	return $self;
+    }
+
+    sub _handles_type_add {
+	my ( $class, @arg ) = @_;
+	$handles_type{$class} = [ __uniqstr( 
+		@{ $handles_type{$class} || [] }, @arg ) ];
+	return;
+    }
+
+    sub _handles_type_del {
+	my ( $class, @arg ) = @_;
+	my %del = map { $_ => 1 } @arg;
+	$handles_type{$class} = [ grep { ! $del{$_} }
+	    @{ $handles_type{$class} || [] } ];
+	return;
+    }
+
+    sub _handles_type_set {
+	my ( $class, @arg ) = @_;
+	$handles_type{$class} = [ __uniqstr( @arg ) ];
+	return;
+    }
+
 }
 
 {
     my $syntax_abbrev;
 
     sub __normalize_options {
-	my ( undef, $opt ) = @_;
+	my ( $invocant, $opt ) = @_;
 
 	$syntax_abbrev ||= Text::Abbrev::abbrev(
 	    SYNTAX_CODE,
@@ -73,15 +128,53 @@ sub __handles_type {
 	    SYNTAX_OTHER,
 	);
 
+	my $class = ref $invocant || $invocant;
+
 	if ( $opt->{syntax} ) {
-	    @{ $opt->{syntax} } = sort { $a cmp $b } List::Util::uniqstr(
+	    @{ $opt->{syntax} } = sort { $a cmp $b } __uniqstr(
 		map { $syntax_abbrev->{$_} || 
 		    __die( "Unsupported syntax type '$_'" ) }
-		map { split qr{ \s* [:;,] \s* }smx }
+		map { split $arg_sep_re }
 		@{ $opt->{syntax} } );
 	}
 
+	foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
+	    my ( $filter, $mod, @val ) =
+		$invocant->_normalize_syntax_mod( $_ );
+	    unless ( $class eq $filter ) {
+		unshift @val, $filter;
+		$val[0] =~ s/ \A @{[ __PACKAGE__ ]} :: //smxo;
+	    }
+	    $_ = [ $filter, $mod, @val ];
+	}
+
 	return;
+    }
+}
+
+{
+
+    my $plugins;
+
+    sub _normalize_syntax_mod {
+	my ( $invocant, $spec ) = @_;
+
+	$plugins ||= { map { $_ => 1 } $invocant->__plugins() };
+
+	my ( $name, $val ) = split qr{ = }smx, $spec, 2;
+	$name =~ s/ \A - //smx;
+	( my $mod = $name ) =~ s/ .* - //smx;
+	my $filter = ref $invocant || $invocant;
+	if ( __PACKAGE__ eq $filter ) {
+	    $val =~ s/ \A ( \w+ (?: :: \w+ )* ) $arg_sep_re? //smx
+		or __die( "Invalid syntax filter name in -$name=$val" );
+	    my $filter = $1;
+	    $filter =~ m/ :: /smx
+		or $filter = join '::', __PACKAGE__, $filter;
+	}
+	$plugins->{$filter}
+	    or __die( "Unknown syntax filter $filter" );
+	return ( $filter, $mod, split $arg_sep_re, $val );
     }
 }
 
@@ -165,11 +258,11 @@ The options parsed are:
 
 =item -syntax
 
-This specifies the syntax types being requested. You can specify more
-than one punctuated by commas, colons, or semicolons (i.e. anything that
-matches C</[:;,]/>, and you can specify this more than once. Multiple
-types in a single value will be parsed out, so that the same options
-hash will be returned whether the input was
+This option specifies the syntax types being requested. You can specify
+more than one punctuated by commas, colons, or semicolons (i.e. anything
+that matches C</[:;,]/>), and you can specify this option more than
+once.  Multiple types in a single value will be parsed out, so that the
+same options hash will be returned whether the input was
 
  -syntax=code,doc
 
@@ -181,6 +274,46 @@ An exception will be raised if any arguments remain unconsumed, or if
 any of the values for -syntax does not appear in the list returned by
 C<__handles_syntax()>
 
+=item -syntax-add
+
+ -syntax-add=Perl:perlpod
+
+This option adds one or more file types to the filter. It can be
+specified more than once.
+
+If the invocant is C<App::AckX::Preflight::Syntax>, the argument is a
+syntax filter name and one or more C<ack> file types, punctuated by
+commas, colons, or semicolons (i.e. anything that matches C</[:;,]/>).
+
+If the invocant is a subclass of C<App::AckX::Preflight::Syntax>, the
+filter is the invocant, and the argument is one or more C<ack> file
+types, punctuated by commas, colons, or semicolons (i.e. anything that
+matches C</[:;,]/>).
+
+The filter name, if present, B<must> be the name of a syntax filter, but
+the leading C<App::AckX::Preflight::Filter::> can be omitted. The file
+types will be ineffective unless they are known to C<ack>.
+
+=item -syntax-del
+
+ -syntax-del=Perl:perlpod
+
+This option removes one or more file types from the filter. It can be
+specified more than once.
+
+All the verbiage about the argument of C<-syntax-add>, above, applies
+here also.
+
+=item -syntax-set
+
+ -syntax-set=Perl:perl:perlpod
+
+This option associates one or more file types to the filter, replacing
+any previously-handled file types. It can be specified more than once.
+
+All the verbiage about the argument of C<-syntax-add>, above, applies
+here also.
+
 =back
 
 =head2 import
@@ -190,8 +323,8 @@ it parses the import list to configure the syntax filters.
 
 The import list is parsed by L<__getopt()|/__getopt>. The import list
 must be completely consumed by this operation, or an exception is
-raised. All C<--syntax> arguments must be supported by at least one
-syntax filter or an exception is raised.
+raised. All C<--syntax> arguments must be valid or an exception is
+raised.
 
 =head2 __handles_syntax
 
@@ -231,13 +364,36 @@ This is a catch-all category. It should be used sparingly if at all.
 =head2 __handles_type
 
 This static method returns a list of the file types recognized by the
+filter.
+
+These need to conform to F<ack>'s file types, otherwise the
+filter is useless.
+
+This will return an empty list unless
+L<__handles_type_mod()|/__handles_type_mod> has been called on the
+invocant to set or add types. It is recommended that subclasses
+initialize themselves by calling
+
+ __PACKAGE__->__handles_type_mod( set => ... );
+
+=head2 __handles_type_mod
+
+ $syntax_filter->__handles_type_mod( qw{ add mytype } );
+
+This static method modifies the list of the file types recognized by the
 filter. These need to conform to F<ack>'s file types, otherwise the
-filter is useless. Unfortunately F<ack>'s file types are configurable,
-but this list is not.
+filter is useless.
 
-With luck, this will be fixed in a future release.
+The arguments are the modification to make (C<'add'>, C<'del'>, or
+C<'set'>), and the list of F<ack> file types involved.
 
-This method B<must> be overridden.
+Subclasses B<should> call
+
+ __PACKAGE__->__handles_type_mod( set => ... )
+
+to initialize themselves. Subclasses that do not do this will not be
+applied to any file types by default. They will still be applied if the
+user passes the appropriate options.
 
 =head2 IN_SERVICE
 

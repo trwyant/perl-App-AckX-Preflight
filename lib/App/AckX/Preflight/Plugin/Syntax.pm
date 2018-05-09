@@ -7,7 +7,6 @@ use warnings;
 
 use App::AckX::Preflight::Syntax;
 use App::AckX::Preflight::Util qw{ @CARP_NOT };
-use List::Util 1.45 ();
 use Text::Abbrev ();
 
 use parent qw{ App::AckX::Preflight::Plugin };
@@ -27,9 +26,19 @@ sub __process {
 	and @{ $opt->{syntax} }
 	or return;
 
-    local $" = ':';
+    App::AckX::Preflight::Syntax->__getopt( \@ARGV, $opt );
+
+    my @arg = (
+	'-syntax=' . join( ':', @{ $opt->{syntax} } ),
+    );
+    foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
+	my ( undef, $mod, @val ) = @{ $_ };
+	local $" = ':';
+	push @arg, "-syntax-$mod=@val";
+    }
+    local $" = ',';
     $aaxp->__inject(
-	"-MApp::AckX::Preflight::Syntax=-syntax=@{ $opt->{syntax} }" );
+	"-MApp::AckX::Preflight::Syntax=@arg" );
 
     return;
 

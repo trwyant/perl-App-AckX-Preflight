@@ -18,10 +18,7 @@ sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT );
 }
 
-sub __handles_type {
-    # TODO make this configurable
-    return( qw{ shell } );
-}
+__PACKAGE__->__handles_type_mod( qw{ set shell } );
 
 sub FILL {
     my ( $self, $fh ) = @_;

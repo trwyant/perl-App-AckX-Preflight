@@ -18,12 +18,9 @@ sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION );
 }
 
-sub __handles_type {
-    # TODO make this configurable
-    # C++ uses the same comment syntax. In fact, Doxygen-format in-line
-    # documentation uses '/**' to introduce it.
-    return( qw{ java cpp } );
-}
+# C++ uses the same comment syntax. In fact, Doxygen-format in-line
+# documentation uses '/**' to introduce it.
+__PACKAGE__->__handles_type_mod( qw{ set java cpp } );
 
 sub __in_line_documentation_re {
     return qr{ \A \s* / [*] [*] }smx;

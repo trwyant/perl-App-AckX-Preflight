@@ -72,7 +72,9 @@ use constant SYNTAX_OTHER		=> 'other';
 use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
     qw{ dos os2 MSWin32 VMS } }->{$^O};
 
-*__die = \&App::Ack::die;	# sub __die
+sub __die {
+    goto $Carp::Verbose ? \&Carp::confess : \&App::Ack::die;
+}
 
 sub __die_hard {
     my @arg = @_;
@@ -171,7 +173,8 @@ default.
 
  __die( 'Goodbye, cruel world!' );
 
-This subroutine is really just an alias for C<App::Ack::die()>.
+This subroutine dispatches to C<Carp::confess()> if C<$Carp::Verbose> is
+true; otherwise it dispatches to C<App::Ack::die()>.
 
 =head2 __die_hard
 

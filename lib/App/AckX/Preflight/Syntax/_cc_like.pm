@@ -19,10 +19,6 @@ sub __handles_syntax {
     __die_hard( '__handles_syntax() must be overridden' );
 }
 
-sub __handles_type {
-    __die_hard( '__handles_type() must be overridden' );
-}
-
 my %cmt_or_doc = map { $_ => 1 } SYNTAX_COMMENT, SYNTAX_DOCUMENTATION;
 
 sub FILL {

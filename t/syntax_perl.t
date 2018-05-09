@@ -55,6 +55,15 @@ my $perl_resource = App::Ack::Resource->new( PERL_FILE );
 
 my $text_resource = App::Ack::Resource->new( TEXT_FILE );
 
+is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ perl perltest } ],
+    sprintf '%s handles perl, perltest', SYNTAX_FILTER;
+
+SYNTAX_FILTER->import( qw{ -syntax-add perlpod } );
+
+is_deeply [ SYNTAX_FILTER->__handles_type() ],
+    [ qw{ perl perltest perlpod } ],
+    sprintf 'Added perlpod to %s', SYNTAX_FILTER;
+
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
 
 ok ! SYNTAX_FILTER->__want_everything(),

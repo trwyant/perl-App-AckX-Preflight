@@ -10,7 +10,7 @@ use App::AckX::Preflight::Util qw{ :all };
 use Cwd ();
 use File::Basename ();
 use File::Spec;
-use List::Util ();
+use List::Util 1.45 ();	# for uniqstr, which this module does not use
 use Module::Pluggable::Object 5.2;
 use Pod::Usage ();
 use Text::ParseWords ();
@@ -84,6 +84,8 @@ use constant MAX_DEPTH		=> do {
 	return $self->{home};
     }
 }
+
+sub __any (&@); *__any = \&List::Util::any;	## no critic (ProhibitSubroutinePrototypes)
 
 sub __inject {
     my ( $self, @arg ) = @_;
@@ -175,10 +177,10 @@ EOD
 
     my @inject = @{ $self->{inject} };
 
-    List::Util::any { m/ \A -MApp::AckX::Preflight::Syntax \b /smx } @inject
+    __any { m/ \A -MApp::AckX::Preflight::Syntax \b /smx } @inject
 	and splice @inject, 0, 0, '-MApp::AckX::Preflight::Resource';
     if ( DEVELOPMENT &&
-	List::Util::any { m/ \A -MApp::AckX::Preflight\b /smx } @inject
+	__any { m/ \A -MApp::AckX::Preflight\b /smx } @inject
     ) {
 	splice @inject, 0, 0, '-Mblib';
     }

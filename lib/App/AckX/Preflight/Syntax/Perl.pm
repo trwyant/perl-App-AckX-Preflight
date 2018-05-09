@@ -23,10 +23,7 @@ sub __handles_syntax {
     );
 }
 
-sub __handles_type {
-    # TODO make this configurable
-    return( qw{ perl perltest } );
-}
+__PACKAGE__->__handles_type_mod( qw{ set perl perltest } );
 
 {
     my %is_data = map {; "__${_}__\n" => 1 } qw{ DATA END };

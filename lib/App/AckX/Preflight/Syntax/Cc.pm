@@ -18,10 +18,7 @@ sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT );
 }
 
-sub __handles_type {
-    # TODO make this configurable
-    return( qw{ cc } );
-}
+__PACKAGE__->__handles_type_mod( qw{ set cc } );
 
 1;
 
