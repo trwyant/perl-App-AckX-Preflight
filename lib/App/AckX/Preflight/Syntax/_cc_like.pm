@@ -69,12 +69,14 @@ sub PUSHED {
     }, ref $class || $class;
 }
 
+# Sorry, perlcritic. The following are reqired to return either a Regexp
+# object or undef, and to do that in list context.
 sub __single_line_comment_re {
-    return;
+    return undef;	## no critic (ProhibitExplicitReturnUndef)
 }
 
 sub __in_line_documentation_re {
-    return;
+    return undef;	## no critic (ProhibitExplicitReturnUndef)
 }
 
 
