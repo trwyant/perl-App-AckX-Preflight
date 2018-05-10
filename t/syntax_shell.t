@@ -39,7 +39,7 @@ use constant SHELL_COMMENTS	=> <<'EOD';
   14: # ex: set textwidth=72 :
 EOD
 
-use constant SHELL_CODE_DOC => <<'EOD';
+use constant SHELL_CODE_COMMENT => <<'EOD';
    1: #!/bin/sh
    2:
    3: x=$1
@@ -60,7 +60,7 @@ $App::Ack::mappings{shell} = [
     App::Ack::Filter::Extension->new( qw{ sh } ),
 ];
 
-my $java_resource = App::Ack::Resource->new( SHELL_FILE );
+my $shell_resource = App::Ack::Resource->new( SHELL_FILE );
 
 my $text_resource = App::Ack::Resource->new( TEXT_FILE );
 
@@ -74,7 +74,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( SHELL_FILE ), SHELL_CODE, 'Only code, reading directly';
 
-is slurp( $java_resource ), SHELL_CODE, 'Only code, reading resource';
+is slurp( $shell_resource ), SHELL_CODE, 'Only code, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
 
@@ -85,7 +85,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( SHELL_FILE ), SHELL_COMMENTS, 'Only comments, reading directly';
 
-is slurp( $java_resource ), SHELL_COMMENTS, 'Only comments, reading resource';
+is slurp( $shell_resource ), SHELL_COMMENTS, 'Only comments, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
 
@@ -94,10 +94,10 @@ SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_CODE, SYNTAX_COMMENT );
 ok SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is everything>, SYNTAX_CODE, SYNTAX_COMMENT;
 
-is slurp( SHELL_FILE ), SHELL_CODE_DOC,
+is slurp( SHELL_FILE ), SHELL_CODE_COMMENT,
     'Code and comments, reading directly';
 
-is slurp( $java_resource ), SHELL_CODE_DOC,
+is slurp( $shell_resource ), SHELL_CODE_COMMENT,
     'Code and comments, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT,
