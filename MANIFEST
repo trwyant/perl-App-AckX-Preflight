@@ -17,6 +17,7 @@ lib/App/AckX/Preflight/Resource.pm
 lib/App/AckX/Preflight/Syntax.pm
 lib/App/AckX/Preflight/Syntax/Cc.pm
 lib/App/AckX/Preflight/Syntax/Java.pm
+lib/App/AckX/Preflight/Syntax/Make.pm
 lib/App/AckX/Preflight/Syntax/Perl.pm
 lib/App/AckX/Preflight/Syntax/SQL.pm
 lib/App/AckX/Preflight/Syntax/Shell.pm
@@ -38,6 +39,7 @@ t/data/global/ackxprc
 t/data/home/_ackxprc
 t/data/cc_file.c
 t/data/java_file.java
+t/data/make_file.mak
 t/data/perl_file.PL
 t/data/shell_file.sh
 t/data/sql_file.sql
@@ -54,6 +56,7 @@ t/plugin_syntax.t
 t/preflight.t
 t/syntax_cc.t
 t/syntax_java.t
+t/syntax_make.t
 t/syntax_perl.t
 t/syntax_shell.t
 t/syntax_sql.t
