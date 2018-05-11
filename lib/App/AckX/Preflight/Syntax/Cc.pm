@@ -18,7 +18,7 @@ sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT );
 }
 
-__PACKAGE__->__handles_type_mod( qw{ set cc } );
+__PACKAGE__->__handles_type_mod( qw{ set cc css } );
 
 1;
 
@@ -26,7 +26,7 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Syntax::Cc - App::AckX::Preflight syntax filter for C.
+App::AckX::Preflight::Syntax::Cc - App::AckX::Preflight syntax filter for C-like files.
 
 =head1 SYNOPSIS
 
@@ -35,7 +35,7 @@ No direct user interaction.
 =head1 DESCRIPTION
 
 This L<PerlIO::via|PerlIO::via> I/O layer is intended to be used by
-L<App::AckX::Preflight|App::AckX::Preflight> to process a C file,
+L<App::AckX::Preflight|App::AckX::Preflight> to process a C or css file,
 returning only those lines the user has requested.
 
 The supported syntax types are:

@@ -20,7 +20,7 @@ sub __handles_syntax {
 
 # C++ uses the same comment syntax. In fact, Doxygen-format in-line
 # documentation uses '/**' to introduce it.
-__PACKAGE__->__handles_type_mod( qw{ set java cpp } );
+__PACKAGE__->__handles_type_mod( qw{ set java cpp csharp objc } );
 
 sub __in_line_documentation_re {
     return qr{ \A \s* / [*] [*] }smx;
@@ -36,7 +36,7 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Syntax::Java - App::AckX::Preflight syntax filter for Java.
+App::AckX::Preflight::Syntax::Java - App::AckX::Preflight syntax filter for Java-like languages.
 
 =head1 SYNOPSIS
 
@@ -45,8 +45,9 @@ No direct user interaction.
 =head1 DESCRIPTION
 
 This L<PerlIO::via|PerlIO::via> I/O layer is intended to be used by
-L<App::AckX::Preflight|App::AckX::Preflight> to process a Java or C++
-file, returning only those lines the user has requested.
+L<App::AckX::Preflight|App::AckX::Preflight> to process a Java, C++,
+C#, or Objective C file, returning only those lines the user has
+requested.
 
 The supported syntax types are:
 

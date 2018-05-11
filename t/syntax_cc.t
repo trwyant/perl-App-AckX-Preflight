@@ -70,8 +70,8 @@ my $cc_resource = App::Ack::Resource->new( CC_FILE );
 
 my $text_resource = App::Ack::Resource->new( TEXT_FILE );
 
-is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ cc } ],
-    sprintf '%s handles cc', SYNTAX_FILTER;
+is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ cc css } ],
+    sprintf '%s handles cc, css', SYNTAX_FILTER;
 
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
 

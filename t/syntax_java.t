@@ -92,8 +92,9 @@ my $java_resource = App::Ack::Resource->new( JAVA_FILE );
 
 my $text_resource = App::Ack::Resource->new( TEXT_FILE );
 
-is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ java cpp } ],
-    sprintf '%s handles java, cpp', SYNTAX_FILTER;
+is_deeply [ SYNTAX_FILTER->__handles_type() ],
+    [ qw{ java cpp csharp objc } ],
+    sprintf '%s handles java, cpp, csharp, objc', SYNTAX_FILTER;
 
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
 
