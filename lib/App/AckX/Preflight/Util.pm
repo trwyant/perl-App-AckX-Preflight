@@ -53,6 +53,7 @@ our @CARP_NOT = qw{
     App::AckX::Preflight::Syntax::Cc
     App::AckX::Preflight::Syntax::Cpp
     App::AckX::Preflight::Syntax::Data
+    App::AckX::Preflight::Syntax::Fortran
     App::AckX::Preflight::Syntax::Java
     App::AckX::Preflight::Syntax::Make
     App::AckX::Preflight::Syntax::Perl

@@ -18,6 +18,7 @@ lib/App/AckX/Preflight/Syntax.pm
 lib/App/AckX/Preflight/Syntax/Cc.pm
 lib/App/AckX/Preflight/Syntax/Cpp.pm
 lib/App/AckX/Preflight/Syntax/Data.pm
+lib/App/AckX/Preflight/Syntax/Fortran.pm
 lib/App/AckX/Preflight/Syntax/Java.pm
 lib/App/AckX/Preflight/Syntax/Make.pm
 lib/App/AckX/Preflight/Syntax/Perl.pm
@@ -43,6 +44,7 @@ t/data/fubar
 t/data/global/ackxprc
 t/data/home/_ackxprc
 t/data/cc_file.c
+t/data/fortran_file.for
 t/data/java_file.java
 t/data/json_file.json
 t/data/make_file.mak
@@ -65,6 +67,7 @@ t/preflight.t
 t/syntax_cc.t
 t/syntax_cpp.t
 t/syntax_data.t
+t/syntax_fortran.t
 t/syntax_make.t
 t/syntax_perl.t
 t/syntax_shell.t

@@ -25,6 +25,7 @@ ackxp
 ASCIIbetical
 ASCIIbetically
 del
+Fortran
 getopt
 hoc
 Javadoc
