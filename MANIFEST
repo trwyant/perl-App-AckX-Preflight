@@ -68,6 +68,7 @@ t/syntax_shell.t
 t/syntax_sql.t
 t/syntax_yaml.t
 tools/number
+tools/out-of-service
 xt/author/carp_not.t
 xt/author/changes.t
 xt/author/critic.t
