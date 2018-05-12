@@ -65,10 +65,10 @@ is_deeply xqt( qw{ --noenv --ackxprc t/data/ackxprc } ),
     [ qw{ perl -S ack --from=t/data/ackxprc --noenv } ],
     '--ackxprc t/data/ackxprc';
 
-$got = xqt( qw{ --files-from t/data/relative --relative } ),
+$got = xqt( qw{ --noenv --files-from t/data/relative --relative } ),
 is_deeply $got,
-    [ qw{ perl -S ack t/data/foo t/data/fubar } ],
-    '--files-from t/data/relative --relative'
+    [ qw{ perl -S ack --noenv t/data/foo t/data/fubar } ],
+    '--noenv --files-from t/data/relative --relative'
     or diag 'got ', explain $got;
 
 $got = xqt( qw{ --disable FilesFrom --files-from t/data/relative } );

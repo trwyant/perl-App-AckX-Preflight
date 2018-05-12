@@ -102,6 +102,8 @@ sub run {
 	'ack-filters'	=> $self->__filter_available(),
     };
 
+    $self->__process_config_files( $self->__find_config_files() );
+
     $self->{disable} = {};
 
     __getopt( $opt,
@@ -165,8 +167,6 @@ EOD
     );
 
     $self->{use_ack_filters} = $opt->{ 'ack-filters' };
-
-    $self->__process_config_files( $self->__find_config_files() );
 
     foreach my $p_rec ( $self->__marshal_plugins ) {
 	my $plugin = $p_rec->{package};
