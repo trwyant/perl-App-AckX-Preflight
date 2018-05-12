@@ -32,3 +32,4 @@ merchantability
 preflight
 VMS
 Wyant
+yaml
