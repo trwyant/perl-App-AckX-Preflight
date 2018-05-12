@@ -12,7 +12,7 @@ use App::AckX::Preflight::Util qw{
     @CARP_NOT
 };
 
-our $VERSION = '0.000_009';
+our $VERSION = '0.000_010';
 
 use constant IN_SERVICE	=> 0;
 

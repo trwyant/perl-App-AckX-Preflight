@@ -14,7 +14,7 @@ use Module::Pluggable::Object 5.2;
 use Pod::Usage ();
 use Text::ParseWords ();
 
-our $VERSION = '0.000_009';
+our $VERSION = '0.000_010';
 our $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
 
 use constant DEVELOPMENT => grep { m{ \b blib \b }smx } @INC;

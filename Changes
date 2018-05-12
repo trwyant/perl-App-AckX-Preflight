@@ -1,3 +1,14 @@
+0.000_010	2018-05-12	T. R. Wyant
+    Add syntax filters for:
+    - Fortran
+    - Makefile
+    - JSON
+    - Vimscript
+    - YAML
+
+    Rename ::Syntax::Java to ::Cpp The old module is still around, but
+    IN_SERVICE returns false.
+
 0.000_009	2018-05-08	T. R. Wyant
     Keep ::Plugin::File from wrongly using --literal.
 
