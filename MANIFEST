@@ -16,6 +16,7 @@ lib/App/AckX/Preflight/Plugin/Syntax.pm
 lib/App/AckX/Preflight/Resource.pm
 lib/App/AckX/Preflight/Syntax.pm
 lib/App/AckX/Preflight/Syntax/Cc.pm
+lib/App/AckX/Preflight/Syntax/Cpp.pm
 lib/App/AckX/Preflight/Syntax/Data.pm
 lib/App/AckX/Preflight/Syntax/Java.pm
 lib/App/AckX/Preflight/Syntax/Make.pm
@@ -59,8 +60,8 @@ t/plugin_files_from.t
 t/plugin_syntax.t
 t/preflight.t
 t/syntax_cc.t
+t/syntax_cpp.t
 t/syntax_data.t
-t/syntax_java.t
 t/syntax_make.t
 t/syntax_perl.t
 t/syntax_shell.t

@@ -48,6 +48,17 @@ The supported syntax types are:
 
 =back
 
+In principal this syntax filter can be used for any syntax that consists
+solely of code and C-style comments. By default it applies to:
+
+=over
+
+=item cc
+
+=item css
+
+=back
+
 =head1 METHODS
 
 This class adds the following methods, which are part of the

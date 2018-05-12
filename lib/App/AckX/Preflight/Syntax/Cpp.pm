@@ -1,4 +1,4 @@
-package App::AckX::Preflight::Syntax::Java;
+package App::AckX::Preflight::Syntax::Cpp;
 
 use 5.008008;
 
@@ -14,15 +14,13 @@ use App::AckX::Preflight::Util qw{
 
 our $VERSION = '0.000_009';
 
-use constant IN_SERVICE	=> 0;
-
 sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION );
 }
 
 # C++ uses the same comment syntax. In fact, Doxygen-format in-line
 # documentation uses '/**' to introduce it.
-__PACKAGE__->__handles_type_mod( qw{ set java cpp csharp objc } );
+__PACKAGE__->__handles_type_mod( qw{ set cpp csharp java objc } );
 
 sub __in_line_documentation_re {
     return qr{ \A \s* / [*] [*] }smx;
@@ -38,7 +36,7 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Syntax::Java - App::AckX::Preflight syntax filter for Java-like languages.
+App::AckX::Preflight::Syntax::Cpp - App::AckX::Preflight syntax filter for C++-like languages.
 
 =head1 SYNOPSIS
 
@@ -46,13 +44,9 @@ No direct user interaction.
 
 =head1 DESCRIPTION
 
-This syntax filter is no longer in service. It has been replaced by
-L<App::AckX::Preflight::Syntax::Cpp|App::AckX::Preflight::Syntax::Cpp>.
-
 This L<PerlIO::via|PerlIO::via> I/O layer is intended to be used by
-L<App::AckX::Preflight|App::AckX::Preflight> to process a Java, C++,
-C#, or Objective C file, returning only those lines the user has
-requested.
+L<App::AckX::Preflight|App::AckX::Preflight> to process a C++-like file,
+returning only those lines the user has requested.
 
 The supported syntax types are:
 
@@ -60,9 +54,26 @@ The supported syntax types are:
 
 =item code
 
-=item comment (both block and single-line)
+=item comment (both C</* ... */>-style block and C<//> single-line)
 
-=item documentation (Javadoc; block comments introduced by '/**')
+=item documentation (block comments introduced by '/**')
+
+=back
+
+In principal this syntax filter can be used for any syntax that consists
+of code, single-line comments introduced by C<'//'>, block comments
+enclosed in C<'/* ... */'>, and in-line documentation enclosed in
+C<'/** ... */'>.  By default it applies to:
+
+=over
+
+=item C<cpp>
+
+=item C<csharp>
+
+=item C<java>
+
+=item C<objc>
 
 =back
 
