@@ -55,18 +55,25 @@ foreach ( qw{
 
 note 'Syntax filters';
 
-foreach my $class ( qw{
+foreach ( qw{
 	App::AckX::Preflight::Syntax
 	App::AckX::Preflight::Syntax::_cc_like
+	App::AckX::Preflight::Syntax::_single_line_comments
 	App::AckX::Preflight::Syntax::Cc
+	App::AckX::Preflight::Syntax::Cpp
 	App::AckX::Preflight::Syntax::Data
-	App::AckX::Preflight::Syntax::Java
+	-App::AckX::Preflight::Syntax::Java
 	App::AckX::Preflight::Syntax::Make
 	App::AckX::Preflight::Syntax::Perl
 	App::AckX::Preflight::Syntax::SQL
 	App::AckX::Preflight::Syntax::Shell
+	App::AckX::Preflight::Syntax::Vim
 	App::AckX::Preflight::Syntax::YAML
     } ) {
+
+    my $class = $_;
+
+    my $in_service = ( $class =~ s/ \A - //smx ) ? 0 : 1;
 
     require_ok $class
 	or BAIL_OUT $@;
@@ -84,6 +91,9 @@ foreach my $class ( qw{
 	__want_syntax
     }
 	or BAIL_OUT;
+
+    cmp_ok $class->IN_SERVICE, '==', $in_service,
+	"$class is@{[ $in_service ? ' ' : ' not ' ]}in service";
 
 }
 

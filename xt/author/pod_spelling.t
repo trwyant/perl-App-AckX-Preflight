@@ -30,6 +30,7 @@ hoc
 Javadoc
 merchantability
 preflight
+Vimscript
 VMS
 Wyant
 yaml

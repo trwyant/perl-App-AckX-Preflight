@@ -23,8 +23,10 @@ lib/App/AckX/Preflight/Syntax/Make.pm
 lib/App/AckX/Preflight/Syntax/Perl.pm
 lib/App/AckX/Preflight/Syntax/SQL.pm
 lib/App/AckX/Preflight/Syntax/Shell.pm
+lib/App/AckX/Preflight/Syntax/Vim.pm
 lib/App/AckX/Preflight/Syntax/YAML.pm
 lib/App/AckX/Preflight/Syntax/_cc_like.pm
+lib/App/AckX/Preflight/Syntax/_single_line_comments.pm
 lib/App/AckX/Preflight/Util.pm
 LICENSES/Artistic
 LICENSES/Copying
@@ -48,6 +50,7 @@ t/data/perl_file.PL
 t/data/shell_file.sh
 t/data/sql_file.sql
 t/data/text_file.txt
+t/data/vim_file.vim
 t/data/yaml_file.yml
 t/data/relative
 t/data/tests
@@ -66,6 +69,7 @@ t/syntax_make.t
 t/syntax_perl.t
 t/syntax_shell.t
 t/syntax_sql.t
+t/syntax_vim.t
 t/syntax_yaml.t
 tools/number
 tools/out-of-service

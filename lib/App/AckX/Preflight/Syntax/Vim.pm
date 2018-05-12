@@ -1,4 +1,4 @@
-package App::AckX::Preflight::Syntax::Shell;
+package App::AckX::Preflight::Syntax::Vim;
 
 use 5.008008;
 
@@ -18,10 +18,10 @@ sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT );
 }
 
-__PACKAGE__->__handles_type_mod( qw{ set shell } );
+__PACKAGE__->__handles_type_mod( qw{ set vim } );
 
 sub __single_line_comment_re {
-    return qr{ \A \s* \# }smx;
+    return qr{ \A \s* " }smx;
 }
 
 1;
@@ -30,7 +30,7 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Syntax::Shell - App::AckX::Preflight syntax filter for Shell.
+App::AckX::Preflight::Syntax::Vim - App::AckX::Preflight syntax filter for Vim.
 
 =head1 SYNOPSIS
 
@@ -39,8 +39,8 @@ No direct user interaction.
 =head1 DESCRIPTION
 
 This L<PerlIO::via|PerlIO::via> I/O layer is intended to be used by
-L<App::AckX::Preflight|App::AckX::Preflight> to process a Shell file,
-returning only those lines the user has requested.
+L<App::AckX::Preflight|App::AckX::Preflight> to process a Vimscript
+file, returning only those lines the user has requested.
 
 The supported syntax types are:
 
