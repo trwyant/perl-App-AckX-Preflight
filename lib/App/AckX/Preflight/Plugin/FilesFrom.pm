@@ -18,12 +18,15 @@ our $VERSION = '0.000_010';
 use constant MANIFEST	=> 'MANIFEST';
 
 sub __options {
-    return( qw{ files-from|x=s manifest! relative! } );
+    return( qw{ files-from|x=s files-from-filter! manifest! relative! } );
 }
 
 
 sub __process {
     my ( undef, $aaxp, $opt ) = @_;
+
+    defined $opt->{'files-from-filter'}
+	or $opt->{'files-from-filter'} = 1;
 
     $opt->{manifest}
 	and not $opt->{'files-from'}
@@ -56,7 +59,9 @@ sub __process {
 	and @files = map { File::Spec->abs2rel( $_ ) }
 	    map { File::Spec->rel2abs( $_, $dirname ) } @files;
 
-    push @ARGV, $aaxp->__filter_files( @files );
+    push @ARGV, $opt->{'files-from-filter'} ?
+	$aaxp->__filter_files( @files ) :
+	@files;
 
     return;
 }
@@ -87,7 +92,8 @@ alleged smarts consist of the following:
 =item * Files can be filtered
 
 That is, if you specify C<--type=> or something equivalent (like
-C<--perl>), then only files of the given type will be processed.
+C<--perl>), then only files of the given type will be processed. You can
+turn this off by specifying C<--no-files-from-filter>.
 
 =item * Special handling of MANIFEST
 
