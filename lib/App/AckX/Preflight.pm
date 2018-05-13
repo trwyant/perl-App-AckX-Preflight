@@ -84,7 +84,10 @@ use constant PLUGIN_MAX_DEPTH	=> do {
     }
 }
 
-sub __any (&@); *__any = \&List::Util::any;	## no critic (ProhibitSubroutinePrototypes)
+BEGIN {
+    # We need to do this inside a BEGIN block to pick up the prototype.
+    *__any = \&List::Util::any;	# sub __any {...}
+}
 
 sub __inject {
     my ( $self, @arg ) = @_;
