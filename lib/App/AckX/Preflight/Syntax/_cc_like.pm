@@ -111,8 +111,10 @@ a block comment;
 =back
 
 In order to use this as a superclass, the subclass B<must> override
-L<__handles_syntax|App::AckX::Preflight::Syntax/__handles_syntax> and
-L<__handles_type|App::AckX::Preflight::Syntax/__handles_type>. See the
+L<__handles_syntax|App::AckX::Preflight::Syntax/__handles_syntax>. Also,
+it B<must> call
+L<__handles_type_mod|App::AckX::Preflight::Syntax/__handles_type_mod> to
+set up the types of files handled by the syntax filter. See the
 documentation of
 L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax> for details.
 
