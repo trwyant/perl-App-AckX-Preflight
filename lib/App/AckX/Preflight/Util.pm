@@ -50,6 +50,7 @@ our @CARP_NOT = qw{
     App::AckX::Preflight::Plugin::Syntax
     App::AckX::Preflight::Resource
     App::AckX::Preflight::Syntax
+    App::AckX::Preflight::Syntax::Ada
     App::AckX::Preflight::Syntax::Cc
     App::AckX::Preflight::Syntax::Cpp
     App::AckX::Preflight::Syntax::Data
