@@ -20,7 +20,7 @@ sub __handles_syntax {
 
 # C++ uses the same comment syntax. In fact, Doxygen-format in-line
 # documentation uses '/**' to introduce it.
-__PACKAGE__->__handles_type_mod( qw{ set cpp csharp java objc } );
+__PACKAGE__->__handles_type_mod( qw{ set actionscript cpp csharp java objc } );
 
 sub __in_line_documentation_re {
     return qr{ \A \s* / [*] [*] }smx;

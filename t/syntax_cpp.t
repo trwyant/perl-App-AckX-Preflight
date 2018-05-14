@@ -91,8 +91,8 @@ $App::Ack::mappings{java} = [
 my $resource = App::Ack::Resource->new( JAVA_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ],
-    [ qw{ cpp csharp java objc } ],
-    sprintf '%s handles cpp, csharp, java, objc', SYNTAX_FILTER;
+    [ qw{ actionscript cpp csharp java objc } ],
+    sprintf '%s handles actionscript, cpp, csharp, java, objc', SYNTAX_FILTER;
 
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
 
