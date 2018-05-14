@@ -21,7 +21,7 @@ sub __handles_syntax {
 __PACKAGE__->__handles_type_mod( qw{ set fortran } );
 
 sub __single_line_comment_re {
-    return qr{ \A (?: [Cc*] | \s* ! ) }smx;
+    return qr{ \A (?: [C*] | \s* ! ) }smxi;
 }
 
 1;
@@ -41,6 +41,10 @@ No direct user interaction.
 This L<PerlIO::via|PerlIO::via> I/O layer is intended to be used by
 L<App::AckX::Preflight|App::AckX::Preflight> to process a Fortran file,
 returning only those lines the user has requested.
+
+This filter considers C<'D'> lines to be code. It is not possible in
+general to distinguish commented-out code from comments in general, but
+when it can be done it seems good sense to do it.
 
 The supported syntax types are:
 
