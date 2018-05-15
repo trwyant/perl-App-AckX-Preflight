@@ -13,7 +13,7 @@ our @EXPORT_OK = qw{ prs xqt };
 
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION = '0.000_011';
+our $VERSION = '0.000_012';
 
 sub prs {
     local @ARGV = @_;

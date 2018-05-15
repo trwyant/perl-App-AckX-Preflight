@@ -1,3 +1,14 @@
+0.000_012	2018-05-14	T. R. Wyant
+    Remove obsolete ::Plugin::PerlFile, ::Syntax::Java
+
+    Properly handle single-line C-style block comments
+
+    Add actionscript to Cpp syntax filter.
+
+    Add syntax filter for Ada.
+
+    Documented that Fortran filter calls 'D' code
+
 0.000_011	2018-05-12	T. R. Wyant
     Process config files _before_ parsing cmd line.
 
