@@ -11,7 +11,6 @@ lib/App/AckX/Preflight.pm
 lib/App/AckX/Preflight/Plugin.pm
 lib/App/AckX/Preflight/Plugin/File.pm
 lib/App/AckX/Preflight/Plugin/FilesFrom.pm
-lib/App/AckX/Preflight/Plugin/PerlFile.pm
 lib/App/AckX/Preflight/Plugin/Syntax.pm
 lib/App/AckX/Preflight/Resource.pm
 lib/App/AckX/Preflight/Syntax.pm
@@ -20,7 +19,6 @@ lib/App/AckX/Preflight/Syntax/Cc.pm
 lib/App/AckX/Preflight/Syntax/Cpp.pm
 lib/App/AckX/Preflight/Syntax/Data.pm
 lib/App/AckX/Preflight/Syntax/Fortran.pm
-lib/App/AckX/Preflight/Syntax/Java.pm
 lib/App/AckX/Preflight/Syntax/Make.pm
 lib/App/AckX/Preflight/Syntax/Perl.pm
 lib/App/AckX/Preflight/Syntax/SQL.pm

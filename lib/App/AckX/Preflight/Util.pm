@@ -48,7 +48,6 @@ our @CARP_NOT = qw{
     App::AckX::Preflight::Plugin
     App::AckX::Preflight::Plugin::File
     App::AckX::Preflight::Plugin::FilesFrom
-    App::AckX::Preflight::Plugin::PerlFile
     App::AckX::Preflight::Plugin::Syntax
     App::AckX::Preflight::Resource
     App::AckX::Preflight::Syntax
@@ -57,7 +56,6 @@ our @CARP_NOT = qw{
     App::AckX::Preflight::Syntax::Cpp
     App::AckX::Preflight::Syntax::Data
     App::AckX::Preflight::Syntax::Fortran
-    App::AckX::Preflight::Syntax::Java
     App::AckX::Preflight::Syntax::Make
     App::AckX::Preflight::Syntax::Perl
     App::AckX::Preflight::Syntax::SQL
