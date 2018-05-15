@@ -22,7 +22,9 @@ our @EXPORT_OK = qw{
     __warn
 
     ARRAY_REF
+    CODE_REF
     HASH_REF
+    REGEXP_REF
     SCALAR_REF
 
     SYNTAX_CODE
@@ -68,7 +70,9 @@ our @CARP_NOT = qw{
 };
 
 use constant ARRAY_REF	=> ref [];
+use constant CODE_REF	=> ref sub {};
 use constant HASH_REF	=> ref {};
+use constant REGEXP_REF	=> ref qr{};
 use constant SCALAR_REF	=> ref \0;
 
 use constant SYNTAX_CODE		=> 'code';
@@ -277,6 +281,18 @@ exported by default.
 =head2 ARRAY_REF
 
 This is set to C<ref []>.
+
+=head2 CODE_REF
+
+This is set to C<ref sub {}>.
+
+=head2 HASH_REF
+
+This is set to C<ref {}>.
+
+=head2 REGEXP_REF
+
+This is set to C<ref qr{}>.
 
 =head2 SCALAR_REF
 
