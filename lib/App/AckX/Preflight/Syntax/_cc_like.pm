@@ -26,16 +26,7 @@ sub FILL {
 	defined( my $line = <$fh> )
 	    or last;
 
-	if ( $self->{_block_end} && $line =~ $self->{_block_end} ) {
-	    my $was = $self->{in};
-	    $self->{in} = SYNTAX_CODE;
-	    delete $self->{_block_end};
-	    # We have to hand-dispatch the line because although the
-	    # next line is code, the end of the block comment is doc.
-	    $self->{want}{$was}
-		and return $line;
-	    redo;
-	} elsif ( SYNTAX_CODE eq $self->{in} ) {
+	if ( SYNTAX_CODE eq $self->{in} ) {
 	    if ( $self->{in_line_doc_start} &&
 		$line =~ $self->{in_line_doc_start} ) {
 		my $block_end = $self->_get_block_end(
@@ -69,6 +60,15 @@ sub FILL {
 		    and return $line;
 		redo;
 	    }
+	} elsif ( $self->{_block_end} && $line =~ $self->{_block_end} ) {
+	    my $was = $self->{in};
+	    $self->{in} = SYNTAX_CODE;
+	    delete $self->{_block_end};
+	    # We have to hand-dispatch the line because although the
+	    # next line is code, the end of the block comment is doc.
+	    $self->{want}{$was}
+		and return $line;
+	    redo;
 	}
 	$self->{want}{$self->{in}}
 	    and return $line;
