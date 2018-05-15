@@ -47,6 +47,10 @@ sub __single_line_re {
     __die_hard( '__single_line_re() must be overridden' );
 }
 
+sub __single_line_doc_re {
+    return;
+}
+
 1;
 
 __END__
@@ -81,6 +85,16 @@ This method returns a regular expression that matches a comment line, or
 nothing if the syntax does not support single-line comments.
 
 This method B<must> be overridden by a subclass.
+
+=head2 __single_line_doc_re
+
+This method returns a regular expression that matches a single-line
+in-line documentation line, or nothing if the syntax does not support
+single-line in-line documentation.
+
+This implementation returns nothing. The subclass should override this
+only if it is trying to parse a syntax having single-line in-line
+documentation.
 
 =head2 PUSHED
 
