@@ -22,44 +22,48 @@ use constant CC_FILE	=> 't/data/cc_file.c';
 use constant CC_CODE	=> <<'EOD';
    1: #include <stdio.h>
    2:
-   3: int main ( int argc, char ** argv ) {
-   4:     printf( "Hello, %s!\n", argc > 1 ? argv[1] : "world" );
-   5: }
-   6:
+   4:
+   5: int main ( int argc, char ** argv ) {
+   6:     printf( "Hello, %s!\n", argc > 1 ? argv[1] : "world" );
+   7: }
+   8:
 EOD
 
 use constant CC_COMMENTS	=> <<'EOD';
-   7: /*
-   8:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
-   9:  *
-  10:  * Copyright (C) 2018 by Thomas R. Wyant, III
+   3: /* This is a single-line block comment */
+   9: /*
+  10:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
   11:  *
-  12:  * This program is distributed in the hope that it will be useful, but
-  13:  * without any warranty; without even the implied warranty of
-  14:  * merchantability or fitness for a particular purpose.
-  15:  *
-  16:  * ex: set textwidth=72 :
-  17:  */
+  12:  * Copyright (C) 2018 by Thomas R. Wyant, III
+  13:  *
+  14:  * This program is distributed in the hope that it will be useful, but
+  15:  * without any warranty; without even the implied warranty of
+  16:  * merchantability or fitness for a particular purpose.
+  17:  *
+  18:  * ex: set textwidth=72 :
+  19:  */
 EOD
 
 use constant CC_CODE_COMMENTS => <<'EOD';
    1: #include <stdio.h>
    2:
-   3: int main ( int argc, char ** argv ) {
-   4:     printf( "Hello, %s!\n", argc > 1 ? argv[1] : "world" );
-   5: }
-   6:
-   7: /*
-   8:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
-   9:  *
-  10:  * Copyright (C) 2018 by Thomas R. Wyant, III
+   3: /* This is a single-line block comment */
+   4:
+   5: int main ( int argc, char ** argv ) {
+   6:     printf( "Hello, %s!\n", argc > 1 ? argv[1] : "world" );
+   7: }
+   8:
+   9: /*
+  10:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
   11:  *
-  12:  * This program is distributed in the hope that it will be useful, but
-  13:  * without any warranty; without even the implied warranty of
-  14:  * merchantability or fitness for a particular purpose.
-  15:  *
-  16:  * ex: set textwidth=72 :
-  17:  */
+  12:  * Copyright (C) 2018 by Thomas R. Wyant, III
+  13:  *
+  14:  * This program is distributed in the hope that it will be useful, but
+  15:  * without any warranty; without even the implied warranty of
+  16:  * merchantability or fitness for a particular purpose.
+  17:  *
+  18:  * ex: set textwidth=72 :
+  19:  */
 EOD
 
 $App::Ack::mappings{cc} = [

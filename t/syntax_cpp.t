@@ -20,68 +20,71 @@ use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Cpp';
 use constant JAVA_FILE	=> 't/data/java_file.java';
 
 use constant JAVA_CODE	=> <<'EOD';
-   1: import java.io.*;
-   2: import java.util.*;
-   3:
-  10:
-  11: public class java_file {
+   2:
+   3: import java.io.*;
+   4: import java.util.*;
+   5:
   12:
-  19:
-  20:     public static void main( String argv[] ) {
-  21: 	String name = argv.length > 0 ? argv[0] : "World";
-  22: 	System.out.println( "Hello, " + name + "|" );
-  23:     }
-  24:
-  25: }
+  13: public class java_file {
+  14:
+  21:
+  22:     public static void main( String argv[] ) {
+  23: 	String name = argv.length > 0 ? argv[0] : "World";
+  24: 	System.out.println( "Hello, " + name + "|" );
+  25:     }
   26:
+  27: }
+  28:
 EOD
 
 use constant JAVA_COMMENTS	=> <<'EOD';
-  27: // ex: set textwidth=72 :
+   1: /* This is a single-line block comment. Just because. */
+  29: // ex: set textwidth=72 :
 EOD
 
 use constant JAVA_DOC	=> <<'EOD';
-   4: /**
-   5:  * Implement a greeting in Java
-   6:  *
-   7:  * @author	Thomas R. Wyant, III F<wyant at cpan dot org>
-   8:  * @version	0.000_001
-   9:  */
-  13:     /**
-  14:      * This method is the mainline. It prints a greeting to the name
-  15:      * given as the first command-line argument, defaulting to "World".
-  16:      *
-  17:      * @param argv[]	String command line arguments.
-  18:      */
+   6: /**
+   7:  * Implement a greeting in Java
+   8:  *
+   9:  * @author	Thomas R. Wyant, III F<wyant at cpan dot org>
+  10:  * @version	0.000_001
+  11:  */
+  15:     /**
+  16:      * This method is the mainline. It prints a greeting to the name
+  17:      * given as the first command-line argument, defaulting to "World".
+  18:      *
+  19:      * @param argv[]	String command line arguments.
+  20:      */
 EOD
 
 use constant JAVA_CODE_DOC => <<'EOD';
-   1: import java.io.*;
-   2: import java.util.*;
-   3:
-   4: /**
-   5:  * Implement a greeting in Java
-   6:  *
-   7:  * @author	Thomas R. Wyant, III F<wyant at cpan dot org>
-   8:  * @version	0.000_001
-   9:  */
-  10:
-  11: public class java_file {
+   2:
+   3: import java.io.*;
+   4: import java.util.*;
+   5:
+   6: /**
+   7:  * Implement a greeting in Java
+   8:  *
+   9:  * @author	Thomas R. Wyant, III F<wyant at cpan dot org>
+  10:  * @version	0.000_001
+  11:  */
   12:
-  13:     /**
-  14:      * This method is the mainline. It prints a greeting to the name
-  15:      * given as the first command-line argument, defaulting to "World".
-  16:      *
-  17:      * @param argv[]	String command line arguments.
-  18:      */
-  19:
-  20:     public static void main( String argv[] ) {
-  21: 	String name = argv.length > 0 ? argv[0] : "World";
-  22: 	System.out.println( "Hello, " + name + "|" );
-  23:     }
-  24:
-  25: }
+  13: public class java_file {
+  14:
+  15:     /**
+  16:      * This method is the mainline. It prints a greeting to the name
+  17:      * given as the first command-line argument, defaulting to "World".
+  18:      *
+  19:      * @param argv[]	String command line arguments.
+  20:      */
+  21:
+  22:     public static void main( String argv[] ) {
+  23: 	String name = argv.length > 0 ? argv[0] : "World";
+  24: 	System.out.println( "Hello, " + name + "|" );
+  25:     }
   26:
+  27: }
+  28:
 EOD
 
 $App::Ack::mappings{java} = [

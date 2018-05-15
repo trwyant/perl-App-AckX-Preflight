@@ -43,6 +43,11 @@ sub FILL {
 		$line =~ $self->{in_line_doc_re} ) {
 		$self->{in} = SYNTAX_DOCUMENTATION;
 	    } elsif ( $line =~ m< \A \s* / [*] >smx ) {
+		if ( $line =~ m< [*] / >smx ) {
+		    $self->{want}{ SYNTAX_COMMENT() }
+			and return $line;
+		    redo;
+		}
 		$self->{in} = SYNTAX_COMMENT;
 	    } elsif ( $self->{single_line_comment_re} &&
 		$line =~ $self->{single_line_comment_re} ) {

@@ -1,3 +1,5 @@
+/* This is a single-line block comment. Just because. */
+
 import java.io.*;
 import java.util.*;
 
