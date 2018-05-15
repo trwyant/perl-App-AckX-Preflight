@@ -77,8 +77,9 @@ t/syntax_shell.t
 t/syntax_sql.t
 t/syntax_vim.t
 t/syntax_yaml.t
+tools/ackxp-out-of-service
 tools/number
-tools/out-of-service
+tools/syntax-filters
 xt/author/carp_not.t
 xt/author/changes.t
 xt/author/critic.t

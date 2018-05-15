@@ -76,14 +76,14 @@ __END__
 
 =head1 TITLE
 
-out-of-service - Report out-of-service App::AckX::Preflight plug-ins.
+ackxp-out-of-service - Report out-of-service App::AckX::Preflight plug-ins.
 
 =head1 SYNOPSIS
 
- out-of-service
- out-of-service -unlink
- out-of-service -help
- out-of-service -version
+ ackxp-out-of-service
+ ackxp-out-of-service -unlink
+ ackxp-out-of-service -help
+ ackxp-out-of-service -version
 
 =head1 OPTIONS
 
