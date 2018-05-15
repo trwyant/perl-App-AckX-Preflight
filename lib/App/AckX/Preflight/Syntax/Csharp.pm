@@ -1,4 +1,4 @@
-package App::AckX::Preflight::Syntax::Cpp;
+package App::AckX::Preflight::Syntax::Csharp;
 
 use 5.008008;
 
@@ -18,17 +18,14 @@ sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION );
 }
 
-__PACKAGE__->__handles_type_mod( qw{ set actionscript cpp java objc } );
-
-sub __in_line_doc_re {
-    return(
-	qr{ \A \s* / [*] [*] }smx,
-	qr{ [*] / }smx,
-    );
-}
+__PACKAGE__->__handles_type_mod( qw{ set csharp } );
 
 sub __single_line_re {
     return qr{ \A \s* // }smx;
+}
+
+sub __single_line_doc_re {
+    return qr{ \A \s* /// }smx;
 }
 
 1;
@@ -37,7 +34,7 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Syntax::Cpp - App::AckX::Preflight syntax filter for C++-like languages.
+App::AckX::Preflight::Syntax::Csharp - App::AckX::Preflight syntax filter for C#.
 
 =head1 SYNOPSIS
 
@@ -57,24 +54,7 @@ The supported syntax types are:
 
 =item comment (both C</* ... */>-style block and C<//> single-line)
 
-=item documentation (block comments introduced by '/**')
-
-=back
-
-In principal this syntax filter can be used for any syntax that consists
-of code, single-line comments introduced by C<'//'>, block comments
-enclosed in C<'/* ... */'>, and in-line documentation enclosed in
-C<'/** ... */'>.  By default it applies to:
-
-=over
-
-=item c<actionscript>
-
-=item C<cpp>
-
-=item C<java>
-
-=item C<objc>
+=item documentation (single-line comments introduced by '///')
 
 =back
 

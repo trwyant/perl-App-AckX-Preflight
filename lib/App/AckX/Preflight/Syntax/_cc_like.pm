@@ -58,6 +58,11 @@ sub FILL {
 		}
 		$self->{_block_end} = $block_end;
 		$self->{in} = SYNTAX_COMMENT;
+	    } elsif ( $self->{single_line_doc_re} &&
+		$line =~ $self->{single_line_doc_re} ) {
+		$self->{want}{ SYNTAX_DOCUMENTATION() }
+		    and return $line;
+		redo;
 	    } elsif ( $self->{single_line_re} &&
 		$line =~ $self->{single_line_re} ) {
 		$self->{want}{ SYNTAX_COMMENT() }
@@ -75,10 +80,10 @@ sub FILL {
 sub PUSHED {
 #   my ( $class, $mode, $fh ) = @_;
     my ( $class ) = @_;
-    my $single_line_re = $class->__single_line_re();
-    defined $single_line_re
-	and REGEXP_REF ne ref $single_line_re
-	and __die_hard( '__single_line_re() must return regex or undef' );
+    my $single_line_re = $class->_validate_single_line(
+	'__single_line_re()', $class->__single_line_re() );
+    my $single_line_doc_re = $class->_validate_single_line(
+	'__single_line_doc_re()', $class->__single_line_doc_re() );
     my ( $block_start, $block_end ) = $class->_validate_block(
 	'__block_re()', $class->__block_re() );
     my ( $in_line_doc_start, $in_line_doc_end ) = $class->_validate_block(
@@ -91,6 +96,7 @@ sub PUSHED {
 	in_line_doc_start	=> $in_line_doc_start,
 	in_line_doc_end		=> $in_line_doc_end,
 	single_line_re		=> $single_line_re,
+	single_line_doc_re	=> $single_line_doc_re,
     }, ref $class || $class;
 }
 
@@ -117,8 +123,13 @@ sub _validate_block {
     return ( $start, $end );
 }
 
-sub __single_line_re {
-    return;
+sub _validate_single_line {
+    my ( undef, $kind, $re ) = @_;
+    defined $re
+	or return;
+    REGEXP_REF eq ref $re
+	or __die_hard( "$kind must return regexp or undef" );
+    return $re;
 }
 
 sub __block_re {
@@ -129,6 +140,14 @@ sub __block_re {
 }
 
 sub __in_line_doc_re {
+    return;
+}
+
+sub __single_line_doc_re {
+    return;
+}
+
+sub __single_line_re {
     return;
 }
 
@@ -223,6 +242,16 @@ nothing if the syntax does not support single-line comments.
 
 This implementation returns nothing. The subclass should override this
 only if it is trying to parse a syntax having single-line comments.
+
+=head2 __single_line_doc_re
+
+This method returns a regular expression that matches a single-line
+in-line documentation line, or nothing if the syntax does not support
+single-line in-line documentation.
+
+This implementation returns nothing. The subclass should override this
+only if it is trying to parse a syntax having single-line in-line
+documentation.
 
 =head2 PUSHED
 
