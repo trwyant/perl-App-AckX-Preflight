@@ -18,15 +18,16 @@ sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION );
 }
 
-# C++ uses the same comment syntax. In fact, Doxygen-format in-line
-# documentation uses '/**' to introduce it.
 __PACKAGE__->__handles_type_mod( qw{ set actionscript cpp csharp java objc } );
 
-sub __in_line_documentation_re {
-    return qr{ \A \s* / [*] [*] }smx;
+sub __in_line_doc_re {
+    return(
+	qr{ \A \s* / [*] [*] }smx,
+	qr{ [*] / }smx,
+    );
 }
 
-sub __single_line_comment_re {
+sub __single_line_re {
     return qr{ \A \s* // }smx;
 }
 
@@ -66,6 +67,8 @@ enclosed in C<'/* ... */'>, and in-line documentation enclosed in
 C<'/** ... */'>.  By default it applies to:
 
 =over
+
+=item c<actionscript>
 
 =item C<cpp>
 

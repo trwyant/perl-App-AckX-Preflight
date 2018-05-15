@@ -24,7 +24,7 @@ sub FILL {
     {
 	defined( my $line = <$fh> )
 	    or last;
-	my $type = $line =~ $self->{single_line_comment_re} ?
+	my $type = $line =~ $self->{single_line_re} ?
 	    SYNTAX_COMMENT :
 	    SYNTAX_CODE;
 	$self->{want}{$type}
@@ -39,12 +39,12 @@ sub PUSHED {
     my ( $class ) = @_;
     return bless {
 	want			=> $class->__want_syntax(),
-	single_line_comment_re	=> $class->__single_line_comment_re(),
+	single_line_re	=> $class->__single_line_re(),
     }, ref $class || $class;
 }
 
-sub __single_line_comment_re {
-    __die_hard( '__single_line_comment_re() must be overridden' );
+sub __single_line_re {
+    __die_hard( '__single_line_re() must be overridden' );
 }
 
 1;
@@ -69,13 +69,13 @@ documentation.
 
 In order to use this as a superclass, the subclass B<must> override
 L<__handles_syntax|App::AckX::Preflight::Syntax/__handles_syntax> and
-L<__single_line_comment_re()|/__single_line_comment_re>.
+L<__single_line_re()|/__single_line_re>.
 
 =head1 METHODS
 
 This class adds the following methods:
 
-=head2 __single_line_comment_re
+=head2 __single_line_re
 
 This method returns a regular expression that matches a comment line, or
 nothing if the syntax does not support single-line comments.

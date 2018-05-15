@@ -9,6 +9,7 @@ use parent qw{ App::AckX::Preflight::Syntax };
 
 use App::AckX::Preflight::Util qw{
     :croak
+    :ref
     :syntax
     @CARP_NOT
 };
@@ -19,38 +20,46 @@ sub __handles_syntax {
     __die_hard( '__handles_syntax() must be overridden' );
 }
 
-my %cmt_or_doc = map { $_ => 1 } SYNTAX_COMMENT, SYNTAX_DOCUMENTATION;
-
 sub FILL {
     my ( $self, $fh ) = @_;
     {
 	defined( my $line = <$fh> )
 	    or last;
 
-	if ( $cmt_or_doc{$self->{in}} ) {
-	    if ( $line =~ m< [*] / >smx ) {
-		my $was = $self->{in};
-		$self->{in} = SYNTAX_CODE;
-		# We have to hand-dispatch the line because although the
-		# next line is code, the end of the block comment is
-		# doc.
-		$self->{want}{$was}
-		    and return $line;
-		redo;
-	    }
+	if ( $self->{_block_end} && $line =~ $self->{_block_end} ) {
+	    my $was = $self->{in};
+	    $self->{in} = SYNTAX_CODE;
+	    delete $self->{_block_end};
+	    # We have to hand-dispatch the line because although the
+	    # next line is code, the end of the block comment is doc.
+	    $self->{want}{$was}
+		and return $line;
+	    redo;
 	} elsif ( SYNTAX_CODE eq $self->{in} ) {
-	    if ( $self->{in_line_doc_re} &&
-		$line =~ $self->{in_line_doc_re} ) {
+	    if ( $self->{in_line_doc_start} &&
+		$line =~ $self->{in_line_doc_start} ) {
+		my $block_end = $self->_get_block_end(
+		    in_line_doc_end => $1 );
+		if ( $line =~ $block_end ) {
+		    $self->{want}{ SYNTAX_DOCUMENTATION() }
+			and return $line;
+		    redo;
+		}
+		$self->{_block_end} = $block_end;
 		$self->{in} = SYNTAX_DOCUMENTATION;
-	    } elsif ( $line =~ m< \A \s* / [*] >smx ) {
-		if ( $line =~ m< [*] / >smx ) {
+
+
+	    } elsif ( $self->{block_start} && $line =~ $self->{block_start} ) {
+		my $block_end = $self->_get_block_end( block_end => $1 );
+		if ( $line =~ $block_end ) {
 		    $self->{want}{ SYNTAX_COMMENT() }
 			and return $line;
 		    redo;
 		}
+		$self->{_block_end} = $block_end;
 		$self->{in} = SYNTAX_COMMENT;
-	    } elsif ( $self->{single_line_comment_re} &&
-		$line =~ $self->{single_line_comment_re} ) {
+	    } elsif ( $self->{single_line_re} &&
+		$line =~ $self->{single_line_re} ) {
 		$self->{want}{ SYNTAX_COMMENT() }
 		    and return $line;
 		redo;
@@ -66,22 +75,61 @@ sub FILL {
 sub PUSHED {
 #   my ( $class, $mode, $fh ) = @_;
     my ( $class ) = @_;
+    my $single_line_re = $class->__single_line_re();
+    defined $single_line_re
+	and REGEXP_REF ne ref $single_line_re
+	and __die_hard( '__single_line_re() must return regex or undef' );
+    my ( $block_start, $block_end ) = $class->_validate_block(
+	'__block_re()', $class->__block_re() );
+    my ( $in_line_doc_start, $in_line_doc_end ) = $class->_validate_block(
+	'__in_line_doc_re()', $class->__in_line_doc_re() );
     return bless {
 	in			=> SYNTAX_CODE,
 	want			=> $class->__want_syntax(),
-	single_line_comment_re	=> $class->__single_line_comment_re(),
-	in_line_doc_re		=> $class->__in_line_documentation_re(),
+	block_start		=> $block_start,
+	block_end		=> $block_end,
+	in_line_doc_start	=> $in_line_doc_start,
+	in_line_doc_end		=> $in_line_doc_end,
+	single_line_re		=> $single_line_re,
     }, ref $class || $class;
 }
 
-# Sorry, perlcritic. The following are reqired to return either a Regexp
-# object or undef, and to do that in list context.
-sub __single_line_comment_re {
-    return undef;	## no critic (ProhibitExplicitReturnUndef)
+sub _get_block_end {
+    my ( $self, $kind, $start ) = @_;
+    REGEXP_REF eq ref $self->{$kind}
+	and return $self->{$kind};
+    return $self->{$kind}{$start} || __die_hard(
+	"No block end corresponds to '$start'" );
 }
 
-sub __in_line_documentation_re {
-    return undef;	## no critic (ProhibitExplicitReturnUndef)
+sub _validate_block {
+    my ( undef, $kind, $start, $end ) = @_;
+    defined $start
+	or return;
+    REGEXP_REF eq ref $start
+	or __die_hard( "$kind start must be regexp or undef" );
+    REGEXP_REF eq ref $end
+	and return ( $start, $end );
+    HASH_REF eq ref $end
+	or __die_hard( "$kind end must be regexp or hash ref" );
+    __any { REGEXP_REF ne ref } values %{ $end }
+	and __die_hard( "$kind end hash values must be regexp" );
+    return ( $start, $end );
+}
+
+sub __single_line_re {
+    return;
+}
+
+sub __block_re {
+    return(
+	qr{ \A \s* / [*] }smx,
+	qr{ [*] / }smx,
+    );
+}
+
+sub __in_line_doc_re {
+    return;
 }
 
 
@@ -124,8 +172,8 @@ documentation of
 L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax> for details.
 
 The subclass B<may> override
-L<__single_line_comment_re()|/__single_line_comment_re> and/or
-L<__in_line_documentation_re()|/__in_line_documentatio_re>. If it does
+L<__single_line_re()|/__single_line_re> and/or
+L<__in_line_doc_re()|/__in_line_documentatio_re>. If it does
 not, it gets a syntax like C itself, without single-line comments or
 in-line documentation.
 
@@ -133,25 +181,48 @@ in-line documentation.
 
 This class adds the following methods:
 
-=head2 __single_line_comment_re
+=head2 __block_re
 
-This method returns a regular expression that matches a comment line, or
-nothing if the syntax does not support single-line comments.
+This method returns either nothing, two regular expressions, or a
+regular expression with a single capture group and a reference to a hash
+of regular expressions keyed on possible captures of the first return.
 
-This implementation returns nothing. The subclass should override this
-only if it is trying to parse a syntax having single-line comments.
+The first return value is used to detect the beginning of a block
+comment. The second return value is used to detect the end of a block
+comment. The hash provides for cases where multiple block comment
+formats exist (e.g. Pascal).
 
-=head2 __in_line_documentation_re
+This implementation returns
 
-This method returns a regular expression that matches the beginning of
-in-line documentation, or nothing if the syntax does not support in-line
-documentation.
+  (
+    qr{ \A \s* / [*] }smx,
+    qr{ [*] / }smx,
+  )
+
+=head2 __in_line_doc_re
+
+This method returns either nothing, two regular expressions, or a
+regular expression with a single capture group and a reference to a hash
+of regular expressions keyed on possible captures of the first return.
+
+The first return value is used to detect the beginning of in-line
+documentation.  comment. The second return value is used to detect the
+end of in-line documentation.  comment.  The hash provides for cases
+where multiple in-line documentation formats exist.
 
 If this regular expression is provided it is tried before block
 comments.
 
 This implementation returns nothing. The subclass should override this
 only if it is trying to parse a syntax having in-line documentation.
+
+=head2 __single_line_re
+
+This method returns a regular expression that matches a comment line, or
+nothing if the syntax does not support single-line comments.
+
+This implementation returns nothing. The subclass should override this
+only if it is trying to parse a syntax having single-line comments.
 
 =head2 PUSHED
 

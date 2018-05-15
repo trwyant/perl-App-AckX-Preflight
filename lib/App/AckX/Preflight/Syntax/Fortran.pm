@@ -20,7 +20,7 @@ sub __handles_syntax {
 
 __PACKAGE__->__handles_type_mod( qw{ set fortran } );
 
-sub __single_line_comment_re {
+sub __single_line_re {
     return qr{ \A (?: [C*] | \s* ! ) }smxi;
 }
 

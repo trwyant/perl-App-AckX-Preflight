@@ -18,9 +18,9 @@ sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT );
 }
 
-__PACKAGE__->__handles_type_mod( qw{ set shell } );
+__PACKAGE__->__handles_type_mod( qw{ set python shell } );
 
-sub __single_line_comment_re {
+sub __single_line_re {
     return qr{ \A \s* \# }smx;
 }
 
@@ -30,7 +30,7 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Syntax::Shell - App::AckX::Preflight syntax filter for Shell.
+App::AckX::Preflight::Syntax::Shell - App::AckX::Preflight syntax filter for shell-like syntax.
 
 =head1 SYNOPSIS
 
@@ -49,6 +49,18 @@ The supported syntax types are:
 =item code
 
 =item comment
+
+=back
+
+In principal this syntax filter can be used for any syntax that consists
+of code and single-line comments introduced by C<'#'>. By default it
+applies to:
+
+=over
+
+=item python
+
+=item shell
 
 =back
 
