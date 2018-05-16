@@ -21,7 +21,7 @@ my @want;
 
 @got = PLUGIN->__options();
 is_deeply \@got,
-    [ qw{ syntax=s@ } ],
+    [ qw{ syntax=s@ syntax-type! } ],
     'Options'
     or diag explain 'Got ', @got;
 

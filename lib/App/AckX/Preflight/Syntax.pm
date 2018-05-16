@@ -46,7 +46,8 @@ sub __getopt {
 	'syntax-add=s'	=> $mod_syntax,
 	'syntax-del=s'	=> $mod_syntax,
 	'syntax-set=s'	=> $mod_syntax,
-	qw{ syntax=s@ } );
+	qw{ syntax=s@ syntax-type! },
+    );
     if ( $strict && @{ $arg } ) {
 	local $" = ', ';
 	__die( "Unsupported arguments @{ $arg }" );
@@ -56,10 +57,12 @@ sub __getopt {
 }
 
 my %WANT_SYNTAX;
+my %SYNTAX_OPT;
 
 sub import {
     my ( $class, @arg ) = @_;
     my $opt = $class->__getopt( \@arg );
+    %SYNTAX_OPT  = map { $_ => $opt->{$_} } qw{ syntax-type };
     %WANT_SYNTAX = map { $_ => 1 } @{ $opt->{syntax} || [] };
     foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
 	my ( $filter, $mod, @val ) = @{ $_ };
@@ -197,6 +200,10 @@ sub __handles_syntax {
     }
 }
 
+sub __syntax_opt {
+    return \%SYNTAX_OPT;
+}
+
 sub __want_everything {
     my ( $class ) = @_;
     $class->IS_EXHAUSTIVE
@@ -210,7 +217,12 @@ sub __want_everything {
 }
 
 sub __want_syntax {
-    return \%WANT_SYNTAX;
+    my ( $class ) = @_;
+    keys %WANT_SYNTAX
+	and return \%WANT_SYNTAX;
+    $SYNTAX_OPT{'syntax-type'}
+	and return { map { $_ => 1 } $class->__handles_syntax() };
+    return {};
 }
 
 1;
@@ -313,6 +325,11 @@ any previously-handled file types. It can be specified more than once.
 
 All the verbiage about the argument of C<-syntax-add>, above, applies
 here also.
+
+=item -syntax-type
+
+If asserted, this Boolean option requests that the syntax filters prefix
+each line returned with the syntax type computed for that line.
 
 =back
 
@@ -449,6 +466,25 @@ appear in the hash returned by L<__want_syntax()|/__want_syntax>.
 
 This static method returns the full class names of all in-service
 syntax filters.
+
+=head2 __syntax_opt
+
+This static method returns a reference to a hash containing the values
+of options that the individual filters need to see. At the moment this
+is:
+
+=over
+
+=item syntax-type
+
+See L<-syntax-type|/-syntax-type> above.
+
+=back
+
+=head2 __want_everything
+
+This convenience static method returns a true value if and only if the
+filter is exhaustive and every supported syntax type was requested.
 
 =head2 __want_syntax
 

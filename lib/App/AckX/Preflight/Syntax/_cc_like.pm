@@ -104,8 +104,12 @@ sub FILL {
     local $_ = undef;	# Should not be needed, but seems to be.
 
     while ( <$fh> ) {
-	$self->{want}{ $classifier->{ $self->{in} }->( $self ) }
-	    and return $_;
+	my $type = $classifier->{ $self->{in} }->( $self );
+	$self->{want}{$type}
+	    or next;
+	$self->{syntax_type}
+	    and $_ = join ':', substr( $type, 0, 4 ), $_;
+	return $_;
     }
     return;
 }
@@ -113,6 +117,7 @@ sub FILL {
 sub PUSHED {
 #   my ( $class, $mode, $fh ) = @_;
     my ( $class ) = @_;
+    my $syntax_opt = $class->__syntax_opt();
     my $single_line_re = $class->_validate_single_line(
 	'__single_line_re()', $class->__single_line_re() );
     my $single_line_doc_re = $class->_validate_single_line(
@@ -137,6 +142,7 @@ sub PUSHED {
 	single_line_re		=> $single_line_re,
 	single_line_doc_re	=> $single_line_doc_re,
 	single_line_meta_re	=> $single_line_meta_re,
+	syntax_type		=> $syntax_opt->{'syntax-type'},
     }, ref $class || $class;
 }
 

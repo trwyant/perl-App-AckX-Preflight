@@ -68,8 +68,12 @@ sub FILL {
     local $_ = undef;	# Should not be needed, but seems to be.
 
     while ( <$fh> ) {
-	$self->{want}{ $classifier->{ $self->{in} }->( $self ) }
-	    and return $_;
+	my $type = $classifier->{ $self->{in} }->( $self );
+	$self->{want}{$type}
+	    or next;
+	$self->{syntax_type}
+	    and $_ = join ':', substr( $type, 0, 4 ), $_;
+	return $_;
     }
     return;
 }
@@ -77,9 +81,11 @@ sub FILL {
 sub PUSHED {
 #   my ( $class, $mode, $fh ) = @_;
     my ( $class ) = @_;
+    my $syntax_opt = $class->__syntax_opt();
     return bless {
-	in	=> SYNTAX_CODE,
-	want	=> $class->__want_syntax(),
+	in		=> SYNTAX_CODE,
+	want		=> $class->__want_syntax(),
+	syntax_type	=> $syntax_opt->{'syntax-type'},
     }, ref $class || $class;
 }
 

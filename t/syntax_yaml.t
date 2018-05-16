@@ -20,7 +20,6 @@ use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::YAML';
 use constant DATA_FILE	=> 't/data/yaml_file.yml';
 
 use constant DATA_DATA	=> <<'EOD';
-   1: ---
    3: - There was a young lady named Bright,
    4: - Who could travel much faster than light.
    5: - '    She set out one day'
@@ -32,7 +31,7 @@ use constant DATA_COMMENT	=> <<'EOD';
    2: # This is a comment
 EOD
 
-use constant DATA_DATA_COMMENT => <<'EOD';
+use constant DATA_DATA_COMMENT_META => <<'EOD';
    1: ---
    2: # This is a comment
    3: - There was a young lady named Bright,
@@ -51,6 +50,7 @@ my $resource = App::Ack::Resource->new( DATA_FILE );
 is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ yaml } ],
     sprintf '%s handles yaml', SYNTAX_FILTER;
 
+
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_DATA );
 
 ok ! SYNTAX_FILTER->__want_everything(),
@@ -59,6 +59,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 is slurp( DATA_FILE ), DATA_DATA, 'Only data, reading directly';
 
 is slurp( $resource ), DATA_DATA, 'Only data, reading resource';
+
 
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_COMMENT );
 
@@ -69,16 +70,20 @@ is slurp( DATA_FILE ), DATA_COMMENT, 'Only comments, reading directly';
 
 is slurp( $resource ), DATA_COMMENT, 'Only comments, reading resource';
 
-SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_DATA, SYNTAX_COMMENT );
+
+SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_DATA, SYNTAX_COMMENT,
+    SYNTAX_METADATA );
 
 ok SYNTAX_FILTER->__want_everything(),
-    sprintf q<'%s:%s' is everything>, SYNTAX_DATA, SYNTAX_COMMENT;
+    sprintf q<'%s:%s:%s' is everything>, SYNTAX_DATA, SYNTAX_COMMENT,
+    SYNTAX_METADATA;
 
-is slurp( DATA_FILE ), DATA_DATA_COMMENT,
-    'YAML and comments, reading directly';
+is slurp( DATA_FILE ), DATA_DATA_COMMENT_META,
+    'Data, comments, and metadata, reading directly';
 
-is slurp( $resource ), DATA_DATA_COMMENT,
-    'YAML and comments, reading resource';
+is slurp( $resource ), DATA_DATA_COMMENT_META,
+    'Data, comments, and metadata, reading resource';
+
 
 done_testing;
 

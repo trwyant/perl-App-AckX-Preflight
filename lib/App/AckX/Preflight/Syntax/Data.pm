@@ -28,11 +28,19 @@ sub FILL {
 sub PUSHED {
 #   my ( $class, $mode, $fh ) = @_;
     my ( $class ) = @_;
+    my $syntax_opt = $class->__syntax_opt();
     my $want = $class->__want_syntax();
-    my $fill = $want->{ SYNTAX_DATA() } ? sub {
-	my ( $fh ) = @_;
-	return scalar <$fh>;
-    } : sub { return };
+    my $type = substr SYNTAX_DATA, 0, 4;
+    my $fill = $want->{ SYNTAX_DATA() } ?
+	$syntax_opt->{'syntax-type'} ? sub {
+	    my ( $fh ) = @_;
+	    defined( my $line = <$fh> )
+		or return;
+	    return "$type:$line";
+	} : sub {
+	    my ( $fh ) = @_;
+	    return scalar <$fh>;
+	} : sub { return };
     return bless {
 	fill	=> $fill,
     }, ref $class || $class;

@@ -61,8 +61,12 @@ __PACKAGE__->__handles_type_mod( qw{ set perl perltest } );
 	local $_ = undef;	# Should not be needed, but seems to be.
 
 	while ( <$fh> ) {
-	    $self->{want}{ $classify->{ $self->{in} }->( $self ) }
-		and return $_;
+	    my $type = $classify->{ $self->{in} }->( $self );
+	    $self->{want}{$type}
+		or next;
+	    $self->{syntax_type}
+		and $_ = join ':', substr( $type, 0, 4 ), $_;
+	    return $_;
 	}
 	return;
     }
@@ -71,9 +75,11 @@ __PACKAGE__->__handles_type_mod( qw{ set perl perltest } );
 sub PUSHED {
 #   my ( $class, $mode, $fh ) = @_;
     my ( $class ) = @_;
+    my $syntax_opt = $class->__syntax_opt();
     return bless {
-	in	=> SYNTAX_CODE,
-	want	=> $class->__want_syntax(),
+	in		=> SYNTAX_CODE,
+	want		=> $class->__want_syntax(),
+	syntax_type	=> $syntax_opt->{'syntax-type'},
     }, ref $class || $class;
 }
 

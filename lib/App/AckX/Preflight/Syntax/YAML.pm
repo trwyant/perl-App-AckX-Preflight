@@ -15,7 +15,7 @@ use App::AckX::Preflight::Util qw{
 our $VERSION = '0.000_013';
 
 sub __handles_syntax {
-    return( SYNTAX_DATA, SYNTAX_COMMENT );
+    return( SYNTAX_DATA, SYNTAX_COMMENT, SYNTAX_METADATA );
 }
 
 __PACKAGE__->__handles_type_mod( qw{ set yaml } );
@@ -26,11 +26,16 @@ sub FILL {
     local $_ = undef;	# Should not be needed, but seems to be.
 
     while ( <$fh> ) {
-	my $type = $_ =~ m/ \A \s* \# /smx ?
-	    SYNTAX_COMMENT :
-	    SYNTAX_DATA;
+	my $type = ( 1 == $. && "---\n" eq $_ ) ?
+	    SYNTAX_METADATA :
+	    $_ =~ m/ \A \s* \# /smx ?
+		SYNTAX_COMMENT :
+		SYNTAX_DATA;
 	$self->{want}{$type}
-	    and return $_;
+	    or next;
+	$self->{syntax_type}
+	    and $_ = join ':', substr( $type, 0, 4 ), $_;
+	return $_;
     }
     return;
 }
@@ -38,8 +43,10 @@ sub FILL {
 sub PUSHED {
 #   my ( $class, $mode, $fh ) = @_;
     my ( $class ) = @_;
+    my $syntax_opt = $class->__syntax_opt();
     return bless {
-	want	=> $class->__want_syntax(),
+	want		=> $class->__want_syntax(),
+	syntax_type	=> $syntax_opt->{'syntax-type'},
     }, ref $class || $class;
 }
 

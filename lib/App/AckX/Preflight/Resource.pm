@@ -53,8 +53,10 @@ our $VERSION = '0.000_013';
 	    $self->__ackx_preflight__is_type( $class->__handles_type() )
 		or next;
 
-	    # If we want everything we don't need the filter.
+	    # If we want everything and we're not reporting syntax types
+	    # we don't need the filter.
 	    $class->__want_everything()
+		and not $class->__syntax_opt()->{'syntax-type'}
 		and goto $open;
 
 	    # Open the file, inserting the PerlIO::via module into the

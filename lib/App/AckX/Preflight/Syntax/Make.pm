@@ -34,7 +34,10 @@ sub FILL {
 	$_ =~ m/ \\ $ /x
 	    and $self->{continued} = $type;
 	$self->{want}{$type}
-	    and return $_;
+	    or next;
+	$self->{syntax_type}
+	    and $_ = join ':', substr( $type, 0, 4 ), $_;
+	return $_;
     }
     return;
 }
@@ -42,8 +45,10 @@ sub FILL {
 sub PUSHED {
 #   my ( $class, $mode, $fh ) = @_;
     my ( $class ) = @_;
+    my $syntax_opt = $class->__syntax_opt();
     return bless {
-	want	=> $class->__want_syntax(),
+	want		=> $class->__want_syntax(),
+	syntax_type	=> $syntax_opt->{'syntax-type'},
     }, ref $class || $class;
 }
 

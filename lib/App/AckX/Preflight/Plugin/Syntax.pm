@@ -17,20 +17,24 @@ our $VERSION = '0.000_013';
 *__normalize_options = \&App::AckX::Preflight::Syntax::__normalize_options;
 
 sub __options {
-    return( qw{ syntax=s@ } );
+    return( qw{ syntax=s@ syntax-type! } );
 }
 
 sub __process {
     my ( undef, $aaxp, $opt ) = @_;
     $opt->{syntax}
 	and @{ $opt->{syntax} }
+	or $opt->{'syntax-type'}
 	or return;
 
     App::AckX::Preflight::Syntax->__getopt( \@ARGV, $opt );
 
-    my @arg = (
-	'-syntax=' . join( ':', @{ $opt->{syntax} } ),
-    );
+    my @arg;
+    $opt->{syntax}
+	and @{ $opt->{syntax} }
+	and push @arg, '-syntax=' . join( ':', @{ $opt->{syntax} } );
+    $opt->{'syntax-type'}
+	and push @arg, '-syntax-type';
     foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
 	my ( undef, $mod, @val ) = @{ $_ };
 	local $" = ':';
