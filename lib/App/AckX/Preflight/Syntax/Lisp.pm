@@ -16,7 +16,8 @@ use App::AckX::Preflight::Util qw{
 our $VERSION = '0.000_013';
 
 sub __handles_syntax {
-    return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION );
+    return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION,
+	SYNTAX_METADATA );
 }
 
 __PACKAGE__->__handles_type_mod( qw{ set clojure elisp lisp scheme } );
@@ -24,7 +25,9 @@ __PACKAGE__->__handles_type_mod( qw{ set clojure elisp lisp scheme } );
 my $handler = {
     SYNTAX_CODE()	=> sub {
 	my ( $self ) = @_;
-	if ( m/ \A \s* ( ;+ ) /smx ) {
+	if ( 1 == $. && m/ \A \# ! /smx ) {
+	    return $self->{want}{ SYNTAX_METADATA() };
+	} elsif ( m/ \A \s* ( ;+ ) /smx ) {
 	    my $type = 2 < length $1 ?
 		SYNTAX_DOCUMENTATION :
 		SYNTAX_COMMENT;
@@ -87,7 +90,7 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Syntax::Lisp - App::AckX::Preflight syntax filter for languages which only have single-line comments.
+App::AckX::Preflight::Syntax::Lisp - App::AckX::Preflight syntax filter for Lisp.
 
 =head1 SYNOPSIS
 
@@ -95,50 +98,41 @@ No direct user interaction.
 
 =head1 DESCRIPTION
 
-This Perl class is intended to be subclassed to produce a
-This L<PerlIO::via|PerlIO::via> I/O layer used by
-L<App::AckX::Preflight|App::AckX::Preflight> to process a language whose
-syntax allows only single-line comments, and no in-line data or
-documentation.
+This L<PerlIO::via|PerlIO::via> I/O layer is intended to be used by
+L<App::AckX::Preflight|App::AckX::Preflight> to process a Lisp file,
+returning only those lines the user has requested.
 
-In order to use this as a superclass, the subclass B<must> override
-L<__handles_syntax|App::AckX::Preflight::Syntax/__handles_syntax> and
-L<__single_line_re()|/__single_line_re>.
+The supported syntax types are:
+
+=over
+
+=item code
+
+=item comment
+
+=item documentation (i.e. C<;;;>-lines)
+
+=item metadata (shebang line)
+
+=back
 
 =head1 METHODS
 
-This class adds the following methods:
-
-=head2 __single_line_re
-
-This method returns a regular expression that matches a comment line, or
-nothing if the syntax does not support single-line comments.
-
-This method B<must> be overridden by a subclass.
-
-=head2 __single_line_doc_re
-
-This method returns a regular expression that matches a single-line
-in-line documentation line, or nothing if the syntax does not support
-single-line in-line documentation.
-
-This implementation returns nothing. The subclass should override this
-only if it is trying to parse a syntax having single-line in-line
-documentation.
+This class adds the following methods, which are part of the
+L<PerlIO::via|PerlIO::via> interface:
 
 =head2 PUSHED
 
-This static method is part of the L<PerlIO::via|PerlIO::via> interface.
-It is called when this class is pushed onto the stack.  It manufactures,
-initializes, and returns a new object.
+This static method is called when this class is pushed onto the stack.
+It manufactures, initializes, and returns a new object.
 
 =head2 FILL
 
-This method is part of the L<PerlIO::via|PerlIO::via> interface. It is
-called when a C<readline>/C<< <> >> operator is executed on the file
-handle. It reads the next-lower-level layer until a line is found that
-is one of the syntax types that is being returned, and returns that line
-to the next-higher layer. At end of file, nothing is returned.
+This method is called when a C<readline>/C<< <> >> operator is executed
+on the file handle. It reads the next-lower-level layer until a line is
+found that is one of the syntax types that is being returned, and
+returns that line to the next-higher layer. At end of file, nothing is
+returned.
 
 =head1 SEE ALSO
 

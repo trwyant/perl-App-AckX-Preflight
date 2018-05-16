@@ -1,4 +1,4 @@
-package App::AckX::Preflight::Syntax::Cpp;
+package App::AckX::Preflight::Syntax::Java;
 
 use 5.008008;
 
@@ -15,10 +15,11 @@ use App::AckX::Preflight::Util qw{
 our $VERSION = '0.000_013';
 
 sub __handles_syntax {
-    return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION );
+    return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION,
+	SYNTAX_METADATA );
 }
 
-__PACKAGE__->__handles_type_mod( qw{ set actionscript cpp objc } );
+__PACKAGE__->__handles_type_mod( qw{ set actionscript cpp java objc } );
 
 sub __in_line_doc_re {
     return(
@@ -27,8 +28,19 @@ sub __in_line_doc_re {
     );
 }
 
+sub __block_meta_re {
+    return(
+	qr{ \A \s* \@ \w+ \s* [(] }smx,
+	qr{ [)] }smx,
+    );
+}
+
 sub __single_line_re {
     return qr{ \A \s* // }smx;
+}
+
+sub __single_line_meta_re {
+    return qr{ \A \s* \@ \w+ \s* (?! [(] ) }smx;	# )
 }
 
 1;
@@ -37,7 +49,7 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Syntax::Cpp - App::AckX::Preflight syntax filter for C++-like languages.
+App::AckX::Preflight::Syntax::Java - App::AckX::Preflight syntax filter for Java.
 
 =head1 SYNOPSIS
 
@@ -46,7 +58,7 @@ No direct user interaction.
 =head1 DESCRIPTION
 
 This L<PerlIO::via|PerlIO::via> I/O layer is intended to be used by
-L<App::AckX::Preflight|App::AckX::Preflight> to process a C++-like file,
+L<App::AckX::Preflight|App::AckX::Preflight> to process a Java program,
 returning only those lines the user has requested.
 
 The supported syntax types are:
@@ -59,22 +71,19 @@ The supported syntax types are:
 
 =item documentation (block comments introduced by '/**')
 
-=back
-
-In principal this syntax filter can be used for any syntax that consists
-of code, single-line comments introduced by C<'//'>, block comments
-enclosed in C<'/* ... */'>, and in-line documentation enclosed in
-C<'/** ... */'>.  By default it applies to:
-
-=over
-
-=item c<actionscript>
-
-=item C<cpp>
-
-=item C<objc>
+=item metadata (annotations)
 
 =back
+
+Note that, because the
+L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax>
+classification is line-based, if annotations are cuddled with code like
+this
+
+ @Override int Foo() {... }
+
+the whole line will be considered metadata. This is a restriction, in
+the sense of a misfeature which the author sees no way to fix.
 
 =head1 METHODS
 
@@ -84,6 +93,14 @@ It overrides the following methods:
 
 =head2 __handles_syntax
 
+=head2 __block_meta_re
+
+This recognizes
+
+ @Annotation(
+     ...
+ )
+
 =head2 __in_line_doc_re
 
 This recognizes C<'/** ... */'> as documentation, not comments.
@@ -91,6 +108,12 @@ This recognizes C<'/** ... */'> as documentation, not comments.
 =head2 __single_line_re
 
 This recognizes C<'//'> as a single-line comment.
+
+=head2 __single_line_meta_re
+
+THis recognizes
+
+ @Annotation
 
 =head1 SEE ALSO
 

@@ -20,7 +20,6 @@ use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Lisp';
 use constant LISP_FILE	=> 't/data/lisp_file.lisp';
 
 use constant LISP_CODE	=> <<'EOD';
-   1: #!/usr/bin/env clisp
    9: (
   10:   format t "Hello ~a!~%" (
   11:     if ( > ( length *args* ) 0 ) ( first *args* ) "world"
@@ -42,7 +41,6 @@ use constant LISP_DOC	=> <<'EOD';
 EOD
 
 use constant LISP_CODE_DOC => <<'EOD';
-   1: #!/usr/bin/env clisp
    3: ;;; but this is documentation
    9: (
   10:   format t "Hello ~a!~%" (

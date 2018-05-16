@@ -15,10 +15,14 @@ use App::AckX::Preflight::Util qw{
 our $VERSION = '0.000_013';
 
 sub __handles_syntax {
-    return( SYNTAX_CODE, SYNTAX_COMMENT );
+    return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_METADATA );
 }
 
 __PACKAGE__->__handles_type_mod( qw{ set python shell } );
+
+sub __shebang_re {
+    return qr{ \A \# ! .* sh }smx;
+}
 
 sub __single_line_re {
     return qr{ \A \s* \# }smx;
@@ -49,6 +53,8 @@ The supported syntax types are:
 =item code
 
 =item comment
+
+=item metadata (the shebang line)
 
 =back
 

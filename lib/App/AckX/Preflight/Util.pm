@@ -31,6 +31,7 @@ our @EXPORT_OK = qw{
     SYNTAX_COMMENT
     SYNTAX_DATA
     SYNTAX_DOCUMENTATION
+    SYNTAX_METADATA
     SYNTAX_OTHER
 
     @CARP_NOT
@@ -57,6 +58,7 @@ our @CARP_NOT = qw{
     App::AckX::Preflight::Syntax::Csharp
     App::AckX::Preflight::Syntax::Data
     App::AckX::Preflight::Syntax::Fortran
+    App::AckX::Preflight::Syntax::Java
     App::AckX::Preflight::Syntax::Lisp
     App::AckX::Preflight::Syntax::Make
     App::AckX::Preflight::Syntax::Perl
@@ -79,6 +81,7 @@ use constant SYNTAX_CODE		=> 'code';
 use constant SYNTAX_COMMENT		=> 'comment';
 use constant SYNTAX_DATA		=> 'data';
 use constant SYNTAX_DOCUMENTATION	=> 'documentation';
+use constant SYNTAX_METADATA		=> 'metadata';
 use constant SYNTAX_OTHER		=> 'other';
 
 use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }

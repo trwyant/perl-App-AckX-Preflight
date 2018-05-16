@@ -20,6 +20,7 @@ sub __handles_syntax {
 	SYNTAX_COMMENT,
 	SYNTAX_DATA,
 	SYNTAX_DOCUMENTATION,
+	SYNTAX_METADATA,
     );
 }
 
@@ -31,11 +32,17 @@ __PACKAGE__->__handles_type_mod( qw{ set perl perltest } );
     my $handler = {
 	SYNTAX_CODE()		=> sub {
 	    my ( $self ) = @_;
-	    m/ \A \s* \# /smx
-		and return $self->{want}{ SYNTAX_COMMENT() };
+	    if ( m/ \A \s* \# /smx ) {
+		1 == $.
+		    and m/ perl /smx
+		    and return $self->{want}{ SYNTAX_METADATA() };
+		m/ \A \#line \s+ [0-9]+ /smx
+		    and return $self->{want}{ SYNTAX_METADATA() };
+		return $self->{want}{ SYNTAX_COMMENT() };
+	    }
 	    if ( $is_data->{$_} ) {
 		$self->{in} = SYNTAX_DATA;
-		return $self->{want}{ SYNTAX_DATA() };
+		return $self->{want}{ SYNTAX_METADATA() };
 	    }
 	    goto &_handle_possible_pod;
 	},
@@ -111,6 +118,8 @@ The supported syntax types are:
 =item data (non-POD stuff after __DATA__ and/or __END__)
 
 =item documentation (i.e. POD)
+
+=item metadata (shebang, C<#line>, C<__DATA__>, C<__END__>).
 
 =back
 

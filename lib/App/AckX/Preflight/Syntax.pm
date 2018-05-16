@@ -125,6 +125,7 @@ sub __handles_syntax {
 	    SYNTAX_COMMENT,
 	    SYNTAX_DATA,
 	    SYNTAX_DOCUMENTATION,
+	    SYNTAX_METADATA,
 	    SYNTAX_OTHER,
 	);
 
@@ -337,7 +338,7 @@ filter. These can be anything, but for sanity's sake the following list
 
 This should be self-explanatory.
 
-=item com
+=item comment
 
 This is comments, both single-line and block comments that occupy whole
 lines. Inline documentation should be C<'doc'> if that can be managed.
@@ -348,11 +349,16 @@ This should represent data embedded in the program. In the case of Perl,
 it is intended for the non-POD stuff after C<__DATA__> or C<__END__>. It
 is not intended that this include here documents.
 
-=item doc
+=item documentation
 
 This represents inline documentation. In the case of Perl it should
 include POD. In the case of Java it should include Javadoc for sure, and
 maybe all inline comments.
+
+=item metadata
+
+This represents data about the program. It should include the shebang
+line for such formats as support it.
 
 =item other
 

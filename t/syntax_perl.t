@@ -28,12 +28,12 @@ use constant PERL_CODE	=> <<'EOD';
    7:
 EOD
 
-use constant PERL_COMMENTS	=> <<'EOD';
+use constant PERL_METADATA	=> <<'EOD';
    1: #!/usr/bin/env perl
+   8: __END__
 EOD
 
 use constant PERL_DATA	=> <<'EOD';
-   8: __END__
    9:
   10: This is data, kinda sorta.
   11:
@@ -79,16 +79,16 @@ is slurp( $perl_resource ), PERL_CODE, 'Only code, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_COMMENT );
+SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_METADATA );
 
 ok ! SYNTAX_FILTER->__want_everything(),
-    sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
+    sprintf q<'%s' is not everything>, SYNTAX_METADATA;
 
-is slurp( PERL_FILE ), PERL_COMMENTS, 'Only comments, reading directly';
+is slurp( PERL_FILE ), PERL_METADATA, 'Only metadata, reading directly';
 
-is slurp( $perl_resource ), PERL_COMMENTS, 'Only comments, reading resource';
+is slurp( $perl_resource ), PERL_METADATA, 'Only metadata, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
+is slurp( $text_resource ), TEXT_CONTENT, 'Only metadata, text resource';
 
 SYNTAX_FILTER->import( '-syntax', SYNTAX_DATA );
 

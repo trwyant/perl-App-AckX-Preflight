@@ -28,7 +28,6 @@ use constant SHELL_CODE	=> <<'EOD';
 EOD
 
 use constant SHELL_COMMENTS	=> <<'EOD';
-   1: #!/bin/sh
    6: # Author: Thomas R. Wyant, III F<wyant at cpan dot org>
    7: #
    8: # Copyright (C) 2018 by Thomas R. Wyant, III
@@ -39,7 +38,7 @@ use constant SHELL_COMMENTS	=> <<'EOD';
   14: # ex: set textwidth=72 :
 EOD
 
-use constant SHELL_CODE_COMMENT => <<'EOD';
+use constant SHELL_CODE_COMMENT_METADATA => <<'EOD';
    1: #!/bin/sh
    2:
    3: x=$1
@@ -89,15 +88,17 @@ is slurp( $shell_resource ), SHELL_COMMENTS, 'Only comments, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
 
-SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_CODE, SYNTAX_COMMENT );
+SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_CODE, SYNTAX_COMMENT,
+    SYNTAX_METADATA );
 
 ok SYNTAX_FILTER->__want_everything(),
-    sprintf q<'%s:%s' is everything>, SYNTAX_CODE, SYNTAX_COMMENT;
+    sprintf q<'%s:%s:%s' is everything>, SYNTAX_CODE, SYNTAX_COMMENT,
+    SYNTAX_METADATA;
 
-is slurp( SHELL_FILE ), SHELL_CODE_COMMENT,
+is slurp( SHELL_FILE ), SHELL_CODE_COMMENT_METADATA,
     'Code and comments, reading directly';
 
-is slurp( $shell_resource ), SHELL_CODE_COMMENT,
+is slurp( $shell_resource ), SHELL_CODE_COMMENT_METADATA,
     'Code and comments, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT,

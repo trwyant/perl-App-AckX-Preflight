@@ -37,6 +37,14 @@ my $handler = {	# Anticipating 'state'.
 		and return $self->{want}{ SYNTAX_COMMENT() };
 	    $self->{_block_end} = $block_end;
 	    $self->{in} = SYNTAX_COMMENT;
+	} elsif ( $self->{block_meta_start} &&
+	    $_ =~ $self->{block_meta_start} ) {
+	    my $block_meta_end = $self->_get_block_end(
+		block_meta_end => $1 );
+	    $_ =~ $block_meta_end
+		and return $self->{want}{ SYNTAX_METADATA() };
+	    $self->{_block_meta_end} = $block_meta_end;
+	    $self->{in} = SYNTAX_METADATA;
 	} elsif ( $self->{single_line_doc_re} &&
 	    $_ =~ $self->{single_line_doc_re} ) {
 	    return $self->{want}{ SYNTAX_DOCUMENTATION() };
@@ -77,6 +85,23 @@ my $handler = {	# Anticipating 'state'.
 
 	return;
     },
+    SYNTAX_METADATA()		=> sub {
+	my ( $self ) = @_;
+
+	if ( $_ =~ $self->{_block_meta_end} ) {
+	    my $was = $self->{in};
+	    $self->{in} = SYNTAX_CODE;
+	    delete $self->{_block_meta_end};
+	    # We have to hand-dispatch the line because although the
+	    # next line is code, the end of the block metadata is
+	    # metadata.
+	    return $self->{want}{$was};
+	} else {
+	    return $self->{want}{ $self->{in} };
+	}
+
+	return;
+    },
 };
 
 sub FILL {
@@ -98,10 +123,14 @@ sub PUSHED {
 	'__single_line_re()', $class->__single_line_re() );
     my $single_line_doc_re = $class->_validate_single_line(
 	'__single_line_doc_re()', $class->__single_line_doc_re() );
+    my $single_line_meta_re = $class->_validate_single_line(
+	'__single_line_meta_re()', $class->__single_line_meta_re() );
     my ( $block_start, $block_end ) = $class->_validate_block(
 	'__block_re()', $class->__block_re() );
     my ( $in_line_doc_start, $in_line_doc_end ) = $class->_validate_block(
 	'__in_line_doc_re()', $class->__in_line_doc_re() );
+    my ( $block_meta_start, $block_meta_end ) = $class->_validate_block(
+	'__block_meta_re()', $class->__block_meta_re() );
     return bless {
 	in			=> SYNTAX_CODE,
 	want			=> $class->__want_syntax(),
@@ -109,8 +138,11 @@ sub PUSHED {
 	block_end		=> $block_end,
 	in_line_doc_start	=> $in_line_doc_start,
 	in_line_doc_end		=> $in_line_doc_end,
+	block_meta_start	=> $block_meta_start,
+	block_meta_end		=> $block_meta_end,
 	single_line_re		=> $single_line_re,
 	single_line_doc_re	=> $single_line_doc_re,
+	single_line_meta_re	=> $single_line_meta_re,
     }, ref $class || $class;
 }
 
@@ -157,7 +189,15 @@ sub __in_line_doc_re {
     return;
 }
 
+sub __block_meta_re {
+    return;
+}
+
 sub __single_line_doc_re {
+    return;
+}
+
+sub __single_line_meta_re {
     return;
 }
 
@@ -204,11 +244,8 @@ set up the types of files handled by the syntax filter. See the
 documentation of
 L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax> for details.
 
-The subclass B<may> override
-L<__single_line_re()|/__single_line_re> and/or
-L<__in_line_doc_re()|/__in_line_documentatio_re>. If it does
-not, it gets a syntax like C itself, without single-line comments or
-in-line documentation.
+The subclass B<may> override any of the other subroutines documented
+below if they are relevant to the syntax it is trying to parse.
 
 =head1 METHODS
 
@@ -239,15 +276,32 @@ regular expression with a single capture group and a reference to a hash
 of regular expressions keyed on possible captures of the first return.
 
 The first return value is used to detect the beginning of in-line
-documentation.  comment. The second return value is used to detect the
-end of in-line documentation.  comment.  The hash provides for cases
-where multiple in-line documentation formats exist.
+documentation. The second return value is used to detect the end of
+in-line documentation. The hash provides for cases where multiple
+in-line documentation formats exist.
 
 If this regular expression is provided it is tried before block
 comments.
 
 This implementation returns nothing. The subclass should override this
 only if it is trying to parse a syntax having in-line documentation.
+
+=head2 __block_meta_re
+
+This method returns either nothing, two regular expressions, or a
+regular expression with a single capture group and a reference to a hash
+of regular expressions keyed on possible captures of the first return.
+
+The first return value is used to detect the beginning of block
+metadata. The second return value is used to detect the end of block
+metadata. The hash provides for cases where multiple block metadata
+formats exist.
+
+If this regular expression is provided it is tried after block
+comments.
+
+This implementation returns nothing. The subclass should override this
+only if it is trying to parse a syntax having block metadata.
 
 =head2 __single_line_re
 
@@ -266,6 +320,15 @@ single-line in-line documentation.
 This implementation returns nothing. The subclass should override this
 only if it is trying to parse a syntax having single-line in-line
 documentation.
+
+=head2 __single_line_meta_re
+
+This method returns a regular expression that matches a single line of
+metadata, or nothing if the syntax does not support single-line
+metadata.
+
+This implementation returns nothing. The subclass should override this
+only if it is trying to parse a syntax having single-line metadata.
 
 =head2 PUSHED
 

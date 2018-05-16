@@ -17,122 +17,111 @@ use My::Module::TestSyntax;	# for slurp() and TEXT_*
 
 use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Cpp';
 
-use constant JAVA_FILE	=> 't/data/java_file.java';
+use constant CPP_FILE	=> 't/data/cpp_file.cpp';
 
-use constant JAVA_CODE	=> <<'EOD';
+use constant CPP_CODE	=> <<'EOD';
+   1: #include <stdio.h>
    2:
-   3: import java.io.*;
-   4: import java.util.*;
-   5:
-  12:
-  13: public class java_file {
-  14:
-  21:
-  22:     public static void main( String argv[] ) {
-  23: 	String name = argv.length > 0 ? argv[0] : "world";
-  24: 	System.out.println( "Hello " + name + "|" );
-  25:     }
-  26:
-  27: }
-  28:
+   3: using namespace std;
+   4:
+   9:
+  10: int main( int argc, char *argv[] ) {
+  11:
+  14:     printf( "Hello %s!\n", argc > 1 ? argv[1] : "world" );
+  15:
+  16:     return 0;
+  17: }
+  18:
 EOD
 
-use constant JAVA_COMMENTS	=> <<'EOD';
-   1: /* This is a single-line block comment. Just because. */
-  29: // ex: set textwidth=72 :
+use constant CPP_COMMENT	=> <<'EOD';
+  12:     /* Old-school printf still works. */
+  13:     // As do new-school C++ comments
+  19: /*
+  20:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+  21:  *
+  22:  * Copyright (C) 2018 by Thomas R. Wyant, III
+  23:  *
+  24:  * This program is distributed in the hope that it will be useful, but
+  25:  * without any warranty; without even the implied warranty of
+  26:  * merchantability or fitness for a particular purpose.
+  27:  *
+  28:  * ex: set textwidth=72 :
+  29:  */
 EOD
 
-use constant JAVA_DOC	=> <<'EOD';
-   6: /**
-   7:  * Implement a greeting in Java
-   8:  *
-   9:  * @author	Thomas R. Wyant, III F<wyant at cpan dot org>
-  10:  * @version	0.000_001
-  11:  */
-  15:     /**
-  16:      * This method is the mainline. It prints a greeting to the name
-  17:      * given as the first command-line argument, defaulting to "world".
-  18:      *
-  19:      * @param argv[]	String command line arguments.
-  20:      */
+use constant CPP_DOC	=> <<'EOD';
+   5: /**
+   6:  * Print the standard 'Hello, world!' message. If a command argument is
+   7:  * passed, it is used instead of 'world.'
+   8:  */
 EOD
 
-use constant JAVA_CODE_DOC => <<'EOD';
+use constant CPP_CODE_DOC => <<'EOD';
+   1: #include <stdio.h>
    2:
-   3: import java.io.*;
-   4: import java.util.*;
-   5:
-   6: /**
-   7:  * Implement a greeting in Java
-   8:  *
-   9:  * @author	Thomas R. Wyant, III F<wyant at cpan dot org>
-  10:  * @version	0.000_001
-  11:  */
-  12:
-  13: public class java_file {
-  14:
-  15:     /**
-  16:      * This method is the mainline. It prints a greeting to the name
-  17:      * given as the first command-line argument, defaulting to "world".
-  18:      *
-  19:      * @param argv[]	String command line arguments.
-  20:      */
-  21:
-  22:     public static void main( String argv[] ) {
-  23: 	String name = argv.length > 0 ? argv[0] : "world";
-  24: 	System.out.println( "Hello " + name + "|" );
-  25:     }
-  26:
-  27: }
-  28:
+   3: using namespace std;
+   4:
+   5: /**
+   6:  * Print the standard 'Hello, world!' message. If a command argument is
+   7:  * passed, it is used instead of 'world.'
+   8:  */
+   9:
+  10: int main( int argc, char *argv[] ) {
+  11:
+  14:     printf( "Hello %s!\n", argc > 1 ? argv[1] : "world" );
+  15:
+  16:     return 0;
+  17: }
+  18:
 EOD
 
-$App::Ack::mappings{java} = [
-    App::Ack::Filter::Extension->new( qw{ java } ),
+$App::Ack::mappings{cpp} = [
+    App::Ack::Filter::Extension->new( qw{ cpp } ),
 ];
 
-my $resource = App::Ack::Resource->new( JAVA_FILE );
+my $resource = App::Ack::Resource->new( CPP_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ],
-    [ qw{ actionscript cpp java objc } ],
-    sprintf '%s handles actionscript, cpp, java, objc', SYNTAX_FILTER;
+    [ qw{ actionscript cpp objc } ],
+    sprintf '%s handles actionscript, cpp, objc', SYNTAX_FILTER;
 
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
 
-is slurp( JAVA_FILE ), JAVA_CODE, 'Only code, reading directly';
+is slurp( CPP_FILE ), CPP_CODE, 'Only code, reading directly';
 
-is slurp( $resource ), JAVA_CODE, 'Only code, reading resource';
+is slurp( $resource ), CPP_CODE, 'Only code, reading resource';
 
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_COMMENT );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
 
-is slurp( JAVA_FILE ), JAVA_COMMENTS, 'Only comments, reading directly';
+is slurp( CPP_FILE ), CPP_COMMENT, 'Only comments, reading directly';
 
-is slurp( $resource ), JAVA_COMMENTS, 'Only comments, reading resource';
+is slurp( $resource ), CPP_COMMENT, 'Only comments, reading resource';
 
 SYNTAX_FILTER->import( '-syntax', SYNTAX_DOCUMENTATION );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_DOCUMENTATION;
 
-is slurp( JAVA_FILE ), JAVA_DOC, 'Only documentation, reading directly';
+is slurp( CPP_FILE ), CPP_DOC, 'Only documentation, reading directly';
 
-is slurp( $resource ), JAVA_DOC, 'Only documentation, reading resource';
+is slurp( $resource ), CPP_DOC, 'Only documentation, reading resource';
 
 SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_CODE, SYNTAX_DOCUMENTATION );
 
 ok !SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is not everything>, SYNTAX_CODE, SYNTAX_DOCUMENTATION;
 
-is slurp( JAVA_FILE ), JAVA_CODE_DOC,
+is slurp( CPP_FILE ), CPP_CODE_DOC,
     'Code and documentation, reading directly';
 
-is slurp( $resource ), JAVA_CODE_DOC,
+is slurp( $resource ), CPP_CODE_DOC,
     'Code and documentation, reading resource';
 
 done_testing;

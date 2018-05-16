@@ -26,7 +26,9 @@ sub FILL {
 
     while ( <$fh> ) {
 	my $type;
-	if ( $self->{single_line_doc_re} &&
+	if ( 1 == $. && $self->{shebang_re} && $_ =~ $self->{shebang_re} ) {
+	    $type = SYNTAX_METADATA;
+	} elsif ( $self->{single_line_doc_re} &&
 	    $_ =~ $self->{single_line_doc_re} ) {
 	    $type = SYNTAX_DOCUMENTATION;
 	} elsif ( $self->{single_line_re} &&
@@ -46,9 +48,14 @@ sub PUSHED {
     my ( $class ) = @_;
     return bless {
 	want			=> $class->__want_syntax(),
+	shebang_re		=> scalar $class->__shebang_re(),
 	single_line_re		=> scalar $class->__single_line_re(),
 	single_line_doc_re	=> scalar $class->__single_line_doc_re(),
     }, ref $class || $class;
+}
+
+sub __shebang_re {
+    return;
 }
 
 sub __single_line_re {
@@ -86,6 +93,14 @@ L<__single_line_re()|/__single_line_re>.
 =head1 METHODS
 
 This class adds the following methods:
+
+=head2 __shebang_re
+
+If the syntax supports a shebang line, this method returns a regular
+expression that matches it; otherwise it returns nothing.
+
+This specific method returns nothing. Subclasses that support a shebang
+will need to override this method to return a suitable C<Regexp>.
 
 =head2 __single_line_re
 
