@@ -20,59 +20,73 @@ sub __handles_syntax {
     __die_hard( '__handles_syntax() must be overridden' );
 }
 
-sub FILL {
-    my ( $self, $fh ) = @_;
-    {
-	defined( my $line = <$fh> )
-	    or last;
+my $handler = {	# Anticipating 'state'.
+    SYNTAX_CODE()		=> sub {
+	my ( $self ) = @_;
 
-	if ( SYNTAX_CODE eq $self->{in} ) {
-	    if ( $self->{in_line_doc_start} &&
-		$line =~ $self->{in_line_doc_start} ) {
-		my $block_end = $self->_get_block_end(
-		    in_line_doc_end => $1 );
-		if ( $line =~ $block_end ) {
-		    $self->{want}{ SYNTAX_DOCUMENTATION() }
-			and return $line;
-		    redo;
-		}
-		$self->{_block_end} = $block_end;
-		$self->{in} = SYNTAX_DOCUMENTATION;
+	if ( $self->{in_line_doc_start} && $_ =~ $self->{in_line_doc_start} ) {
+	    my $block_end = $self->_get_block_end(
+		in_line_doc_end => $1 );
+	    $_ =~ $block_end
+		and return $self->{want}{ SYNTAX_DOCUMENTATION() };
+	    $self->{_in_line_doc_end} = $block_end;
+	    $self->{in} = SYNTAX_DOCUMENTATION;
+	} elsif ( $self->{block_start} && $_ =~ $self->{block_start} ) {
+	    my $block_end = $self->_get_block_end( block_end => $1 );
+	    $_ =~ $block_end
+		and return $self->{want}{ SYNTAX_COMMENT() };
+	    $self->{_block_end} = $block_end;
+	    $self->{in} = SYNTAX_COMMENT;
+	} elsif ( $self->{single_line_doc_re} &&
+	    $_ =~ $self->{single_line_doc_re} ) {
+	    return $self->{want}{ SYNTAX_DOCUMENTATION() };
+	} elsif ( $self->{single_line_re} && $_ =~ $self->{single_line_re} ) {
+	    return $self->{want}{ SYNTAX_COMMENT() };
+	}
+	return $self->{want}{ $self->{in} };
+    },
+    SYNTAX_COMMENT()		=> sub {
+	my ( $self ) = @_;
 
-
-	    } elsif ( $self->{block_start} && $line =~ $self->{block_start} ) {
-		my $block_end = $self->_get_block_end( block_end => $1 );
-		if ( $line =~ $block_end ) {
-		    $self->{want}{ SYNTAX_COMMENT() }
-			and return $line;
-		    redo;
-		}
-		$self->{_block_end} = $block_end;
-		$self->{in} = SYNTAX_COMMENT;
-	    } elsif ( $self->{single_line_doc_re} &&
-		$line =~ $self->{single_line_doc_re} ) {
-		$self->{want}{ SYNTAX_DOCUMENTATION() }
-		    and return $line;
-		redo;
-	    } elsif ( $self->{single_line_re} &&
-		$line =~ $self->{single_line_re} ) {
-		$self->{want}{ SYNTAX_COMMENT() }
-		    and return $line;
-		redo;
-	    }
-	} elsif ( $self->{_block_end} && $line =~ $self->{_block_end} ) {
+	if ( $_ =~ $self->{_block_end} ) {
 	    my $was = $self->{in};
 	    $self->{in} = SYNTAX_CODE;
 	    delete $self->{_block_end};
 	    # We have to hand-dispatch the line because although the
 	    # next line is code, the end of the block comment is doc.
-	    $self->{want}{$was}
-		and return $line;
-	    redo;
+	    return $self->{want}{$was};
+	} else {
+	    return $self->{want}{ $self->{in} };
 	}
-	$self->{want}{$self->{in}}
-	    and return $line;
-	redo;
+
+	return;
+    },
+    SYNTAX_DOCUMENTATION()	=> sub {
+	my ( $self ) = @_;
+
+	if ( $_ =~ $self->{_in_line_doc_end} ) {
+	    my $was = $self->{in};
+	    $self->{in} = SYNTAX_CODE;
+	    delete $self->{_in_line_doc_end};
+	    # We have to hand-dispatch the line because although the
+	    # next line is code, the end of the block comment is doc.
+	    return $self->{want}{$was};
+	} else {
+	    return $self->{want}{ $self->{in} };
+	}
+
+	return;
+    },
+};
+
+sub FILL {
+    my ( $self, $fh ) = @_;
+
+    local $_ = undef;	# Should not be needed, but seems to be.
+
+    while ( <$fh> ) {
+	$handler->{ $self->{in} }->( $self )
+	    and return $_;
     }
     return;
 }

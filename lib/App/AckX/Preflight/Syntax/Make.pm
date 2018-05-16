@@ -22,18 +22,19 @@ __PACKAGE__->__handles_type_mod( qw{ set make } );
 
 sub FILL {
     my ( $self, $fh ) = @_;
-    {
-	defined( my $line = <$fh> )
-	    or last;
+
+    local $_ = undef;	# Should not be needed, but seems to be.
+
+    while ( <$fh> ) {
+
 	my $type = delete $self->{continued} || (
-	    $line =~ m/ \A \s* \# /smx ?
+	    $_ =~ m/ \A \s* \# /smx ?
 		SYNTAX_COMMENT :
 		SYNTAX_CODE );
-	$line =~ m/ \\ $ /x
+	$_ =~ m/ \\ $ /x
 	    and $self->{continued} = $type;
 	$self->{want}{$type}
-	    and return $line;
-	redo;
+	    and return $_;
     }
     return;
 }

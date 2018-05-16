@@ -26,36 +26,36 @@ sub __handles_syntax {
 __PACKAGE__->__handles_type_mod( qw{ set perl perltest } );
 
 {
-    my %is_data = map {; "__${_}__\n" => 1 } qw{ DATA END };
+    my $is_data = { map {; "__${_}__\n" => 1 } qw{ DATA END } };
+
+    my $handler = {
+	SYNTAX_CODE()		=> sub {
+	    my ( $self ) = @_;
+	    m/ \A \s* \# /smx
+		and return $self->{want}{ SYNTAX_COMMENT() };
+	    if ( $is_data->{$_} ) {
+		$self->{in} = SYNTAX_DATA;
+		return $self->{want}{ SYNTAX_DATA() };
+	    }
+	    goto &_handle_possible_pod;
+	},
+	SYNTAX_DATA()		=> \&_handle_possible_pod,
+	SYNTAX_DOCUMENTATION()	=> sub {
+	    my ( $self ) = @_;
+	    m/ \A = cut \b /smx
+		and $self->{in} = delete $self->{cut};
+	    return $self->{want}{ SYNTAX_DOCUMENTATION() };
+	},
+    };
 
     sub FILL {
 	my ( $self, $fh ) = @_;
-	{
-	    defined( my $line = <$fh> )
-		or last;
-	    if ( $line =~ m/ \A = cut \b /smx ) {
-		$self->{in} = $self->{cut};
-		# We have to hand-dispatch the line because although the
-		# next line is whatever we were working on before the
-		# POD was encountered, the '=cut' itself is POD.
-		$self->{want}{ SYNTAX_DOCUMENTATION() }
-		    and return $line;
-		redo;
-	    } elsif ( $line =~ m/ \A = [A-Za-z] /smx ) {
-		$self->{cut} = $self->{in};
-		$self->{in} = SYNTAX_DOCUMENTATION;
-	    } elsif ( SYNTAX_DOCUMENTATION eq $self->{in} ) {
-		# Nothing else can be in POD
-	    } elsif ( SYNTAX_CODE eq $self->{in} && $line =~ m/ \A \s* \# /smx ) {
-		$self->{want}{ SYNTAX_COMMENT() }
-		    and return $line;
-		redo;
-	    } elsif ( $is_data{$line} ) {
-		$self->{in} = SYNTAX_DATA;
-	    }
-	    $self->{want}{$self->{in}}
-		and return $line;
-	    redo;
+
+	local $_ = undef;	# Should not be needed, but seems to be.
+
+	while ( <$fh> ) {
+	    $handler->{ $self->{in} }->( $self )
+		and return $_;
 	}
 	return;
     }
@@ -68,6 +68,17 @@ sub PUSHED {
 	in	=> SYNTAX_CODE,
 	want	=> $class->__want_syntax(),
     }, ref $class || $class;
+}
+
+sub _handle_possible_pod {
+    my ( $self ) = @_;
+    if ( m/ \A = ( cut \b | [A-Za-z] ) /smx ) {
+	'cut' eq $1
+	    and return $self->{want}{ SYNTAX_DOCUMENTATION() };
+	$self->{cut} = $self->{in};
+	$self->{in} = SYNTAX_DOCUMENTATION;
+    }
+    return $self->{want}{ $self->{in} };
 }
 
 

@@ -22,16 +22,19 @@ __PACKAGE__->__handles_type_mod( qw{ set json } );
 
 sub FILL {
     my ( $self, $fh ) = @_;
-    $self->{want}{ SYNTAX_DATA() }
-	and return scalar <$fh>;
-    return;
+    return $self->{fill}->( $fh );
 }
 
 sub PUSHED {
 #   my ( $class, $mode, $fh ) = @_;
     my ( $class ) = @_;
+    my $want = $class->__want_syntax();
+    my $fill = $want->{ SYNTAX_DATA() } ? sub {
+	my ( $fh ) = @_;
+	return scalar <$fh>;
+    } : sub { return };
     return bless {
-	want	=> $class->__want_syntax(),
+	fill	=> $fill,
     }, ref $class || $class;
 }
 

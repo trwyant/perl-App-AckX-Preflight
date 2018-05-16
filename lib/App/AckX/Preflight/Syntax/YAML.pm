@@ -22,15 +22,15 @@ __PACKAGE__->__handles_type_mod( qw{ set yaml } );
 
 sub FILL {
     my ( $self, $fh ) = @_;
-    {
-	defined( my $line = <$fh> )
-	    or last;
-	my $type = $line =~ m/ \A \s* \# /smx ?
+
+    local $_ = undef;	# Should not be needed, but seems to be.
+
+    while ( <$fh> ) {
+	my $type = $_ =~ m/ \A \s* \# /smx ?
 	    SYNTAX_COMMENT :
 	    SYNTAX_DATA;
 	$self->{want}{$type}
-	    and return $line;
-	redo;
+	    and return $_;
     }
     return;
 }

@@ -21,15 +21,22 @@ sub __handles_syntax {
 
 sub FILL {
     my ( $self, $fh ) = @_;
-    {
-	defined( my $line = <$fh> )
-	    or last;
-	my $type = $line =~ $self->{single_line_re} ?
-	    SYNTAX_COMMENT :
-	    SYNTAX_CODE;
+
+    local $_ = undef;	# Should not be needed, but seems to be.
+
+    while ( <$fh> ) {
+	my $type;
+	if ( $self->{single_line_doc_re} &&
+	    $_ =~ $self->{single_line_doc_re} ) {
+	    $type = SYNTAX_DOCUMENTATION;
+	} elsif ( $self->{single_line_re} &&
+	    $_ =~ $self->{single_line_re} ) {
+	    $type = SYNTAX_COMMENT;
+	} else {
+	    $type = SYNTAX_CODE;
+	}
 	$self->{want}{$type}
-	    and return $line;
-	redo;
+	    and return $_;
     }
     return;
 }
@@ -39,7 +46,8 @@ sub PUSHED {
     my ( $class ) = @_;
     return bless {
 	want			=> $class->__want_syntax(),
-	single_line_re	=> $class->__single_line_re(),
+	single_line_re		=> scalar $class->__single_line_re(),
+	single_line_doc_re	=> scalar $class->__single_line_doc_re(),
     }, ref $class || $class;
 }
 

@@ -24,6 +24,8 @@ use constant PERL_CODE	=> <<'EOD';
    3: use strict;
    4: use warnings;
    5:
+   6: printf "Hello, %s!\n", @ARGV ? $ARGV[0] : 'World';
+   7:
 EOD
 
 use constant PERL_COMMENTS	=> <<'EOD';
@@ -31,18 +33,20 @@ use constant PERL_COMMENTS	=> <<'EOD';
 EOD
 
 use constant PERL_DATA	=> <<'EOD';
-   6: __END__
-   7:
-   8: This is data, kinda sorta.
+   8: __END__
    9:
+  10: This is data, kinda sorta.
+  11:
+  17:
+  18: # ex: set textwidth=72 :
 EOD
 
 use constant PERL_DOC	=> <<'EOD';
-  10: =head1 TEST
-  11:
-  12: This is a test. It is only a test.
+  12: =head1 TEST
   13:
-  14: =cut
+  14: This is documentation.
+  15:
+  16: =cut
 EOD
 
 use constant PERL_CODE_DOC => PERL_CODE . PERL_DOC;
