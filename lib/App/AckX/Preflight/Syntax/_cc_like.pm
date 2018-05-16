@@ -20,7 +20,7 @@ sub __handles_syntax {
     __die_hard( '__handles_syntax() must be overridden' );
 }
 
-my $handler = {	# Anticipating 'state'.
+my $classifier = {	# Anticipating 'state'.
     SYNTAX_CODE()		=> sub {
 	my ( $self ) = @_;
 
@@ -28,13 +28,13 @@ my $handler = {	# Anticipating 'state'.
 	    my $block_end = $self->_get_block_end(
 		in_line_doc_end => $1 );
 	    $_ =~ $block_end
-		and return $self->{want}{ SYNTAX_DOCUMENTATION() };
+		and return SYNTAX_DOCUMENTATION;
 	    $self->{_in_line_doc_end} = $block_end;
 	    $self->{in} = SYNTAX_DOCUMENTATION;
 	} elsif ( $self->{block_start} && $_ =~ $self->{block_start} ) {
 	    my $block_end = $self->_get_block_end( block_end => $1 );
 	    $_ =~ $block_end
-		and return $self->{want}{ SYNTAX_COMMENT() };
+		and return SYNTAX_COMMENT;
 	    $self->{_block_end} = $block_end;
 	    $self->{in} = SYNTAX_COMMENT;
 	} elsif ( $self->{block_meta_start} &&
@@ -42,16 +42,16 @@ my $handler = {	# Anticipating 'state'.
 	    my $block_meta_end = $self->_get_block_end(
 		block_meta_end => $1 );
 	    $_ =~ $block_meta_end
-		and return $self->{want}{ SYNTAX_METADATA() };
+		and return SYNTAX_METADATA;
 	    $self->{_block_meta_end} = $block_meta_end;
 	    $self->{in} = SYNTAX_METADATA;
 	} elsif ( $self->{single_line_doc_re} &&
 	    $_ =~ $self->{single_line_doc_re} ) {
-	    return $self->{want}{ SYNTAX_DOCUMENTATION() };
+	    return SYNTAX_DOCUMENTATION;
 	} elsif ( $self->{single_line_re} && $_ =~ $self->{single_line_re} ) {
-	    return $self->{want}{ SYNTAX_COMMENT() };
+	    return SYNTAX_COMMENT;
 	}
-	return $self->{want}{ $self->{in} };
+	return $self->{in};
     },
     SYNTAX_COMMENT()		=> sub {
 	my ( $self ) = @_;
@@ -62,12 +62,10 @@ my $handler = {	# Anticipating 'state'.
 	    delete $self->{_block_end};
 	    # We have to hand-dispatch the line because although the
 	    # next line is code, the end of the block comment is doc.
-	    return $self->{want}{$was};
-	} else {
-	    return $self->{want}{ $self->{in} };
+	    return $was;
 	}
 
-	return;
+	return $self->{in};
     },
     SYNTAX_DOCUMENTATION()	=> sub {
 	my ( $self ) = @_;
@@ -78,12 +76,10 @@ my $handler = {	# Anticipating 'state'.
 	    delete $self->{_in_line_doc_end};
 	    # We have to hand-dispatch the line because although the
 	    # next line is code, the end of the block comment is doc.
-	    return $self->{want}{$was};
-	} else {
-	    return $self->{want}{ $self->{in} };
+	    return $was;
 	}
 
-	return;
+	return $self->{in};
     },
     SYNTAX_METADATA()		=> sub {
 	my ( $self ) = @_;
@@ -95,12 +91,10 @@ my $handler = {	# Anticipating 'state'.
 	    # We have to hand-dispatch the line because although the
 	    # next line is code, the end of the block metadata is
 	    # metadata.
-	    return $self->{want}{$was};
-	} else {
-	    return $self->{want}{ $self->{in} };
+	    return $was;
 	}
 
-	return;
+	return $self->{in};
     },
 };
 
@@ -110,7 +104,7 @@ sub FILL {
     local $_ = undef;	# Should not be needed, but seems to be.
 
     while ( <$fh> ) {
-	$handler->{ $self->{in} }->( $self )
+	$self->{want}{ $classifier->{ $self->{in} }->( $self ) }
 	    and return $_;
     }
     return;

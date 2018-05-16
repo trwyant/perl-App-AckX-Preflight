@@ -22,22 +22,21 @@ sub __handles_syntax {
 
 __PACKAGE__->__handles_type_mod( qw{ set clojure elisp lisp scheme } );
 
-my $handler = {
+my $classifier = {
     SYNTAX_CODE()	=> sub {
 	my ( $self ) = @_;
 	if ( 1 == $. && m/ \A \# ! /smx ) {
-	    return $self->{want}{ SYNTAX_METADATA() };
+	    return SYNTAX_METADATA;
 	} elsif ( m/ \A \s* ( ;+ ) /smx ) {
-	    my $type = 2 < length $1 ?
+	    return 2 < length $1 ?
 		SYNTAX_DOCUMENTATION :
 		SYNTAX_COMMENT;
-	    return $self->{want}{$type};
 	} elsif ( m/ \A \s* \# \| /smx ) {
 	    $self->{in} = SYNTAX_COMMENT;
 	    $self->{comment_depth} = 0;
 	    goto &_handle_comment;
 	} else {
-	    return $self->{want}{ SYNTAX_CODE() };
+	    return SYNTAX_CODE;
 	}
     },
     SYNTAX_COMMENT()	=> \&_handle_comment,
@@ -58,7 +57,7 @@ my $handler = {
 	    delete $self->{comment_depth};
 	    $self->{in} = SYNTAX_CODE;
 	}
-	return $self->{want}{ SYNTAX_COMMENT() };
+	return SYNTAX_COMMENT;
     }
 }
 
@@ -69,7 +68,7 @@ sub FILL {
     local $_ = undef;	# Should not be needed, but seems to be.
 
     while ( <$fh> ) {
-	$handler->{ $self->{in} }->( $self )
+	$self->{want}{ $classifier->{ $self->{in} }->( $self ) }
 	    and return $_;
     }
     return;

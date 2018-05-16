@@ -111,7 +111,7 @@ This recognizes C<'//'> as a single-line comment.
 
 =head2 __single_line_meta_re
 
-THis recognizes
+This recognizes
 
  @Annotation
 

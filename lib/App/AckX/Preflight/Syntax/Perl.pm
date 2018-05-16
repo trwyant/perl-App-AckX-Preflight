@@ -29,20 +29,20 @@ __PACKAGE__->__handles_type_mod( qw{ set perl perltest } );
 {
     my $is_data = { map {; "__${_}__\n" => 1 } qw{ DATA END } };
 
-    my $handler = {
+    my $classify = {
 	SYNTAX_CODE()		=> sub {
 	    my ( $self ) = @_;
 	    if ( m/ \A \s* \# /smx ) {
 		1 == $.
 		    and m/ perl /smx
-		    and return $self->{want}{ SYNTAX_METADATA() };
+		    and return SYNTAX_METADATA;
 		m/ \A \#line \s+ [0-9]+ /smx
-		    and return $self->{want}{ SYNTAX_METADATA() };
-		return $self->{want}{ SYNTAX_COMMENT() };
+		    and return SYNTAX_METADATA;
+		return SYNTAX_COMMENT;
 	    }
 	    if ( $is_data->{$_} ) {
 		$self->{in} = SYNTAX_DATA;
-		return $self->{want}{ SYNTAX_METADATA() };
+		return SYNTAX_METADATA;
 	    }
 	    goto &_handle_possible_pod;
 	},
@@ -51,7 +51,7 @@ __PACKAGE__->__handles_type_mod( qw{ set perl perltest } );
 	    my ( $self ) = @_;
 	    m/ \A = cut \b /smx
 		and $self->{in} = delete $self->{cut};
-	    return $self->{want}{ SYNTAX_DOCUMENTATION() };
+	    return SYNTAX_DOCUMENTATION;
 	},
     };
 
@@ -61,7 +61,7 @@ __PACKAGE__->__handles_type_mod( qw{ set perl perltest } );
 	local $_ = undef;	# Should not be needed, but seems to be.
 
 	while ( <$fh> ) {
-	    $handler->{ $self->{in} }->( $self )
+	    $self->{want}{ $classify->{ $self->{in} }->( $self ) }
 		and return $_;
 	}
 	return;
@@ -81,11 +81,11 @@ sub _handle_possible_pod {
     my ( $self ) = @_;
     if ( m/ \A = ( cut \b | [A-Za-z] ) /smx ) {
 	'cut' eq $1
-	    and return $self->{want}{ SYNTAX_DOCUMENTATION() };
+	    and return SYNTAX_DOCUMENTATION;
 	$self->{cut} = $self->{in};
 	$self->{in} = SYNTAX_DOCUMENTATION;
     }
-    return $self->{want}{ $self->{in} };
+    return $self->{in};
 }
 
 
