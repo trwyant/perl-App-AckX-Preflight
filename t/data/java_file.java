@@ -14,14 +14,14 @@ public class java_file {
 
     /**
      * This method is the mainline. It prints a greeting to the name
-     * given as the first command-line argument, defaulting to "World".
+     * given as the first command-line argument, defaulting to "world".
      *
      * @param argv[]	String command line arguments.
      */
 
     public static void main( String argv[] ) {
-	String name = argv.length > 0 ? argv[0] : "World";
-	System.out.println( "Hello, " + name + "|" );
+	String name = argv.length > 0 ? argv[0] : "world";
+	System.out.println( "Hello " + name + "|" );
     }
 
 }

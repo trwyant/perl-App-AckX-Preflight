@@ -1,3 +1,3 @@
 " This is a comment
-let name = "World"
-echo "Hello, " . name . "!"
+let name = "world"
+echo "Hello " . name . "!"

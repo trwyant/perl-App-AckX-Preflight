@@ -1,5 +1,5 @@
         print 1000
-1000    format ( " Hello, World!" )
+1000    format ( " Hello world!" )
         call exit()
         end
 

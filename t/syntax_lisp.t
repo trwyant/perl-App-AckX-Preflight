@@ -21,17 +21,20 @@ use constant LISP_FILE	=> 't/data/lisp_file.lisp';
 
 use constant LISP_CODE	=> <<'EOD';
    1: #!/usr/bin/env clisp
-   8: (
-   9:  format t "Hello, world!~%"
-  10: )
+   9: (
+  10:   format t "Hello ~a!~%" (
+  11:     if ( > ( length *args* ) 0 ) ( first *args* ) "world"
+  12:   )
+  13: )
 EOD
 
 use constant LISP_COMMENT	=> <<'EOD';
    2: ; This is a comment
    4: #|
    5:  | Is this a comment? It seems so.
-   6:  | #| Do they really nest? Yes. |#
-   7:  |#
+   6:  | #| Do they really nest? |#
+   7:  | Yes. This is still a comment.
+   8:  |#
 EOD
 
 use constant LISP_DOC	=> <<'EOD';
@@ -41,9 +44,11 @@ EOD
 use constant LISP_CODE_DOC => <<'EOD';
    1: #!/usr/bin/env clisp
    3: ;;; but this is documentation
-   8: (
-   9:  format t "Hello, world!~%"
-  10: )
+   9: (
+  10:   format t "Hello ~a!~%" (
+  11:     if ( > ( length *args* ) 0 ) ( first *args* ) "world"
+  12:   )
+  13: )
 EOD
 
 $App::Ack::mappings{lisp} = [

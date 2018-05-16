@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-printf "Hello, %s!\n", @ARGV ? $ARGV[0] : 'World';
+printf "Hello %s!\n", @ARGV ? $ARGV[0] : 'world';
 
 __END__
 

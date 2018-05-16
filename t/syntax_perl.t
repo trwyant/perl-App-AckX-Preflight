@@ -24,7 +24,7 @@ use constant PERL_CODE	=> <<'EOD';
    3: use strict;
    4: use warnings;
    5:
-   6: printf "Hello, %s!\n", @ARGV ? $ARGV[0] : 'World';
+   6: printf "Hello %s!\n", @ARGV ? $ARGV[0] : 'world';
    7:
 EOD
 

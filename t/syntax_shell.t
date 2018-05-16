@@ -22,7 +22,7 @@ use constant SHELL_FILE	=> 't/data/shell_file.sh';
 use constant SHELL_CODE	=> <<'EOD';
    2:
    3: x=$1
-   4: echo "Hello, ${x:-world}!"
+   4: echo "Hello ${x:-world}!"
    5:
   13:
 EOD
@@ -43,7 +43,7 @@ use constant SHELL_CODE_COMMENT => <<'EOD';
    1: #!/bin/sh
    2:
    3: x=$1
-   4: echo "Hello, ${x:-world}!"
+   4: echo "Hello ${x:-world}!"
    5:
    6: # Author: Thomas R. Wyant, III F<wyant at cpan dot org>
    7: #

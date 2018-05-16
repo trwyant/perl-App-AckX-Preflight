@@ -21,7 +21,7 @@ use constant FORTRAN_FILE	=> 't/data/fortran_file.for';
 
 use constant FORTRAN_CODE	=> <<'EOD';
    1:         print 1000
-   2: 1000    format ( " Hello, World!" )
+   2: 1000    format ( " Hello world!" )
    3:         call exit()
    4:         end
    5:
@@ -41,7 +41,7 @@ EOD
 
 use constant FORTRAN_CODE_COMMENT => <<'EOD';
    1:         print 1000
-   2: 1000    format ( " Hello, World!" )
+   2: 1000    format ( " Hello world!" )
    3:         call exit()
    4:         end
    5:

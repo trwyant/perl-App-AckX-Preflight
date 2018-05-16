@@ -24,7 +24,7 @@ use constant CSHARP_CODE	=> <<'EOD';
    2:
    7:
    8: int main ( int argc, char ** argv ) {
-   9:     printf( "Hello, %s!\n", argc > 1 ? argv[1] : "world" );
+   9:     printf( "Hello %s!\n", argc > 1 ? argv[1] : "world" );
   10: }
   11:
 EOD
@@ -59,7 +59,7 @@ use constant CSHARP_CODE_COMMENT_DOC => <<'EOD';
    6: /* This is a single-line block comment */
    7:
    8: int main ( int argc, char ** argv ) {
-   9:     printf( "Hello, %s!\n", argc > 1 ? argv[1] : "world" );
+   9:     printf( "Hello %s!\n", argc > 1 ? argv[1] : "world" );
   10: }
   11:
   12: /*

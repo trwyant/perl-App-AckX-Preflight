@@ -6,7 +6,7 @@ with Ada.Strings.Unbounded;     use Ada.Strings.Unbounded;
 -- I have more, but ...
 
 procedure ada_file is
-name : Unbounded_String := To_Unbounded_String( "World" );
+name : Unbounded_String := To_Unbounded_String( "world" );
 begin
     if Argument_Count > 0
     then

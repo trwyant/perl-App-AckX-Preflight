@@ -1,7 +1,7 @@
 #!/bin/sh
 
 x=$1
-echo "Hello, ${x:-world}!"
+echo "Hello ${x:-world}!"
 
 # Author: Thomas R. Wyant, III F<wyant at cpan dot org>
 #

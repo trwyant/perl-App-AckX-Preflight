@@ -29,8 +29,8 @@ use constant JAVA_CODE	=> <<'EOD';
   14:
   21:
   22:     public static void main( String argv[] ) {
-  23: 	String name = argv.length > 0 ? argv[0] : "World";
-  24: 	System.out.println( "Hello, " + name + "|" );
+  23: 	String name = argv.length > 0 ? argv[0] : "world";
+  24: 	System.out.println( "Hello " + name + "|" );
   25:     }
   26:
   27: }
@@ -51,7 +51,7 @@ use constant JAVA_DOC	=> <<'EOD';
   11:  */
   15:     /**
   16:      * This method is the mainline. It prints a greeting to the name
-  17:      * given as the first command-line argument, defaulting to "World".
+  17:      * given as the first command-line argument, defaulting to "world".
   18:      *
   19:      * @param argv[]	String command line arguments.
   20:      */
@@ -73,14 +73,14 @@ use constant JAVA_CODE_DOC => <<'EOD';
   14:
   15:     /**
   16:      * This method is the mainline. It prints a greeting to the name
-  17:      * given as the first command-line argument, defaulting to "World".
+  17:      * given as the first command-line argument, defaulting to "world".
   18:      *
   19:      * @param argv[]	String command line arguments.
   20:      */
   21:
   22:     public static void main( String argv[] ) {
-  23: 	String name = argv.length > 0 ? argv[0] : "World";
-  24: 	System.out.println( "Hello, " + name + "|" );
+  23: 	String name = argv.length > 0 ? argv[0] : "world";
+  24: 	System.out.println( "Hello " + name + "|" );
   25:     }
   26:
   27: }

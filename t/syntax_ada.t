@@ -26,7 +26,7 @@ use constant SHELL_CODE	=> <<'EOD';
    4:
    7:
    8: procedure ada_file is
-   9: name : Unbounded_String := To_Unbounded_String( "World" );
+   9: name : Unbounded_String := To_Unbounded_String( "world" );
   10: begin
   11:     if Argument_Count > 0
   12:     then
@@ -50,7 +50,7 @@ use constant ADA_CODE_COMMENT => <<'EOD';
    6: -- I have more, but ...
    7:
    8: procedure ada_file is
-   9: name : Unbounded_String := To_Unbounded_String( "World" );
+   9: name : Unbounded_String := To_Unbounded_String( "world" );
   10: begin
   11:     if Argument_Count > 0
   12:     then

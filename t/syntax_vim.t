@@ -20,8 +20,8 @@ use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Vim';
 use constant VIM_FILE	=> 't/data/vim_file.vim';
 
 use constant VIM_CODE	=> <<'EOD';
-   2: let name = "World"
-   3: echo "Hello, " . name . "!"
+   2: let name = "world"
+   3: echo "Hello " . name . "!"
 EOD
 
 use constant VIM_COMMENTS	=> <<'EOD';
@@ -30,8 +30,8 @@ EOD
 
 use constant VIM_CODE_COMMENT => <<'EOD';
    1: " This is a comment
-   2: let name = "World"
-   3: echo "Hello, " . name . "!"
+   2: let name = "world"
+   3: echo "Hello " . name . "!"
 EOD
 
 $App::Ack::mappings{vim} = [

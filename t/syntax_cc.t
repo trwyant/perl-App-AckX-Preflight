@@ -24,7 +24,7 @@ use constant CC_CODE	=> <<'EOD';
    2:
    4:
    5: int main ( int argc, char ** argv ) {
-   6:     printf( "Hello, %s!\n", argc > 1 ? argv[1] : "world" );
+   6:     printf( "Hello %s!\n", argc > 1 ? argv[1] : "world" );
    7: }
    8:
 EOD
@@ -50,7 +50,7 @@ use constant CC_CODE_COMMENTS => <<'EOD';
    3: /* This is a single-line block comment */
    4:
    5: int main ( int argc, char ** argv ) {
-   6:     printf( "Hello, %s!\n", argc > 1 ? argv[1] : "world" );
+   6:     printf( "Hello %s!\n", argc > 1 ? argv[1] : "world" );
    7: }
    8:
    9: /*
