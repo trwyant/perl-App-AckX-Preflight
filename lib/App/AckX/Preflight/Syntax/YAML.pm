@@ -20,34 +20,17 @@ sub __handles_syntax {
 
 __PACKAGE__->__handles_type_mod( qw{ set yaml } );
 
-sub FILL {
-    my ( $self, $fh ) = @_;
-
-    local $_ = undef;	# Should not be needed, but seems to be.
-
-    while ( <$fh> ) {
-	my $type = ( 1 == $. && "---\n" eq $_ ) ?
-	    SYNTAX_METADATA :
-	    $_ =~ m/ \A \s* \# /smx ?
-		SYNTAX_COMMENT :
-		SYNTAX_DATA;
-	$self->{want}{$type}
-	    or next;
-	$self->{syntax_type}
-	    and $_ = join ':', substr( $type, 0, 4 ), $_;
-	return $_;
-    }
-    return;
+sub __classify {
+#   my ( $self ) = @_;
+    return ( 1 == $. && "---\n" eq $_ ) ?
+	SYNTAX_METADATA :
+	$_ =~ m/ \A \s* \# /smx ?
+	    SYNTAX_COMMENT :
+	    SYNTAX_DATA;
 }
 
-sub PUSHED {
-#   my ( $class, $mode, $fh ) = @_;
-    my ( $class ) = @_;
-    my $syntax_opt = $class->__syntax_opt();
-    return bless {
-	want		=> $class->__want_syntax(),
-	syntax_type	=> $syntax_opt->{'syntax-type'},
-    }, ref $class || $class;
+sub __init {
+    return;
 }
 
 
@@ -90,21 +73,8 @@ solely of data and shell-style comments. By default it applies to:
 
 =head1 METHODS
 
-This class adds the following methods, which are part of the
-L<PerlIO::via|PerlIO::via> interface:
-
-=head2 PUSHED
-
-This static method is called when this class is pushed onto the stack.
-It manufactures, initializes, and returns a new object.
-
-=head2 FILL
-
-This method is called when a C<readline>/C<< <> >> operator is executed
-on the file handle. It reads the next-lower-level layer until a line is
-found that is one of the syntax types that is being returned, and
-returns that line to the next-higher layer. At end of file, nothing is
-returned.
+This class adds no new methods to its parent,
+L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax>.
 
 =head1 SEE ALSO
 

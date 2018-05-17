@@ -22,25 +22,41 @@ sub __handles_syntax {
 
 __PACKAGE__->__handles_type_mod( qw{ set clojure elisp lisp scheme } );
 
-my $classifier = {
-    SYNTAX_CODE()	=> sub {
+{
+    my $classifier = {
+	SYNTAX_CODE()	=> sub {
+#	    my ( $self, $attr ) = @_;
+	    my ( undef, $attr ) = @_;
+	    if ( 1 == $. && m/ \A \# ! /smx ) {
+		return SYNTAX_METADATA;
+	    } elsif ( m/ \A \s* ( ;+ ) /smx ) {
+		return 2 < length $1 ?
+		    SYNTAX_DOCUMENTATION :
+		    SYNTAX_COMMENT;
+	    } elsif ( m/ \A \s* \# \| /smx ) {
+		$attr->{in} = SYNTAX_COMMENT;
+		$attr->{comment_depth} = 0;
+		goto &_handle_comment;
+	    } else {
+		return SYNTAX_CODE;
+	    }
+	},
+	SYNTAX_COMMENT()	=> \&_handle_comment,
+    };
+
+    sub __classify {
 	my ( $self ) = @_;
-	if ( 1 == $. && m/ \A \# ! /smx ) {
-	    return SYNTAX_METADATA;
-	} elsif ( m/ \A \s* ( ;+ ) /smx ) {
-	    return 2 < length $1 ?
-		SYNTAX_DOCUMENTATION :
-		SYNTAX_COMMENT;
-	} elsif ( m/ \A \s* \# \| /smx ) {
-	    $self->{in} = SYNTAX_COMMENT;
-	    $self->{comment_depth} = 0;
-	    goto &_handle_comment;
-	} else {
-	    return SYNTAX_CODE;
-	}
-    },
-    SYNTAX_COMMENT()	=> \&_handle_comment,
-};
+	my $attr = $self->__my_attr();
+	return $classifier->{ $attr->{in} }->( $self, $attr );
+    }
+}
+
+sub __init {
+    my ( $self ) = @_;
+    my $attr = $self->__my_attr();
+    $attr->{in} = SYNTAX_CODE;
+    return;
+}
 
 {
     my $adjust = {
@@ -49,44 +65,17 @@ my $classifier = {
     };
 
     sub _handle_comment {
-	my ( $self ) = @_;
+#	my ( $self, $attr ) = @_;
+	my ( undef, $attr ) = @_;
 	while ( m/ ( \# \| | \| \# ) /smxg ) {
-	    $self->{comment_depth} += $adjust->{$1};
+	    $attr->{comment_depth} += $adjust->{$1};
 	}
-	if ( 0 >= $self->{comment_depth} ) {
-	    delete $self->{comment_depth};
-	    $self->{in} = SYNTAX_CODE;
+	if ( 0 >= $attr->{comment_depth} ) {
+	    delete $attr->{comment_depth};
+	    $attr->{in} = SYNTAX_CODE;
 	}
 	return SYNTAX_COMMENT;
     }
-}
-
-
-sub FILL {
-    my ( $self, $fh ) = @_;
-
-    local $_ = undef;	# Should not be needed, but seems to be.
-
-    while ( <$fh> ) {
-	my $type = $classifier->{ $self->{in} }->( $self );
-	$self->{want}{$type}
-	    or next;
-	$self->{syntax_type}
-	    and $_ = join ':', substr( $type, 0, 4 ), $_;
-	return $_;
-    }
-    return;
-}
-
-sub PUSHED {
-#   my ( $class, $mode, $fh ) = @_;
-    my ( $class ) = @_;
-    my $syntax_opt = $class->__syntax_opt();
-    return bless {
-	in		=> SYNTAX_CODE,
-	want		=> $class->__want_syntax(),
-	syntax_type	=> $syntax_opt->{'syntax-type'},
-    }, ref $class || $class;
 }
 
 1;
@@ -123,21 +112,8 @@ The supported syntax types are:
 
 =head1 METHODS
 
-This class adds the following methods, which are part of the
-L<PerlIO::via|PerlIO::via> interface:
-
-=head2 PUSHED
-
-This static method is called when this class is pushed onto the stack.
-It manufactures, initializes, and returns a new object.
-
-=head2 FILL
-
-This method is called when a C<readline>/C<< <> >> operator is executed
-on the file handle. It reads the next-lower-level layer until a line is
-found that is one of the syntax types that is being returned, and
-returns that line to the next-higher layer. At end of file, nothing is
-returned.
+This class adds no new methods to its parent,
+L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax>.
 
 =head1 SEE ALSO
 

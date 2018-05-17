@@ -118,6 +118,41 @@ sub __handles_syntax {
 
 }
 
+sub __my_attr {
+    my ( $self ) = @_;
+    return $self->{ scalar caller } ||= {};
+}
+
+sub FILL {
+    my ( $self, $fh ) = @_;
+
+    local $_ = undef;	# Should not be needed, but seems to be.
+
+    my $attr = $self->__my_attr();
+
+    while ( <$fh> ) {
+	my $type = $self->__classify();
+	$attr->{want}{$type}
+	    or next;
+	$attr->{syntax_type}
+	    and $_ = join ':', substr( $type, 0, 4 ), $_;
+	return $_;
+    }
+    return;
+}
+
+sub PUSHED {
+#   my ( $class, $mode, $fh ) = @_;
+    my ( $class ) = @_;
+    my $syntax_opt = $class->__syntax_opt();
+    my $self = bless {}, ref $class || $class;
+    my $attr = $self->__my_attr();
+    $attr->{syntax_type} = $syntax_opt->{'syntax-type'};
+    $attr->{want} = $self->__want_syntax();
+    $self->__init();
+    return $self;
+}
+
 {
     my $syntax_abbrev;
 
@@ -410,6 +445,45 @@ Subclasses B<should> call
 to initialize themselves. Subclasses that do not do this will not be
 applied to any file types by default. They will still be applied if the
 user passes the appropriate options.
+
+=head2 PUSHED
+
+This static method is part of the L<PerlIO::via|PerlIO::via> interface.
+It is called when this class is pushed onto the stack.  It manufactures,
+initializes, and returns a new object.
+
+=head2 __init
+
+This method B<must> be overridden by the subclass. It is called by
+L<PUSHED()|/PUSHED> once the object has been created.
+
+If this method needs to set up any attributes, it B<must> do so by
+calling L<__my_attr()|/__my_attr> on its invocant, and storing them in
+the resultant hash reference, rather than directly in the invocant.
+
+=head2 FILL
+
+This method is part of the L<PerlIO::via|PerlIO::via> interface. It is
+called when a C<readline>/C<< <> >> operator is executed on the file
+handle. It reads the next-lower-level layer until a line is found that
+is one of the syntax types that is being returned, and returns that line
+to the next-higher layer. At end of file, nothing is returned.
+
+=head2 __classify
+
+This method B<must> be overridden by the subclass. It is called by
+L<FILL()|/FILL> once a line of input has been read. The input will be in
+the topic variable (a.k.a. C<$_>).
+
+This method returns the syntax type of the line based on the contents of
+C<$_>, and possibly of the contents of the hash returned by the
+L<__my_attr()|/__my_attr> method, which this method is free to modify.
+
+=head2 __my_attr
+
+This method returns a hash that the caller can use to store the data it
+needs to do its job, creating it if necessary. This is intended for the
+use of the L<__init()|/__init> and L<__classify()|/__classify> methods.
 
 =head2 IN_SERVICE
 

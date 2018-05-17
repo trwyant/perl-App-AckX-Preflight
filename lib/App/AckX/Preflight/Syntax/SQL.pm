@@ -54,21 +54,8 @@ The supported syntax types are:
 
 =head1 METHODS
 
-This class adds the following methods, which are part of the
-L<PerlIO::via|PerlIO::via> interface:
-
-=head2 PUSHED
-
-This static method is called when this class is pushed onto the stack.
-It manufactures, initializes, and returns a new object.
-
-=head2 FILL
-
-This method is called when a C<readline>/C<< <> >> operator is executed
-on the file handle. It reads the next-lower-level layer until a line is
-found that is one of the syntax types that is being returned, and
-returns that line to the next-higher layer. At end of file, nothing is
-returned.
+This class adds no new methods to its parent,
+L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax>.
 
 =head1 SEE ALSO
 

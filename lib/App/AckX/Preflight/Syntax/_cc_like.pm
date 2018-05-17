@@ -22,135 +22,125 @@ sub __handles_syntax {
 
 my $classifier = {	# Anticipating 'state'.
     SYNTAX_CODE()		=> sub {
-	my ( $self ) = @_;
+#	my ( $self, $attr ) = @_;
+	my ( undef, $attr ) = @_;
 
-	if ( $self->{in_line_doc_start} && $_ =~ $self->{in_line_doc_start} ) {
-	    my $block_end = $self->_get_block_end(
+	if ( $attr->{in_line_doc_start} && $_ =~ $attr->{in_line_doc_start} ) {
+	    my $block_end = _get_block_end( $attr,
 		in_line_doc_end => $1 );
 	    $_ =~ $block_end
 		and return SYNTAX_DOCUMENTATION;
-	    $self->{_in_line_doc_end} = $block_end;
-	    $self->{in} = SYNTAX_DOCUMENTATION;
-	} elsif ( $self->{block_start} && $_ =~ $self->{block_start} ) {
-	    my $block_end = $self->_get_block_end( block_end => $1 );
+	    $attr->{_in_line_doc_end} = $block_end;
+	    $attr->{in} = SYNTAX_DOCUMENTATION;
+	} elsif ( $attr->{block_start} && $_ =~ $attr->{block_start} ) {
+	    my $block_end = _get_block_end( $attr, block_end => $1 );
 	    $_ =~ $block_end
 		and return SYNTAX_COMMENT;
-	    $self->{_block_end} = $block_end;
-	    $self->{in} = SYNTAX_COMMENT;
-	} elsif ( $self->{block_meta_start} &&
-	    $_ =~ $self->{block_meta_start} ) {
-	    my $block_meta_end = $self->_get_block_end(
+	    $attr->{_block_end} = $block_end;
+	    $attr->{in} = SYNTAX_COMMENT;
+	} elsif ( $attr->{block_meta_start} &&
+	    $_ =~ $attr->{block_meta_start} ) {
+	    my $block_meta_end = _get_block_end( $attr,
 		block_meta_end => $1 );
 	    $_ =~ $block_meta_end
 		and return SYNTAX_METADATA;
-	    $self->{_block_meta_end} = $block_meta_end;
-	    $self->{in} = SYNTAX_METADATA;
-	} elsif ( $self->{single_line_doc_re} &&
-	    $_ =~ $self->{single_line_doc_re} ) {
+	    $attr->{_block_meta_end} = $block_meta_end;
+	    $attr->{in} = SYNTAX_METADATA;
+	} elsif ( $attr->{single_line_doc_re} &&
+	    $_ =~ $attr->{single_line_doc_re} ) {
 	    return SYNTAX_DOCUMENTATION;
-	} elsif ( $self->{single_line_re} && $_ =~ $self->{single_line_re} ) {
+	} elsif ( $attr->{single_line_re} && $_ =~ $attr->{single_line_re} ) {
 	    return SYNTAX_COMMENT;
 	}
-	return $self->{in};
+	return $attr->{in};
     },
     SYNTAX_COMMENT()		=> sub {
-	my ( $self ) = @_;
+#	my ( $self, $attr ) = @_;
+	my ( undef, $attr ) = @_;
 
-	if ( $_ =~ $self->{_block_end} ) {
-	    my $was = $self->{in};
-	    $self->{in} = SYNTAX_CODE;
-	    delete $self->{_block_end};
+	if ( $_ =~ $attr->{_block_end} ) {
+	    my $was = $attr->{in};
+	    $attr->{in} = SYNTAX_CODE;
+	    delete $attr->{_block_end};
 	    # We have to hand-dispatch the line because although the
 	    # next line is code, the end of the block comment is doc.
 	    return $was;
 	}
 
-	return $self->{in};
+	return $attr->{in};
     },
     SYNTAX_DOCUMENTATION()	=> sub {
-	my ( $self ) = @_;
+#	my ( $self, $attr ) = @_;
+	my ( undef, $attr ) = @_;
 
-	if ( $_ =~ $self->{_in_line_doc_end} ) {
-	    my $was = $self->{in};
-	    $self->{in} = SYNTAX_CODE;
-	    delete $self->{_in_line_doc_end};
+	if ( $_ =~ $attr->{_in_line_doc_end} ) {
+	    my $was = $attr->{in};
+	    $attr->{in} = SYNTAX_CODE;
+	    delete $attr->{_in_line_doc_end};
 	    # We have to hand-dispatch the line because although the
 	    # next line is code, the end of the block comment is doc.
 	    return $was;
 	}
 
-	return $self->{in};
+	return $attr->{in};
     },
     SYNTAX_METADATA()		=> sub {
-	my ( $self ) = @_;
+#	my ( $self, $attr ) = @_;
+	my ( undef, $attr ) = @_;
 
-	if ( $_ =~ $self->{_block_meta_end} ) {
-	    my $was = $self->{in};
-	    $self->{in} = SYNTAX_CODE;
-	    delete $self->{_block_meta_end};
+	if ( $_ =~ $attr->{_block_meta_end} ) {
+	    my $was = $attr->{in};
+	    $attr->{in} = SYNTAX_CODE;
+	    delete $attr->{_block_meta_end};
 	    # We have to hand-dispatch the line because although the
 	    # next line is code, the end of the block metadata is
 	    # metadata.
 	    return $was;
 	}
 
-	return $self->{in};
+	return $attr->{in};
     },
 };
 
-sub FILL {
-    my ( $self, $fh ) = @_;
+sub __classify {
+    my ( $self ) = @_;
+    my $attr = $self->__my_attr();
+    return $classifier->{ $attr->{in} }->( $self, $attr );
+}
 
-    local $_ = undef;	# Should not be needed, but seems to be.
-
-    while ( <$fh> ) {
-	my $type = $classifier->{ $self->{in} }->( $self );
-	$self->{want}{$type}
-	    or next;
-	$self->{syntax_type}
-	    and $_ = join ':', substr( $type, 0, 4 ), $_;
-	return $_;
-    }
+sub __init {
+    my ( $self ) = @_;
+    my $attr = $self->__my_attr();
+    my $single_line_re = $self->_validate_single_line(
+	'__single_line_re()', $self->__single_line_re() );
+    my $single_line_doc_re = $self->_validate_single_line(
+	'__single_line_doc_re()', $self->__single_line_doc_re() );
+    my $single_line_meta_re = $self->_validate_single_line(
+	'__single_line_meta_re()', $self->__single_line_meta_re() );
+    my ( $block_start, $block_end ) = $self->_validate_block(
+	'__block_re()', $self->__block_re() );
+    my ( $in_line_doc_start, $in_line_doc_end ) = $self->_validate_block(
+	'__in_line_doc_re()', $self->__in_line_doc_re() );
+    my ( $block_meta_start, $block_meta_end ) = $self->_validate_block(
+	'__block_meta_re()', $self->__block_meta_re() );
+    $attr->{in}			= SYNTAX_CODE;
+    $attr->{block_start}	= $block_start;
+    $attr->{block_end}		= $block_end;
+    $attr->{in_line_doc_start}	= $in_line_doc_start;
+    $attr->{in_line_doc_end}	= $in_line_doc_end;
+    $attr->{block_meta_start}	= $block_meta_start;
+    $attr->{block_meta_end}	= $block_meta_end;
+    $attr->{single_line_re}	= $single_line_re;
+    $attr->{single_line_doc_re}	= $single_line_doc_re;
+    $attr->{single_line_meta_re} = $single_line_meta_re;
     return;
 }
 
-sub PUSHED {
-#   my ( $class, $mode, $fh ) = @_;
-    my ( $class ) = @_;
-    my $syntax_opt = $class->__syntax_opt();
-    my $single_line_re = $class->_validate_single_line(
-	'__single_line_re()', $class->__single_line_re() );
-    my $single_line_doc_re = $class->_validate_single_line(
-	'__single_line_doc_re()', $class->__single_line_doc_re() );
-    my $single_line_meta_re = $class->_validate_single_line(
-	'__single_line_meta_re()', $class->__single_line_meta_re() );
-    my ( $block_start, $block_end ) = $class->_validate_block(
-	'__block_re()', $class->__block_re() );
-    my ( $in_line_doc_start, $in_line_doc_end ) = $class->_validate_block(
-	'__in_line_doc_re()', $class->__in_line_doc_re() );
-    my ( $block_meta_start, $block_meta_end ) = $class->_validate_block(
-	'__block_meta_re()', $class->__block_meta_re() );
-    return bless {
-	in			=> SYNTAX_CODE,
-	want			=> $class->__want_syntax(),
-	block_start		=> $block_start,
-	block_end		=> $block_end,
-	in_line_doc_start	=> $in_line_doc_start,
-	in_line_doc_end		=> $in_line_doc_end,
-	block_meta_start	=> $block_meta_start,
-	block_meta_end		=> $block_meta_end,
-	single_line_re		=> $single_line_re,
-	single_line_doc_re	=> $single_line_doc_re,
-	single_line_meta_re	=> $single_line_meta_re,
-	syntax_type		=> $syntax_opt->{'syntax-type'},
-    }, ref $class || $class;
-}
-
 sub _get_block_end {
-    my ( $self, $kind, $start ) = @_;
-    REGEXP_REF eq ref $self->{$kind}
-	and return $self->{$kind};
-    return $self->{$kind}{$start} || __die_hard(
+    my ( $attr, $kind, $start ) = @_;
+    REGEXP_REF eq ref $attr->{$kind}
+	and return $attr->{$kind};
+    return $attr->{$kind}{$start} || __die_hard(
 	"No block end corresponds to '$start'" );
 }
 
@@ -249,7 +239,13 @@ below if they are relevant to the syntax it is trying to parse.
 
 =head1 METHODS
 
-This class adds the following methods:
+This class is a subclass of
+L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax>. It adds or
+overrides the following methods:
+
+=head2 __classify
+
+=head2 __init
 
 =head2 __block_re
 

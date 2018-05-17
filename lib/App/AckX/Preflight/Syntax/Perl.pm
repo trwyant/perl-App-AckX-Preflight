@@ -31,7 +31,8 @@ __PACKAGE__->__handles_type_mod( qw{ set perl perltest } );
 
     my $classify = {
 	SYNTAX_CODE()		=> sub {
-	    my ( $self ) = @_;
+#	    my ( $self, $attr ) = @_;
+	    my ( undef, $attr ) = @_;
 	    if ( m/ \A \s* \# /smx ) {
 		1 == $.
 		    and m/ perl /smx
@@ -41,57 +42,47 @@ __PACKAGE__->__handles_type_mod( qw{ set perl perltest } );
 		return SYNTAX_COMMENT;
 	    }
 	    if ( $is_data->{$_} ) {
-		$self->{in} = SYNTAX_DATA;
+		$attr->{in} = SYNTAX_DATA;
 		return SYNTAX_METADATA;
 	    }
 	    goto &_handle_possible_pod;
 	},
 	SYNTAX_DATA()		=> \&_handle_possible_pod,
 	SYNTAX_DOCUMENTATION()	=> sub {
-	    my ( $self ) = @_;
+#	    my ( $self, $attr ) = @_;
+	    my ( undef, $attr ) = @_;
 	    m/ \A = cut \b /smx
-		and $self->{in} = delete $self->{cut};
+		and $attr->{in} = delete $attr->{cut};
 	    return SYNTAX_DOCUMENTATION;
 	},
     };
 
-    sub FILL {
-	my ( $self, $fh ) = @_;
-
-	local $_ = undef;	# Should not be needed, but seems to be.
-
-	while ( <$fh> ) {
-	    my $type = $classify->{ $self->{in} }->( $self );
-	    $self->{want}{$type}
-		or next;
-	    $self->{syntax_type}
-		and $_ = join ':', substr( $type, 0, 4 ), $_;
-	    return $_;
-	}
-	return;
+    sub __classify {
+	my ( $self ) = @_;
+	my $attr = $self->__my_attr();
+	return $classify->{ $self->__my_attr()->{in} }->( $self, $attr );
     }
 }
 
-sub PUSHED {
-#   my ( $class, $mode, $fh ) = @_;
-    my ( $class ) = @_;
-    my $syntax_opt = $class->__syntax_opt();
-    return bless {
-	in		=> SYNTAX_CODE,
-	want		=> $class->__want_syntax(),
-	syntax_type	=> $syntax_opt->{'syntax-type'},
-    }, ref $class || $class;
+sub __init {
+    my ( $self ) = @_;
+    my $attr = $self->__my_attr();
+    $attr->{in} = SYNTAX_CODE;
+    return;
 }
 
+# This co-routine MUST only be called if $attr->{in} is NOT
+# 'documentation'.
 sub _handle_possible_pod {
-    my ( $self ) = @_;
+#   my ( $self, $attr ) = @_;
+    my ( undef, $attr ) = @_;
     if ( m/ \A = ( cut \b | [A-Za-z] ) /smx ) {
 	'cut' eq $1
 	    and return SYNTAX_DOCUMENTATION;
-	$self->{cut} = $self->{in};
-	$self->{in} = SYNTAX_DOCUMENTATION;
+	$attr->{cut} = $attr->{in};
+	$attr->{in} = SYNTAX_DOCUMENTATION;
     }
-    return $self->{in};
+    return $attr->{in};
 }
 
 
@@ -131,21 +122,8 @@ The supported syntax types are:
 
 =head1 METHODS
 
-This class adds the following methods, which are part of the
-L<PerlIO::via|PerlIO::via> interface:
-
-=head2 PUSHED
-
-This static method is called when this class is pushed onto the stack.
-It manufactures, initializes, and returns a new object.
-
-=head2 FILL
-
-This method is called when a C<readline>/C<< <> >> operator is executed
-on the file handle. It reads the next-lower-level layer until a line is
-found that is one of the syntax types that is being returned, and
-returns that line to the next-higher layer. At end of file, nothing is
-returned.
+This class adds no new methods to its parent,
+L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax>.
 
 =head1 SEE ALSO
 

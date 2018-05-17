@@ -15,48 +15,29 @@ use App::AckX::Preflight::Util qw{
 
 our $VERSION = '0.000_013';
 
-sub __handles_syntax {
-    __die_hard( '__handles_syntax() must be overridden' );
-}
-
-sub FILL {
-    my ( $self, $fh ) = @_;
-
-    local $_ = undef;	# Should not be needed, but seems to be.
-
-    while ( <$fh> ) {
-	my $type;
-	if ( 1 == $. && $self->{shebang_re} && $_ =~ $self->{shebang_re} ) {
-	    $type = SYNTAX_METADATA;
-	} elsif ( $self->{single_line_doc_re} &&
-	    $_ =~ $self->{single_line_doc_re} ) {
-	    $type = SYNTAX_DOCUMENTATION;
-	} elsif ( $self->{single_line_re} &&
-	    $_ =~ $self->{single_line_re} ) {
-	    $type = SYNTAX_COMMENT;
-	} else {
-	    $type = SYNTAX_CODE;
-	}
-	$self->{want}{$type}
-	    or next;
-	$self->{syntax_type}
-	    and $_ = join ':', substr( $type, 0, 4 ), $_;
-	return $_;
+sub __classify {
+    my ( $self ) = @_;
+    my $attr = $self->__my_attr();
+    if ( 1 == $. && $attr->{shebang_re} && $_ =~ $attr->{shebang_re} ) {
+	return SYNTAX_METADATA;
+    } elsif ( $attr->{single_line_doc_re} &&
+	$_ =~ $attr->{single_line_doc_re} ) {
+	return SYNTAX_DOCUMENTATION;
+    } elsif ( $attr->{single_line_re} &&
+	$_ =~ $attr->{single_line_re} ) {
+	return SYNTAX_COMMENT;
+    } else {
+	return SYNTAX_CODE;
     }
-    return;
 }
 
-sub PUSHED {
-#   my ( $class, $mode, $fh ) = @_;
-    my ( $class ) = @_;
-    my $syntax_opt = $class->__syntax_opt();
-    return bless {
-	want			=> $class->__want_syntax(),
-	shebang_re		=> scalar $class->__shebang_re(),
-	single_line_re		=> scalar $class->__single_line_re(),
-	single_line_doc_re	=> scalar $class->__single_line_doc_re(),
-	syntax_type		=> $syntax_opt->{'syntax-type'},
-    }, ref $class || $class;
+sub __init {
+    my ( $self ) = @_;
+    my $attr = $self->__my_attr();
+    $attr->{shebang_re}		= $self->__shebang_re();
+    $attr->{single_line_re}	= $self->__single_line_re();
+    $attr->{single_line_doc_re}	= $self->__single_line_doc_re();
+    return;
 }
 
 sub __shebang_re {
@@ -97,7 +78,13 @@ L<__single_line_re()|/__single_line_re>.
 
 =head1 METHODS
 
-This class adds the following methods:
+This class is a subclass of
+L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax>. It adds or
+overrides the following methods:
+
+=head2 __classify
+
+=head2 __init
 
 =head2 __shebang_re
 
