@@ -7,7 +7,7 @@ use warnings;
 
 use App::AckX::Preflight::Util qw{ :croak @CARP_NOT };
 
-our $VERSION = '0.000_013';
+our $VERSION = '0.000_014';
 
 use constant IN_SERVICE	=> 1;
 

@@ -13,7 +13,7 @@ use App::AckX::Preflight::Util qw{
     @CARP_NOT
 };
 
-our $VERSION = '0.000_013';
+our $VERSION = '0.000_014';
 
 sub __classify {
     my ( $self ) = @_;

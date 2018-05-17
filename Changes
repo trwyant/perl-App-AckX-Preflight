@@ -1,3 +1,20 @@
+0.000_014	2018-05-17	T. R. Wyant
+    Add syntax filters for:
+    - csharp
+    - lisp (including clojure, elisp, and scheme)
+    - python
+    - tcl
+
+    Refactor syntax filters
+
+    Add syntax filter option --syntax-type, which prepends the syntax
+    type to the line.
+
+    Add syntax type 'metadata'. This has been taken to cover:
+    - shebang lines;
+    - Perl '#line ...', '__DATA__' and '__END__';
+    - Java annotations.
+
 0.000_013	2018-05-15	T. R. Wyant
     Remove obsolete plug-ins from t/basic.t
 
