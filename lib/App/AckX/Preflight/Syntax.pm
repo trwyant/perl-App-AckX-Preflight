@@ -8,6 +8,7 @@ use warnings;
 use App::AckX::Preflight::Util qw{
     :croak
     :syntax
+    __syntax_types
     @CARP_NOT
 };
 use Module::Pluggable::Object 5.2;
@@ -123,14 +124,7 @@ sub __handles_syntax {
     sub __normalize_options {
 	my ( $invocant, $opt ) = @_;
 
-	$syntax_abbrev ||= Text::Abbrev::abbrev(
-	    SYNTAX_CODE,
-	    SYNTAX_COMMENT,
-	    SYNTAX_DATA,
-	    SYNTAX_DOCUMENTATION,
-	    SYNTAX_METADATA,
-	    SYNTAX_OTHER,
-	);
+	$syntax_abbrev ||= Text::Abbrev::abbrev( __syntax_types() );
 
 	my $class = ref $invocant || $invocant;
 

@@ -19,6 +19,7 @@ our @EXPORT_OK = qw{
     __getopt
     __getopt_for_plugin
     __open_for_read
+    __syntax_types
     __warn
 
     ARRAY_REF
@@ -164,6 +165,10 @@ sub __open_for_read {
     return $fh;
 }
 
+sub __syntax_types {
+    return ( map { __PACKAGE__->$_() } @{ $EXPORT_TAGS{syntax} } );
+}
+
 sub __warn {
     return CORE::warn( _me(), ': ', @_, "\n" );
 }
@@ -269,6 +274,13 @@ hash.
 
 This subroutine opens the named file for reading. It is assumed to be
 encoded C<UTF-8>. An exception is thrown if the open fails.
+
+=head2 __syntax_types
+
+ say for __syntax_types();
+
+This subroutine returns all defined syntax types; that is to say, the
+values of all defined C<SYNTAX_*> constants.
 
 =head2 __warn
 
