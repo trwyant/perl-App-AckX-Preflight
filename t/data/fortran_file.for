@@ -1,7 +1,13 @@
-        print 1000
-1000    format ( " Hello world!" )
-        call exit()
-        end
+      character*64 my_name
+      if ( iargc() .gt. 0 ) then
+          call getarg( 1, my_name )
+      else
+          my_name = "world"
+      end if
+      print 1000, trim( my_name )
+1000  format ( "Hello ", A, "!" )
+      call exit()
+      end
 
 C Author: Thomas R. Wyant, III F<wyant at cpan dot org>
 C

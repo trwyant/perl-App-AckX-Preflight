@@ -20,40 +20,52 @@ use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Fortran';
 use constant FORTRAN_FILE	=> 't/data/fortran_file.for';
 
 use constant FORTRAN_CODE	=> <<'EOD';
-   1:         print 1000
-   2: 1000    format ( " Hello world!" )
-   3:         call exit()
-   4:         end
-   5:
-  13:
+   1:       character*64 my_name
+   2:       if ( iargc() .gt. 0 ) then
+   3:           call getarg( 1, my_name )
+   4:       else
+   5:           my_name = "world"
+   6:       end if
+   7:       print 1000, trim( my_name )
+   8: 1000  format ( "Hello ", A, "!" )
+   9:       call exit()
+  10:       end
+  11:
+  19:
 EOD
 
 use constant FORTRAN_COMMENT	=> <<'EOD';
-   6: C Author: Thomas R. Wyant, III F<wyant at cpan dot org>
-   7: C
-   8: C Copyright (C) 2018 by Thomas R. Wyant, III
-   9: C
-  10: C This program is distributed in the hope that it will be useful, but
-  11: C without any warranty; without even the implied warranty of
-  12: C merchantability or fitness for a particular purpose.
-  14: C ex: set textwidth=72 :
+  12: C Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+  13: C
+  14: C Copyright (C) 2018 by Thomas R. Wyant, III
+  15: C
+  16: C This program is distributed in the hope that it will be useful, but
+  17: C without any warranty; without even the implied warranty of
+  18: C merchantability or fitness for a particular purpose.
+  20: C ex: set textwidth=72 :
 EOD
 
 use constant FORTRAN_CODE_COMMENT => <<'EOD';
-   1:         print 1000
-   2: 1000    format ( " Hello world!" )
-   3:         call exit()
-   4:         end
-   5:
-   6: C Author: Thomas R. Wyant, III F<wyant at cpan dot org>
-   7: C
-   8: C Copyright (C) 2018 by Thomas R. Wyant, III
-   9: C
-  10: C This program is distributed in the hope that it will be useful, but
-  11: C without any warranty; without even the implied warranty of
-  12: C merchantability or fitness for a particular purpose.
-  13:
-  14: C ex: set textwidth=72 :
+   1:       character*64 my_name
+   2:       if ( iargc() .gt. 0 ) then
+   3:           call getarg( 1, my_name )
+   4:       else
+   5:           my_name = "world"
+   6:       end if
+   7:       print 1000, trim( my_name )
+   8: 1000  format ( "Hello ", A, "!" )
+   9:       call exit()
+  10:       end
+  11:
+  12: C Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+  13: C
+  14: C Copyright (C) 2018 by Thomas R. Wyant, III
+  15: C
+  16: C This program is distributed in the hope that it will be useful, but
+  17: C without any warranty; without even the implied warranty of
+  18: C merchantability or fitness for a particular purpose.
+  19:
+  20: C ex: set textwidth=72 :
 EOD
 
 $App::Ack::mappings{fortran} = [
