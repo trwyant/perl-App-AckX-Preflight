@@ -18,7 +18,7 @@ sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT );
 }
 
-__PACKAGE__->__handles_type_mod( qw{ set make } );
+__PACKAGE__->__handles_type_mod( qw{ set make tcl } );
 
 sub __classify {
     my ( $self ) = @_;
@@ -52,8 +52,8 @@ No direct user interaction.
 =head1 DESCRIPTION
 
 This L<PerlIO::via|PerlIO::via> I/O layer is intended to be used by
-L<App::AckX::Preflight|App::AckX::Preflight> to process a Makefile,
-returning only those lines the user has requested.
+L<App::AckX::Preflight|App::AckX::Preflight> to process a Makefile-like
+syntax, returning only those lines the user has requested.
 
 The supported syntax types are:
 
@@ -62,6 +62,18 @@ The supported syntax types are:
 =item code
 
 =item comment
+
+=back
+
+In principal this syntax filter can be used for any syntax that consists
+of code and single-line comments introduced by C<'#'>, in which the
+comments can be continued by a back slash. By default it applies to:
+
+=over
+
+=item make
+
+=item tcl
 
 =back
 

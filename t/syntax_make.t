@@ -48,8 +48,8 @@ my $make_resource = App::Ack::Resource->new( MAKE_FILE );
 
 my $text_resource = App::Ack::Resource->new( TEXT_FILE );
 
-is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ make } ],
-    sprintf '%s handles make', SYNTAX_FILTER;
+is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ make tcl } ],
+    sprintf '%s handles make, tcl', SYNTAX_FILTER;
 
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
 
