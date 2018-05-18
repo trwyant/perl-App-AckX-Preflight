@@ -83,8 +83,9 @@ $App::Ack::mappings{cpp} = [
 my $resource = App::Ack::Resource->new( CPP_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ],
-    [ qw{ actionscript cpp objc } ],
-    sprintf '%s handles actionscript, cpp, objc', SYNTAX_FILTER;
+    [ qw{ actionscript cpp objc objcpp } ],
+    sprintf '%s handles actionscript, cpp, objc, objcpp', SYNTAX_FILTER;
+
 
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
 
@@ -95,6 +96,7 @@ is slurp( CPP_FILE ), CPP_CODE, 'Only code, reading directly';
 
 is slurp( $resource ), CPP_CODE, 'Only code, reading resource';
 
+
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_COMMENT );
 
 ok ! SYNTAX_FILTER->__want_everything(),
@@ -104,6 +106,7 @@ is slurp( CPP_FILE ), CPP_COMMENT, 'Only comments, reading directly';
 
 is slurp( $resource ), CPP_COMMENT, 'Only comments, reading resource';
 
+
 SYNTAX_FILTER->import( '-syntax', SYNTAX_DOCUMENTATION );
 
 ok ! SYNTAX_FILTER->__want_everything(),
@@ -112,6 +115,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 is slurp( CPP_FILE ), CPP_DOC, 'Only documentation, reading directly';
 
 is slurp( $resource ), CPP_DOC, 'Only documentation, reading resource';
+
 
 SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_CODE, SYNTAX_DOCUMENTATION );
 
@@ -123,6 +127,7 @@ is slurp( CPP_FILE ), CPP_CODE_DOC,
 
 is slurp( $resource ), CPP_CODE_DOC,
     'Code and documentation, reading resource';
+
 
 done_testing;
 

@@ -18,7 +18,7 @@ sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION );
 }
 
-__PACKAGE__->__handles_type_mod( qw{ set actionscript cpp objc } );
+__PACKAGE__->__handles_type_mod( qw{ set actionscript cpp objc objcpp } );
 
 sub __in_line_doc_re {
     return(
@@ -73,6 +73,8 @@ C<'/** ... */'>.  By default it applies to:
 =item C<cpp>
 
 =item C<objc>
+
+=item C<objcpp>
 
 =back
 
