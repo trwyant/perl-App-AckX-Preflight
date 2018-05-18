@@ -7,6 +7,12 @@ ACKXP-REF
     example, ackxp --file eg/ACKXP-REF will find all literal Perl
     reference types used in this distro.
 
+syntax
+    This is a shell script that takes as its arguments one or more
+    files. The contents are listed, with the syntax type derived from
+    the App::AckX::Preflight::Syntax machinery prepended. No prepending
+    occurs if there is no syntax filter for the file type.
+
 README
     This file.
 

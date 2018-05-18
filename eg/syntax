@@ -1,0 +1,52 @@
+#!/bin/sh
+
+if [ -z "$PAGER" ]; then
+    PAGER=less
+fi
+
+case "$1" in
+    -blib|--blib)
+	blib=-Mblib
+	shift
+	;;
+    -help|--help)
+	$PAGER <<EOD
+NAME
+    syntax - App::AckX::Preflight syntax classification
+
+SYNOPSIS
+    syntax file ...
+    syntax -blib file ...
+    syntax -help
+
+DESCRIPTION
+    The syntax command uses App::AckX::Preflight's syntax functionality
+    to classify the lines of one or more files into their syntax types.
+
+    The following options may be specified:
+
+    -blib	Adds -Mblib to the Perl invocation
+    -help	Displays this help text and then exits
+EOD
+	exit 1
+	;;
+    *)
+	;;
+esac
+
+perl $blib -MApp::AckX::Preflight::Resource \
+    -MApp::AckX::Preflight::Syntax=-syntax-type \
+    -S ack --match '' "$@"
+
+# The equivalent ackx invocation is
+# ackx --verbose --syntax-type '' "$@" 
+
+# Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+#
+# Copyright (C) 2018 by Thomas R. Wyant, III
+#
+# This program is distributed in the hope that it will be useful, but
+# without any warranty; without even the implied warranty of
+# merchantability or fitness for a particular purpose.
+
+# ex: set textwidth=72 :
