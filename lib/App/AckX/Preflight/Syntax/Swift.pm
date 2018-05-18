@@ -1,4 +1,4 @@
-package App::AckX::Preflight::Syntax::Lisp;
+package App::AckX::Preflight::Syntax::Swift;
 
 use 5.008008;
 
@@ -20,21 +20,25 @@ sub __handles_syntax {
 	SYNTAX_METADATA );
 }
 
-__PACKAGE__->__handles_type_mod( qw{ set clojure elisp lisp scheme } );
+__PACKAGE__->__handles_type_mod( qw{ set swift } );
 
 sub __single_line_re {
-    return qr{ \A \s* ;;? }smx;
+    return qr{ \A \s* // }smx;
 }
 
 sub __single_line_doc_re {
-    return qr{ \A \s* ;;;* }smx;
+    return qr{ \A \s* //: }smx;
 }
 
 sub __block_re {
     return(
-	qr{ \# \| }smx,
-	qr{ \| \# }smx,
+	qr{ / [*] :? }smx,
+	qr{ [*] / }smx,
     );
+}
+
+sub __block_doc_re {
+    return qr{ / [*] : }smx;
 }
 
 1;
@@ -43,7 +47,7 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Syntax::Lisp - App::AckX::Preflight syntax filter for Lisp.
+App::AckX::Preflight::Syntax::Swift - App::AckX::Preflight syntax filter for Swift.
 
 =head1 SYNOPSIS
 
@@ -52,7 +56,7 @@ No direct user interaction.
 =head1 DESCRIPTION
 
 This L<PerlIO::via|PerlIO::via> I/O layer is intended to be used by
-L<App::AckX::Preflight|App::AckX::Preflight> to process a Lisp file,
+L<App::AckX::Preflight|App::AckX::Preflight> to process a Swift file,
 returning only those lines the user has requested.
 
 The supported syntax types are:
@@ -63,8 +67,6 @@ The supported syntax types are:
 
 =item comment
 
-=item documentation (i.e. C<;;;>-lines)
-
 =item metadata (shebang line)
 
 =back
@@ -72,11 +74,11 @@ The supported syntax types are:
 =head1 METHODS
 
 This class adds no new methods to its parent,
-L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax>.
+L<App::AckX::Preflight::Syntax::_nesting|App::AckX::Preflight::Syntax::_nesting>.
 
 =head1 SEE ALSO
 
-L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax>
+L<App::AckX::Preflight::Syntax::_nesting|App::AckX::Preflight::Syntax::_nesting>
 
 L<App::AckX::Preflight|App::AckX::Preflight>
 
@@ -94,7 +96,7 @@ Thomas R. Wyant, III F<wyant at cpan dot org>
 Copyright (C) 2018 by Thomas R. Wyant, III
 
 This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl 5.10.0. For more details, see the full text
+under the same terms as Perl 5.10.0. For more details, see the full tex::_nestedt
 of the licenses in the directory LICENSES.
 
 This program is distributed in the hope that it will be useful, but
@@ -103,4 +105,4 @@ merchantability or fitness for a particular purpose.
 
 =cut
 
-# ex: set textwidth=72 :
+# ex::_nested: set tex::_nestedtwidth=72 :

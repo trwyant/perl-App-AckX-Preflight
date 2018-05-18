@@ -65,9 +65,11 @@ our @CARP_NOT = qw{
     App::AckX::Preflight::Syntax::Perl
     App::AckX::Preflight::Syntax::SQL
     App::AckX::Preflight::Syntax::Shell
+    App::AckX::Preflight::Syntax::Swift
     App::AckX::Preflight::Syntax::Vim
     App::AckX::Preflight::Syntax::YAML
     App::AckX::Preflight::Syntax::_cc_like
+    App::AckX::Preflight::Syntax::_nesting
     App::AckX::Preflight::Syntax::_single_line_comments
     App::AckX::Preflight::Util
 };
