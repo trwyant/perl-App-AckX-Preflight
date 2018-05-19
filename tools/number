@@ -17,9 +17,17 @@ my %opt;
 
 GetOptions( \%opt,
     help => sub { pod2usage( { -verbose => 2 } ) },
-) and not @ARGV or pod2usage( { -verbose => 0 } );
+) and @ARGV < 2 or pod2usage( { -verbose => 0 } );
 
-print slurp( \*STDIN );
+my $fh;
+if ( @ARGV ) {
+    open $fh, '<', $ARGV[0]
+	or die "Failed to open $ARGV[0]: $!\n";
+} else {
+    $fh = \*STDIN;
+}
+
+print slurp( $fh );
 
 __END__
 
@@ -30,6 +38,7 @@ number - Number the lines of files consistently with t/syntax_*.t
 =head1 SYNOPSIS
 
  number <foo
+ number foo
  number -help
  number -version
 
@@ -46,11 +55,13 @@ This option displays the version of this script. The script then exits.
 
 =head1 DETAILS
 
-This Perl script prints to standard out the file that is presented on
-its standard in, with lines numbered consistently with the usage in
-F<t/syntax_*.t>. It must be run from the home directory of this package,
-because it makes use of C<My::Module::TestSyntax>, which is in the
-F<inc/> directory of the package.
+This Perl script prints a file to standard out, with lines numbered
+consistently with the usage in F<t/syntax_*.t>. The file name is given
+on the command line. If there is none, C<STDIN> is read.
+
+This script must be run from the home directory of this package, because
+it makes use of C<My::Module::TestSyntax>, which is in the F<inc/>
+directory of the package.
 
 This Perl script is completely unsupported, and may be changed or
 removed without notice.
