@@ -16,6 +16,7 @@ lib/App/AckX/Preflight/Plugin/Syntax.pm
 lib/App/AckX/Preflight/Resource.pm
 lib/App/AckX/Preflight/Syntax.pm
 lib/App/AckX/Preflight/Syntax/Ada.pm
+lib/App/AckX/Preflight/Syntax/Batch.pm
 lib/App/AckX/Preflight/Syntax/Cc.pm
 lib/App/AckX/Preflight/Syntax/Cpp.pm
 lib/App/AckX/Preflight/Syntax/Csharp.pm
@@ -49,6 +50,7 @@ t/data/fubar
 t/data/global/ackxprc
 t/data/home/_ackxprc
 t/data/ada_file.adb
+t/data/batch_file.bat
 t/data/cc_file.c
 t/data/cpp_file.cpp
 t/data/csharp_file.cs
@@ -75,6 +77,7 @@ t/plugin_files_from.t
 t/plugin_syntax.t
 t/preflight.t
 t/syntax_ada.t
+t/syntax_batch.t
 t/syntax_cc.t
 t/syntax_cpp.t
 t/syntax_csharp.t
