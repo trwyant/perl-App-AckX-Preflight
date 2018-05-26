@@ -11,9 +11,12 @@ use Pod::Usage;
 
 our $VERSION = '0.000_014';
 
-my %opt;
+my %opt = (
+    env	=> 1,
+);
 
 GetOptions( \%opt,
+    qw{ env! },
     help => sub { pod2usage( { -verbose => 2 } ) },
 ) or pod2usage( { -verbose => 0 } );
 
@@ -26,7 +29,11 @@ foreach my $class ( App::AckX::Preflight::Syntax->__plugins() ) {
 }
 
 {
-    open my $fh, '-|', 'ack --help-types'
+    my @cmd = (
+	qw{ ack --help-types },
+	map { $opt{$_} ? "--$_" : "--no$_" } qw{ env },
+    );
+    open my $fh, '-|', @cmd
 	or die "Can not pipe ack --help-types into us: $!\n";
     while ( <$fh> ) {
 	m/ \A \s* \Q--[no]\E ( \w+ ) /smx
@@ -51,6 +58,15 @@ syntax-filters - List syntax filters for each ack file type
  syntax-filters -version
 
 =head1 OPTIONS
+
+=head2 -env
+
+This Boolean option tells F<ack> to pay attention to environment
+variables and configuration files, which may define additional file
+types.
+
+The default is C<-env>, but you can override this by specifying
+C<-noenv>, which causes only the built-in types to be listed.
 
 =head2 -help
 
