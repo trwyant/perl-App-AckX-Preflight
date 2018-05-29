@@ -63,6 +63,7 @@ foreach ( qw{
 	App::AckX::Preflight::Syntax::Cpp
 	App::AckX::Preflight::Syntax::Data
 	App::AckX::Preflight::Syntax::Fortran
+	App::AckX::Preflight::Syntax::Haskell
 	App::AckX::Preflight::Syntax::Lisp
 	App::AckX::Preflight::Syntax::Make
 	App::AckX::Preflight::Syntax::Perl

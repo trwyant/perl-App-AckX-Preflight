@@ -48,6 +48,10 @@ my $classifier = {	# Anticipating 'state'.
 	    $attr->{in} = SYNTAX_METADATA;
 	} elsif ( $attr->{single_line_doc_re} &&
 	    $_ =~ $attr->{single_line_doc_re} ) {
+	    if ( $attr->{comments_continue_doc} ) {
+		$attr->{in} = SYNTAX_DOCUMENTATION;
+		$attr->{_in_single_line_doc} = 1;
+	    }
 	    return SYNTAX_DOCUMENTATION;
 	} elsif ( $attr->{single_line_re} && $_ =~ $attr->{single_line_re} ) {
 	    return SYNTAX_COMMENT;
@@ -73,7 +77,12 @@ my $classifier = {	# Anticipating 'state'.
 #	my ( $self, $attr ) = @_;
 	my ( undef, $attr ) = @_;
 
-	if ( $_ =~ $attr->{_in_line_doc_end} ) {
+	if ( $attr->{_in_single_line_doc} ) {
+	    unless ( $_ =~ $attr->{single_line_re} ) {
+		$attr->{in} = SYNTAX_CODE;
+		delete $attr->{_in_single_line_doc};
+	    }
+	} elsif ( $_ =~ $attr->{_in_line_doc_end} ) {
 	    my $was = $attr->{in};
 	    $attr->{in} = SYNTAX_CODE;
 	    delete $attr->{_in_line_doc_end};
@@ -126,6 +135,7 @@ sub __init {
     $attr->{in}			= SYNTAX_CODE;
     $attr->{block_start}	= $block_start;
     $attr->{block_end}		= $block_end;
+    $attr->{comments_continue_doc}	= $self->__comments_continue_doc();
     $attr->{in_line_doc_start}	= $in_line_doc_start;
     $attr->{in_line_doc_end}	= $in_line_doc_end;
     $attr->{block_meta_start}	= $block_meta_start;
@@ -144,6 +154,8 @@ sub _get_block_end {
 	"No block end corresponds to '$start'" );
 }
 
+# TODO if we can count on Perl 5.9.5 we can return qr{(*FAIL)}smx rather
+# than nothing, and not have to check if the regexp exists.
 sub _validate_block {
     my ( undef, $kind, $start, $end ) = @_;
     defined $start
@@ -159,6 +171,8 @@ sub _validate_block {
     return ( $start, $end );
 }
 
+# TODO if we can count on Perl 5.9.5 we can return qr{(*FAIL)}smx rather
+# than nothing, and not have to check if the regexp exists.
 sub _validate_single_line {
     my ( undef, $kind, $re ) = @_;
     defined $re
@@ -173,6 +187,10 @@ sub __block_re {
 	qr{ \A \s* / [*] }smx,
 	qr{ [*] / }smx,
     );
+}
+
+sub __comments_continue_doc {
+    return;
 }
 
 sub __in_line_doc_re {
@@ -264,6 +282,19 @@ This implementation returns
     qr{ \A \s* / [*] }smx,
     qr{ [*] / }smx,
   )
+
+=head2 __comments_continue_doc
+
+This method returns a false value. It should be overridden to return a
+true value if and only if:
+
+=over
+
+=item - Single-line documentation is supported;
+
+=item - Single-line comments continue single-line documentation (e.g.  Haskell).
+
+=back
 
 =head2 __in_line_doc_re
 

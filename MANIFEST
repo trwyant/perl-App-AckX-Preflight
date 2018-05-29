@@ -22,6 +22,7 @@ lib/App/AckX/Preflight/Syntax/Cpp.pm
 lib/App/AckX/Preflight/Syntax/Csharp.pm
 lib/App/AckX/Preflight/Syntax/Data.pm
 lib/App/AckX/Preflight/Syntax/Fortran.pm
+lib/App/AckX/Preflight/Syntax/Haskell.pm
 lib/App/AckX/Preflight/Syntax/Java.pm
 lib/App/AckX/Preflight/Syntax/Lisp.pm
 lib/App/AckX/Preflight/Syntax/Make.pm
@@ -55,6 +56,7 @@ t/data/cc_file.c
 t/data/cpp_file.cpp
 t/data/csharp_file.cs
 t/data/fortran_file.for
+t/data/haskell_file.hs
 t/data/java_file.java
 t/data/json_file.json
 t/data/make_file.mak
@@ -83,6 +85,7 @@ t/syntax_cpp.t
 t/syntax_csharp.t
 t/syntax_data.t
 t/syntax_fortran.t
+t/syntax_haskell.t
 t/syntax_java.t
 t/syntax_lisp.t
 t/syntax_make.t
