@@ -83,7 +83,7 @@ $App::Ack::mappings{cpp} = [
 my $resource = App::Ack::Resource->new( CPP_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ],
-    [ qw{ actionscript cpp objc objcpp } ],
+    [ qw{ actionscript cpp go objc objcpp } ],
     sprintf '%s handles actionscript, cpp, objc, objcpp', SYNTAX_FILTER;
 
 
