@@ -1,3 +1,18 @@
+0.000_015	2018-05-30	T. R. Wyant
+    Add syntax filters:
+    - batch (.bat)
+    - go (added to App::AckX::Preflight::Syntax::Cpp)
+    - haskell
+    - objcpp (added to App::AckX::Preflight::Syntax::Cpp)
+    - swift
+
+    Add eg/syntax.
+
+    tools/number now accepts a file name as an argument.
+
+    tools/syntax-filters now has a --[no]env option, which it passes to
+    ack.
+
 0.000_014	2018-05-17	T. R. Wyant
     Add syntax filters for:
     - csharp
