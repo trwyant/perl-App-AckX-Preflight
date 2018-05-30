@@ -34,6 +34,14 @@ EOD
 	;;
 esac
 
+if [ -n "$blib" ]; then
+    if [ -f 'Makefile' ]; then
+	make
+    elif [ -f 'Build' ]; then
+	./Build --quiet
+    fi
+fi
+
 perl $blib -MApp::AckX::Preflight::Resource \
     -MApp::AckX::Preflight::Syntax=-syntax-type \
     -S ack --match '' "$@"
