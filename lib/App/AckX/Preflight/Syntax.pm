@@ -72,6 +72,17 @@ sub import {
     return;
 }
 
+sub __handles_resource {
+    my ( $self, $rsrc ) = @_;
+    foreach my $type ( $self->__handles_type() ) {
+	foreach my $f ( @{ $App::Ack::mappings{$type} || [] } ) {
+	    $f->filter( $rsrc )
+		and return $type;
+	}
+    }
+    return;
+}
+
 sub __handles_syntax {
     __die_hard(
 	'__handles_syntax() must be overridden' );
@@ -254,6 +265,61 @@ sub __want_syntax {
     return {};
 }
 
+{
+    local $@ = undef;
+
+    eval {
+	require App::Ack::Resource;
+
+	my $open = \&App::Ack::Resource::open;
+
+	no warnings qw{ redefine };	## no critic (ProhibitNoWarnings)
+
+	*App::Ack::Resource::open = sub {
+	    my ( $self ) = @_;
+
+	    # If the caller is a resource or a filter we're not opening
+	    # for the main scan. Just use the normal machinery.
+	    my $caller = caller;
+	    foreach my $class ( qw{ App::Ack::Resource App::Ack::Filter } ) {
+		$caller->isa( $class )
+		    and return $open->( $self );
+	    }
+
+	    # Foreach of the syntax filter plug-ins
+	    foreach my $class ( App::AckX::Preflight::Syntax->__plugins() ) {
+
+		# See if this resource is of the type serviced by this
+		# module. If not, try the next.
+		$class->__handles_resource( $self )
+		    or next;
+
+		# Open the file.
+		my $fh = $open->( $self );
+
+		# If we want everything and we're not reporting syntax
+		# types we don't need the filter.
+		$class->__want_everything()
+		    and not $class->__syntax_opt()->{'syntax-type'}
+		    and return $fh;
+
+		# Insert the correct syntax filter into the PerlIO
+		# stack.
+		binmode $fh, ":via($class)";
+
+		# Return the handle
+		return $fh;
+	    }
+
+	    # No syntax filter found. Just open the file and return the
+	    # handle.
+	    return $open->( $self );
+	};
+
+	1;
+    } or __die_hard( 'Unable to load App::Ack::Resource' );
+}
+
 1;
 
 __END__
@@ -371,6 +437,13 @@ The import list is parsed by L<__getopt()|/__getopt>. The import list
 must be completely consumed by this operation, or an exception is
 raised. All C<--syntax> arguments must be valid or an exception is
 raised.
+
+=head2 __handles_resource
+
+This static convenience method takes as its argument an
+L<App::Ack::Resource|App::Ack::Resource> object and returns a true value
+if this syntax filter handles the file represented by the resource.
+Otherwise it returns a false value.
 
 =head2 __handles_syntax
 

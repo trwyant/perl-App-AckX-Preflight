@@ -13,7 +13,6 @@ lib/App/AckX/Preflight/Plugin.pm
 lib/App/AckX/Preflight/Plugin/File.pm
 lib/App/AckX/Preflight/Plugin/FilesFrom.pm
 lib/App/AckX/Preflight/Plugin/Syntax.pm
-lib/App/AckX/Preflight/Resource.pm
 lib/App/AckX/Preflight/Syntax.pm
 lib/App/AckX/Preflight/Syntax/Ada.pm
 lib/App/AckX/Preflight/Syntax/Batch.pm

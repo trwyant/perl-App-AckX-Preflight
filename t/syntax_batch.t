@@ -7,7 +7,6 @@ use warnings;
 
 use App::Ack::Filter::Extension;
 use App::Ack::Resource;
-use App::AckX::Preflight::Resource;
 use App::AckX::Preflight::Syntax::Batch;
 use App::AckX::Preflight::Util qw{ :syntax };
 use Test::More 0.88;	# Because of done_testing();

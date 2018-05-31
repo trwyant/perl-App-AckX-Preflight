@@ -57,6 +57,22 @@ foreach my $relative_path ( qw{ Plugin Syntax } ) {
     }
 }
 
+{
+    local $@ = undef;
+    eval {
+	require App::AckX::Preflight::Resource;
+	my $class = 'App::AckX::Preflight::Resource';
+	if ( $opt{unlink} ) {
+	    ( my $fn = "$class.pm" ) =~ s< :: ></>smxg;
+	    print "$INC{$fn}\n";
+	    unlink $INC{$fn}
+		or warn "Failed to unlink $INC{$fn}: $!\n";
+	} else {
+	    print "$class\n";
+	}
+    };
+}
+
 sub get_perl_path {
     my $xqt = $^X;
     File::Spec->file_name_is_absolute( $xqt )
@@ -114,7 +130,8 @@ This option displays the version of this script. The script then exits.
 =head1 DETAILS
 
 This Perl script displays out-of-service
-L<App::AckX::Preflight|App::AckX::Preflight> plug-ins.
+L<App::AckX::Preflight|App::AckX::Preflight> plug-ins, and other retired
+components of this distribution, optionally removing them.
 
 =head1 AUTHOR
 

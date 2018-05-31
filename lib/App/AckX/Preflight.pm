@@ -179,8 +179,6 @@ EOD
 
     my @inject = @{ $self->{inject} };
 
-    __any { m/ \A -MApp::AckX::Preflight::Syntax \b /smx } @inject
-	and splice @inject, 0, 0, '-MApp::AckX::Preflight::Resource';
     if ( DEVELOPMENT &&
 	__any { m/ \A -MApp::AckX::Preflight\b /smx } @inject
     ) {

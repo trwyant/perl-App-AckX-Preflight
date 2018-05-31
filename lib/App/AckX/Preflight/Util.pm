@@ -51,7 +51,6 @@ our @CARP_NOT = qw{
     App::AckX::Preflight::Plugin::File
     App::AckX::Preflight::Plugin::FilesFrom
     App::AckX::Preflight::Plugin::Syntax
-    App::AckX::Preflight::Resource
     App::AckX::Preflight::Syntax
     App::AckX::Preflight::Syntax::Ada
     App::AckX::Preflight::Syntax::Batch
