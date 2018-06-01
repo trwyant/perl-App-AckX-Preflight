@@ -9,7 +9,7 @@ use Carp ();
 use Exporter qw{ import };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
 
-our $VERSION = '0.000_015';
+our $VERSION = '0.000_016';
 
 our @EXPORT_OK = qw{
     __die
