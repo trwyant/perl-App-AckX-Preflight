@@ -1,3 +1,20 @@
+0.000_017	2018-06-02	T. R. Wyant
+    Make work with Ack 3
+    
+    The issues here were:
+    - The Ack 2 class App::Ack::Resource was renamed to App::Ack::File;
+    - The syntax tests needed to know which class to instantiate;
+    - For some reason Ack 3 likes to call App::Ack::File->reset(), whereas
+      Ack 2 appears not to want to call the App::Ack::Resource->reset(). At
+      least that is how I interpret the fact that this code worked with Ack
+      2 before I provided a SEEK method in App::AckX::Preflight::Syntax. The
+      PerlIO::via documentation says that unless you provide this a seek()
+      is an error, and I was no getting them under Ack 2. TELL was also
+      provided, on general principles.
+
+    Fix eg/syntax for syntax refactor. Forgot to eliminate
+    -MApp::AckX::Preflight::Resource
+
 0.000_016	2018-05-31	T. R. Wyant
     Renormalize syntax filters
     

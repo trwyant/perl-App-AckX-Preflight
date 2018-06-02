@@ -13,7 +13,7 @@ use App::AckX::Preflight::Util qw{
     @CARP_NOT
 };
 
-our $VERSION = '0.000_016';
+our $VERSION = '0.000_017';
 
 {
     my $classifier = {
