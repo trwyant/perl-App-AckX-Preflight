@@ -42,8 +42,7 @@ if [ -n "$blib" ]; then
     fi
 fi
 
-perl $blib -MApp::AckX::Preflight::Resource \
-    -MApp::AckX::Preflight::Syntax=-syntax-type \
+perl $blib -MApp::AckX::Preflight::Syntax=-syntax-type \
     -S ack --match '' "$@"
 
 # The equivalent ackx invocation is
