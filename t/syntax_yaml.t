@@ -6,9 +6,8 @@ use strict;
 use warnings;
 
 use App::Ack::Filter::Extension;
-use App::Ack::Resource;
 use App::AckX::Preflight::Syntax::YAML;
-use App::AckX::Preflight::Util qw{ :syntax };
+use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
@@ -44,7 +43,7 @@ $App::Ack::mappings{yaml} = [
     App::Ack::Filter::Extension->new( qw{ yml yaml } ),
 ];
 
-my $resource = App::Ack::Resource->new( DATA_FILE );
+my $resource = ACK_FILE_CLASS->new( DATA_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ yaml } ],
     sprintf '%s handles yaml', SYNTAX_FILTER;

@@ -9,6 +9,7 @@ use App::AckX::Preflight::Util qw{
     :croak
     :syntax
     __syntax_types
+    ACK_FILE_CLASS
     @CARP_NOT
 };
 use Module::Pluggable::Object 5.2;
@@ -84,8 +85,7 @@ sub __handles_resource {
 }
 
 sub __handles_syntax {
-    __die_hard(
-	'__handles_syntax() must be overridden' );
+    __die_hard( '__handles_syntax() must be overridden' );
 }
 
 {
@@ -162,6 +162,16 @@ sub PUSHED {
     $attr->{want} = $self->__want_syntax();
     $self->__init();
     return $self;
+}
+
+sub SEEK {
+    my ( undef, $posn, $whence, $fh ) = @_;
+    return seek $fh, $posn, $whence;
+}
+
+sub TELL {
+    my ( undef, $fh ) = @_;
+    return tell $fh;
 }
 
 {
@@ -265,59 +275,68 @@ sub __want_syntax {
     return {};
 }
 
+use constant SYNTAX_FILTER_LAYER =>
+    qr{ \A via\(App::AckX::Preflight::Syntax \b }smx;
+
+# Hot patch the open() method on the App::Ack class that represents a
+# file, so that we can inject ourselves as a PerlIO::via layer.
 {
-    local $@ = undef;
+    eval sprintf 'require %s; 1', ACK_FILE_CLASS ## no critic (ProhibitStringyEval,RequireCheckingReturnValueOfEval)
+	and my $open = ACK_FILE_CLASS->can( 'open' )
+	or __die_hard( sprintf '%s does not implement open()', ACK_FILE_CLASS );
 
-    eval {
-	require App::Ack::Resource;
+    no warnings qw{ redefine };	## no critic (ProhibitNoWarnings)
+    no strict qw{ refs };
 
-	my $open = \&App::Ack::Resource::open;
+    my $repl = join '::', ACK_FILE_CLASS, 'open';
 
-	no warnings qw{ redefine };	## no critic (ProhibitNoWarnings)
+    *$repl = sub {
+	my ( $self ) = @_;
 
-	*App::Ack::Resource::open = sub {
-	    my ( $self ) = @_;
+	# If the caller is a resource or a filter we're not opening for
+	# the main scan. Just use the normal machinery.
+	my $caller = caller;
+	foreach my $c ( ACK_FILE_CLASS, qw{ App::Ack::Filter } ) {
+	    $caller->isa( $c )
+		and return $open->( $self );
+	}
 
-	    # If the caller is a resource or a filter we're not opening
-	    # for the main scan. Just use the normal machinery.
-	    my $caller = caller;
-	    foreach my $class ( qw{ App::Ack::Resource App::Ack::Filter } ) {
-		$caller->isa( $class )
-		    and return $open->( $self );
-	    }
+	# Foreach of the syntax filter plug-ins
+	foreach my $syntax ( App::AckX::Preflight::Syntax->__plugins() ) {
 
-	    # Foreach of the syntax filter plug-ins
-	    foreach my $class ( App::AckX::Preflight::Syntax->__plugins() ) {
+	    # See if this resource is of the type serviced by this
+	    # module. If not, try the next.
+	    $syntax->__handles_resource( $self )
+		or next;
 
-		# See if this resource is of the type serviced by this
-		# module. If not, try the next.
-		$class->__handles_resource( $self )
-		    or next;
+	    # Open the file.
+	    my $fh = $open->( $self );
 
-		# Open the file.
-		my $fh = $open->( $self );
+	    # If we want everything and we're not reporting syntax types
+	    # we don't need the filter.
+	    $syntax->__want_everything()
+		and not $syntax->__syntax_opt()->{'syntax-type'}
+		and return $fh;
 
-		# If we want everything and we're not reporting syntax
-		# types we don't need the filter.
-		$class->__want_everything()
-		    and not $class->__syntax_opt()->{'syntax-type'}
+	    # Check to see if we're already on the PerlIO stack. If so,
+	    # just return the file handle.
+	    foreach my $layer ( PerlIO::get_layers( $fh ) ) {
+		$layer =~ SYNTAX_FILTER_LAYER
 		    and return $fh;
-
-		# Insert the correct syntax filter into the PerlIO
-		# stack.
-		binmode $fh, ":via($class)";
-
-		# Return the handle
-		return $fh;
 	    }
 
-	    # No syntax filter found. Just open the file and return the
-	    # handle.
-	    return $open->( $self );
-	};
+	    # Insert the correct syntax filter into the PerlIO stack.
+	    binmode $fh, ":via($syntax)";
 
-	1;
-    } or __die_hard( 'Unable to load App::Ack::Resource' );
+	    # Return the handle
+	    return $fh;
+	}
+
+	# No syntax filter found. Just open the file and return the
+	# handle.
+	return $open->( $self );
+    };
+
 }
 
 1;
@@ -441,8 +460,8 @@ raised.
 =head2 __handles_resource
 
 This static convenience method takes as its argument an
-L<App::Ack::Resource|App::Ack::Resource> object and returns a true value
-if this syntax filter handles the file represented by the resource.
+L<App::Ack::File|App::Ack::File> or L<App::Ack::File|App::Ack::File>
+object and returns a true value if this syntax filter handles the file.
 Otherwise it returns a false value.
 
 =head2 __handles_syntax
@@ -551,6 +570,22 @@ the topic variable (a.k.a. C<$_>).
 This method returns the syntax type of the line based on the contents of
 C<$_>, and possibly of the contents of the hash returned by the
 L<__my_attr()|/__my_attr> method, which this method is free to modify.
+
+=head2 SEEK
+
+This method is part of the L<PerlIO::via|PerlIO::via> interface. It is
+called when a C<seek()> operation is executed on the file handle. All
+this does is seek the next-lower-level layer. This method is needed
+because the default behavior is to fail.
+
+=head2 TELL
+
+This method is part of the L<PerlIO::via|PerlIO::via> interface. It is
+called when a C<tell()> operation is executed on the file handle. All
+this does is call C<tell()> on the next-lower-level layer. This method
+is needed because the default behavior is undefined. I am not sure that
+Ack actually uses this, but my futzing around suggested that failure was
+a real possibility.
 
 =head2 __my_attr
 

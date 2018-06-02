@@ -6,9 +6,8 @@ use strict;
 use warnings;
 
 use App::Ack::Filter::Extension;
-use App::Ack::Resource;
 use App::AckX::Preflight::Syntax::Cc;
-use App::AckX::Preflight::Util qw{ :syntax };
+use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
@@ -69,9 +68,9 @@ $App::Ack::mappings{cc} = [
     App::Ack::Filter::Extension->new( qw{ c } ),
 ];
 
-my $cc_resource = App::Ack::Resource->new( CC_FILE );
+my $cc_resource = ACK_FILE_CLASS->new( CC_FILE );
 
-my $text_resource = App::Ack::Resource->new( TEXT_FILE );
+my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ cc css } ],
     sprintf '%s handles cc, css', SYNTAX_FILTER;

@@ -22,6 +22,8 @@ our @EXPORT_OK = qw{
     __syntax_types
     __warn
 
+    ACK_FILE_CLASS
+
     ARRAY_REF
     CODE_REF
     HASH_REF
@@ -90,6 +92,12 @@ use constant SYNTAX_OTHER		=> 'other';
 
 use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
     qw{ dos os2 MSWin32 VMS } }->{$^O};
+
+use constant ACK_FILE_CLASS	=> do {
+    require App::Ack;
+    ( my $version = App::Ack->VERSION() ) =~ s/ _ //smxg;
+    $version ge '2.999' ? 'App::Ack::File' : 'App::Ack::Resource';
+};
 
 sub __die {
     $Carp::Verbose
@@ -295,6 +303,12 @@ This subroutine is really just an alias for C<App::Ack::warn()>.
 
 This package can export the following manifest constants. None are
 exported by default.
+
+=head2 ACK_FILE_CLASS
+
+This is the name of the Ack class that represents a file. It is
+C<'App::Ack::File'> if the version of L<App::Ack|App::Ack> is at least
+C<2.999>; otherwise it is C<'App::Ack::Resource'>.
 
 =head2 ARRAY_REF
 

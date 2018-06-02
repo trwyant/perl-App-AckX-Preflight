@@ -73,7 +73,6 @@ sub requires {
 	'App::Ack'			=> 0,
 	'App::Ack::ConfigLoader'	=> 0,
 	'App::Ack::Filter::Collection'	=> 0,
-	'App::Ack::Resource'		=> 0,
 	'Carp'				=> 0,
 	'Cwd'				=> 0,
 	'Exporter'			=> 0,

@@ -6,9 +6,8 @@ use strict;
 use warnings;
 
 use App::Ack::Filter::Extension;
-use App::Ack::Resource;
 use App::AckX::Preflight::Syntax::Batch;
-use App::AckX::Preflight::Util qw{ :syntax };
+use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
@@ -49,9 +48,9 @@ $App::Ack::mappings{batch} = [
     App::Ack::Filter::Extension->new( qw{ bat } ),
 ];
 
-my $shell_resource = App::Ack::Resource->new( BATCH_FILE );
+my $shell_resource = ACK_FILE_CLASS->new( BATCH_FILE );
 
-my $text_resource = App::Ack::Resource->new( TEXT_FILE );
+my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ batch } ],
     sprintf '%s handles batch', SYNTAX_FILTER;

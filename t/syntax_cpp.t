@@ -6,9 +6,8 @@ use strict;
 use warnings;
 
 use App::Ack::Filter::Extension;
-use App::Ack::Resource;
 use App::AckX::Preflight::Syntax::Cpp;
-use App::AckX::Preflight::Util qw{ :syntax };
+use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
@@ -79,7 +78,7 @@ $App::Ack::mappings{cpp} = [
     App::Ack::Filter::Extension->new( qw{ cpp } ),
 ];
 
-my $resource = App::Ack::Resource->new( CPP_FILE );
+my $resource = ACK_FILE_CLASS->new( CPP_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ],
     [ qw{ actionscript cpp go objc objcpp } ],

@@ -233,8 +233,8 @@ sub __execute {
 	    and App::Ack::Filter::Collection->can( 'filter' )
 	    or return;
 
-	require App::Ack::Resource;
-	App::Ack::Resource->can( 'new' )
+	eval sprintf 'require %s; 1', ACK_FILE_CLASS ## no critic (ProhibitStringyEval,RequireCheckingReturnValueOfEval)
+	    and ACK_FILE_CLASS->can( 'new' )
 	    or return;
 
 
@@ -375,7 +375,7 @@ sub __execute {
 	    #   filter.
 	    my @rslt;
 	    foreach my $file ( @files ) {
-		my $r = App::Ack::Resource->new( $file );
+		my $r = ACK_FILE_CLASS->new( $file );
 		$direct_filter->filter( $r )
 		    or next;
 		$inverse_filter->filter( $r )

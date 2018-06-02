@@ -6,9 +6,8 @@ use strict;
 use warnings;
 
 use App::Ack::Filter::Extension;
-use App::Ack::Resource;
 use App::AckX::Preflight::Syntax::Csharp;
-use App::AckX::Preflight::Util qw{ :syntax };
+use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
@@ -78,7 +77,7 @@ $App::Ack::mappings{csharp} = [
     App::Ack::Filter::Extension->new( qw{ cs } ),
 ];
 
-my $resource = App::Ack::Resource->new( CSHARP_FILE );
+my $resource = ACK_FILE_CLASS->new( CSHARP_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ csharp } ],
     sprintf '%s handles csharp', SYNTAX_FILTER;

@@ -6,9 +6,8 @@ use strict;
 use warnings;
 
 use App::Ack::Filter::Extension;
-use App::Ack::Resource;
 use App::AckX::Preflight::Syntax::Vim;
-use App::AckX::Preflight::Util qw{ :syntax };
+use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
@@ -37,7 +36,7 @@ $App::Ack::mappings{vim} = [
     App::Ack::Filter::Extension->new( qw{ vim } ),
 ];
 
-my $resource = App::Ack::Resource->new( VIM_FILE );
+my $resource = ACK_FILE_CLASS->new( VIM_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ vim } ],
     sprintf '%s handles vim', SYNTAX_FILTER;

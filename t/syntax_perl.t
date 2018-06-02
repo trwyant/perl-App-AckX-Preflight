@@ -6,9 +6,8 @@ use strict;
 use warnings;
 
 use App::Ack::Filter::Extension;
-use App::Ack::Resource;
 use App::AckX::Preflight::Syntax::Perl;
-use App::AckX::Preflight::Util qw{ :syntax };
+use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Scalar::Util qw{ blessed openhandle };
 use Test::More 0.88;	# Because of done_testing();
 
@@ -16,6 +15,7 @@ use lib qw{ inc };
 use My::Module::TestSyntax;	# for slurp() and TEXT_*
 
 use constant SYNTAX_FILTER	=> 'App::AckX::Preflight::Syntax::Perl';
+
 use constant PERL_FILE	=> 't/data/perl_file.PL';
 
 use constant PERL_CODE	=> <<'EOD';
@@ -54,9 +54,9 @@ $App::Ack::mappings{perl} = [
     App::Ack::Filter::Extension->new( qw{ PL } ),
 ];
 
-my $perl_resource = App::Ack::Resource->new( PERL_FILE );
+my $perl_resource = ACK_FILE_CLASS->new( PERL_FILE );
 
-my $text_resource = App::Ack::Resource->new( TEXT_FILE );
+my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ perl perltest } ],
     sprintf '%s handles perl, perltest', SYNTAX_FILTER;

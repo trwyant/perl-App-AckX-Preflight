@@ -6,9 +6,8 @@ use strict;
 use warnings;
 
 use App::Ack::Filter::Extension;
-use App::Ack::Resource;
 use App::AckX::Preflight::Syntax::Fortran;
-use App::AckX::Preflight::Util qw{ :syntax };
+use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
@@ -71,7 +70,7 @@ $App::Ack::mappings{fortran} = [
     App::Ack::Filter::Extension->new( qw{ for } ),
 ];
 
-my $shell_resource = App::Ack::Resource->new( FORTRAN_FILE );
+my $shell_resource = ACK_FILE_CLASS->new( FORTRAN_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ fortran } ],
     sprintf '%s handles fortran', SYNTAX_FILTER;

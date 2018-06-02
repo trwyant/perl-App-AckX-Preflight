@@ -6,9 +6,8 @@ use strict;
 use warnings;
 
 use App::Ack::Filter::Extension;
-use App::Ack::Resource;
 use App::AckX::Preflight::Syntax::Ada;
-use App::AckX::Preflight::Util qw{ :syntax };
+use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test::More 0.88;	# Because of done_testing();
 
 use lib qw{ inc };
@@ -63,9 +62,9 @@ $App::Ack::mappings{ada} = [
     App::Ack::Filter::Extension->new( qw{ adb } ),
 ];
 
-my $shell_resource = App::Ack::Resource->new( ADA_FILE );
+my $shell_resource = ACK_FILE_CLASS->new( ADA_FILE );
 
-my $text_resource = App::Ack::Resource->new( TEXT_FILE );
+my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ ada } ],
     sprintf '%s handles ada', SYNTAX_FILTER;
