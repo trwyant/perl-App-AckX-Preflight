@@ -18,7 +18,7 @@ sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT );
 }
 
-__PACKAGE__->__handles_type_mod( qw{ set cc css } );
+__PACKAGE__->__handles_type_mod( qw{ set cc css less } );
 
 1;
 
