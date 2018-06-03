@@ -8,10 +8,12 @@ use warnings;
 use Carp ();
 use Exporter qw{ import };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
+use List::Util 1.45 ();	# For uniqstr, which this module does not use
 
 our $VERSION = '0.000_017';
 
 our @EXPORT_OK = qw{
+    __any
     __die
     __die_hard
     __err_exclusive
@@ -65,6 +67,7 @@ our @CARP_NOT = qw{
     App::AckX::Preflight::Syntax::Java
     App::AckX::Preflight::Syntax::Lisp
     App::AckX::Preflight::Syntax::Make
+    App::AckX::Preflight::Syntax::Pascal
     App::AckX::Preflight::Syntax::Perl
     App::AckX::Preflight::Syntax::SQL
     App::AckX::Preflight::Syntax::Shell
@@ -98,6 +101,8 @@ use constant ACK_FILE_CLASS	=> do {
     ( my $version = App::Ack->VERSION() ) =~ s/ _ //smxg;
     $version ge '2.999' ? 'App::Ack::File' : 'App::Ack::Resource';
 };
+
+*__any = \&List::Util::any;	# sub any {...}
 
 sub __die {
     $Carp::Verbose
@@ -207,6 +212,12 @@ L<App::AckX::Preflight|App::AckX::Preflight>.
 
 This package can export the following subroutines. None are exported by
 default.
+
+=head2 __any
+
+ __any { ref } @data
+
+This is just an alias to C<List::Util::any>.
 
 =head2 __die
 

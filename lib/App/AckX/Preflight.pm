@@ -9,7 +9,6 @@ use App::Ack ();
 use App::AckX::Preflight::Util qw{ :all };
 use Cwd ();
 use File::Spec;
-use List::Util 1.45 ();	# for uniqstr, which this module does not use
 use Module::Pluggable::Object 5.2;
 use Pod::Usage ();
 use Text::ParseWords ();
@@ -82,11 +81,6 @@ use constant PLUGIN_MAX_DEPTH	=> do {
 	    or $self = \%default;
 	return $self->{home};
     }
-}
-
-BEGIN {
-    # We need to do this inside a BEGIN block to pick up the prototype.
-    *__any = \&List::Util::any;	# sub __any {...}
 }
 
 sub __inject {

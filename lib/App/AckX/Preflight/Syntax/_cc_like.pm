@@ -11,6 +11,7 @@ use App::AckX::Preflight::Util qw{
     :croak
     :ref
     :syntax
+    __any
     @CARP_NOT
 };
 
@@ -166,7 +167,7 @@ sub _validate_block {
 	and return ( $start, $end );
     HASH_REF eq ref $end
 	or __die_hard( "$kind end must be regexp or hash ref" );
-    __any { REGEXP_REF ne ref } values %{ $end }
+    __any { REGEXP_REF ne ref $_ } values %{ $end }
 	and __die_hard( "$kind end hash values must be regexp" );
     return ( $start, $end );
 }
