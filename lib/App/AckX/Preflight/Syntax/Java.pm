@@ -19,7 +19,7 @@ sub __handles_syntax {
 	SYNTAX_METADATA );
 }
 
-__PACKAGE__->__handles_type_mod( qw{ set actionscript cpp java objc } );
+__PACKAGE__->__handles_type_mod( qw{ set groovy java } );
 
 sub __in_line_doc_re {
     return(
