@@ -22,7 +22,6 @@ my $got;
 is_deeply [ My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::File
-	App::AckX::Preflight::Plugin::FilesFrom
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
     'Plugins';
@@ -31,6 +30,8 @@ is_deeply xqt( qw{ --noenv A B C } ),
     [ qw{ perl -S ack --noenv A B C } ],
     'No reversal by default';
 
+=begin comment
+
 is_deeply xqt( qw{ --noenv --nomanifest A B C } ),
     [ qw{ perl -S ack --noenv A B C } ],
     '--nomanifest';
@@ -38,6 +39,10 @@ is_deeply xqt( qw{ --noenv --nomanifest A B C } ),
 is_deeply xqt( qw{ --noenv --manifest A B C } ),
     [ qw{ perl -S ack --noenv A B C }, @manifest ],
     '--manifest';
+
+=end comment
+
+=cut
 
 is_deeply xqt( qw{ --noenv --file t/data/foo } ),
     [ qw{ perl -S ack --match (?i:\bfoo\b) --noenv } ],
@@ -55,21 +60,33 @@ SKIP: {
 
 # Test combining plug-ins.
 
+=begin comment
+
 $got = xqt( qw{ --noenv --manifest --file t/data/foo } );
 is_deeply $got,
     [ qw{ perl -S ack --match (?i:\bfoo\b) --noenv }, @manifest ],
     '--manifest --file t/data/foo'
     or diag 'got ', explain $got;
 
+=end comment
+
+=cut
+
 is_deeply xqt( qw{ --noenv --ackxprc t/data/ackxprc } ),
     [ qw{ perl -S ack --from=t/data/ackxprc --noenv } ],
     '--ackxprc t/data/ackxprc';
 
-$got = xqt( qw{ --noenv --files-from t/data/relative --relative } ),
+=begin comment
+
+$got = xqt( qw{ --noenv --files-from t/data/relative --relative } );
 is_deeply $got,
     [ qw{ perl -S ack --noenv t/data/foo t/data/fubar } ],
     '--noenv --files-from t/data/relative --relative'
     or diag 'got ', explain $got;
+
+=end comment
+
+=cut
 
 $got = xqt( qw{ --disable FilesFrom --files-from t/data/relative } );
 is_deeply $got,

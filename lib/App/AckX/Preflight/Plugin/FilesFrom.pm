@@ -15,6 +15,8 @@ use parent qw{ App::AckX::Preflight::Plugin };
 
 our $VERSION = '0.000_017';
 
+use constant IN_SERVICE	=> 0;
+
 use constant MANIFEST	=> 'MANIFEST';
 
 sub __options {
