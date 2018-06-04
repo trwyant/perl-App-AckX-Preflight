@@ -10,7 +10,7 @@ use Exporter qw{ import };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
 use List::Util 1.45 ();	# For uniqstr, which this module does not use
 
-our $VERSION = '0.000_017';
+our $VERSION = '0.000_018';
 
 our @EXPORT_OK = qw{
     __any

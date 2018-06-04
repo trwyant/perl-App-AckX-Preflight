@@ -1,3 +1,22 @@
+0.000_018	2018-06-03	T. R. Wyant
+    Take the FilesFrom plugin out of service.
+    
+    There is some cleanup to do once it is gone.
+
+    Add ::Syntax::Pascal for delphi and pascal even though 'pascal' is
+    not a standard ack file type.
+
+    Add .less files to ::Syntax::Cc because it is a variant on .css,
+    which uses C's comment rules.
+
+    Add groovy to ::Syntax::Java since Apache Groovy is a variant on
+    Java, with the same comment, doc, and annotation rules.
+
+    Remove actionscript, cpp, and objc which were mistakenly left in when
+    this class was split off from ::Syntax::Cpp.
+
+    Add dart to ::Syntax::Cpp because it has the same comment syntax.
+
 0.000_017	2018-06-02	T. R. Wyant
     Make work with Ack 3
     

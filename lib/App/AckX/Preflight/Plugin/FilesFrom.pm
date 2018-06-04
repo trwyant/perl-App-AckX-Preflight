@@ -13,7 +13,7 @@ use File::Spec;
 
 use parent qw{ App::AckX::Preflight::Plugin };
 
-our $VERSION = '0.000_017';
+our $VERSION = '0.000_018';
 
 use constant IN_SERVICE	=> 0;
 
