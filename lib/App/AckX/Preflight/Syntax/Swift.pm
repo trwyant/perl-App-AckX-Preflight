@@ -105,4 +105,4 @@ merchantability or fitness for a particular purpose.
 
 =cut
 
-# ex::_nested: set tex::_nestedtwidth=72 :
+# ex: set textwidth=72 :
