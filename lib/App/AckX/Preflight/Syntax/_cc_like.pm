@@ -26,38 +26,40 @@ my $classifier = {	# Anticipating 'state'.
 #	my ( $self, $attr ) = @_;
 	my ( undef, $attr ) = @_;
 
+	my @match;
 	if ( 1 == $. && $attr->{shebang} && m/ \A \# ! /smx ) {
 	    return SYNTAX_METADATA;
-	} elsif ( $attr->{in_line_doc_start} &&
-	    $_ =~ $attr->{in_line_doc_start} ) {
+	} elsif ( $attr->{in_line_doc_start} and
+	    @match = $_ =~ $attr->{in_line_doc_start} ) {
 	    my $block_end = _get_block_end( $attr,
-		in_line_doc_end => $1 );
+		in_line_doc_end => @match );
 	    $_ =~ $block_end
 		and return SYNTAX_DOCUMENTATION;
 	    $attr->{_in_line_doc_end} = $block_end;
 	    $attr->{in} = SYNTAX_DOCUMENTATION;
-	} elsif ( $attr->{block_start} && $_ =~ $attr->{block_start} ) {
-	    my $block_end = _get_block_end( $attr, block_end => $1 );
+	} elsif ( $attr->{block_start} and
+	    @match = $_ =~ $attr->{block_start} ) {
+	    my $block_end = _get_block_end( $attr, block_end => @match );
 	    $_ =~ $block_end
 		and return SYNTAX_COMMENT;
 	    $attr->{_block_end} = $block_end;
 	    $attr->{in} = SYNTAX_COMMENT;
-	} elsif ( $attr->{block_meta_start} &&
-	    $_ =~ $attr->{block_meta_start} ) {
+	} elsif ( $attr->{block_meta_start} and
+	    @match = $_ =~ $attr->{block_meta_start} ) {
 	    my $block_meta_end = _get_block_end( $attr,
-		block_meta_end => $1 );
+		block_meta_end => @match );
 	    $_ =~ $block_meta_end
 		and return SYNTAX_METADATA;
 	    $attr->{_block_meta_end} = $block_meta_end;
 	    $attr->{in} = SYNTAX_METADATA;
-	} elsif ( $attr->{single_line_doc_re} &&
+	} elsif ( $attr->{single_line_doc_re} and
 	    $_ =~ $attr->{single_line_doc_re} ) {
 	    if ( $attr->{comments_continue_doc} ) {
 		$attr->{in} = SYNTAX_DOCUMENTATION;
 		$attr->{_in_single_line_doc} = 1;
 	    }
 	    return SYNTAX_DOCUMENTATION;
-	} elsif ( $attr->{single_line_re} && $_ =~ $attr->{single_line_re} ) {
+	} elsif ( $attr->{single_line_re} and $_ =~ $attr->{single_line_re} ) {
 	    return SYNTAX_COMMENT;
 	}
 	return $attr->{in};
@@ -152,16 +154,16 @@ sub __init {
 }
 
 sub _get_block_end {
-    my ( $attr, $kind, $start ) = @_;
-    defined $start
-	or $start = '';
+    my ( $attr, $kind, @arg ) = @_;
     my $ref = ref( my $info = $attr->{$kind} );
     REGEXP_REF eq $ref
 	and return $info;
     CODE_REF eq ref $info
-	and return $info->( $start );
-    return $info->{$start} || __die_hard(
-	"No block end corresponds to '$start'" );
+	and return $info->( @arg );
+    defined $arg[0]
+	or $arg[0] = '';
+    return $info->{$arg[0]} || __die_hard(
+	"No block end corresponds to '$arg[0]'" );
 }
 
 # TODO if we can count on Perl 5.9.5 we can return qr{(*FAIL)}smx rather
@@ -294,8 +296,8 @@ This method returns one of the following:
 =item a regular expression with a single capture group and a reference
 to a hash of regular expressions keyed on possible captures;
 
-=item a regular expression with a single capture group and a reference
-to code that accepts the capture as its only argument and returns a
+=item a regular expression and a reference to code that accepts anything
+captured by the regular expression as its arguments and returns a
 regular expression.
 
 =back
@@ -332,27 +334,12 @@ true value if the syntax permits a shebang line.
 
 =head2 __in_line_doc_re
 
-This method returns one of the following:
-
-=over
-
-=item nothing;
-
-=item two regular expressions;
-
-=item a regular expression with a single capture group and a reference
-to a hash of regular expressions keyed on possible captures;
-
-=item a regular expression with a single capture group and a reference
-to code that accepts the capture as its only argument and returns a
-regular expression.
-
-=back
+This method returns the same things as L<__block_re()|/__block_re>,
+above.
 
 The first return value is used to detect the beginning of in-line
 documentation. The second return value is used to detect the end of
-in-line documentation. The hash provides for cases where multiple
-in-line documentation formats exist.
+in-line documentation.
 
 If this regular expression is provided it is tried before block
 comments.
@@ -362,27 +349,12 @@ only if it is trying to parse a syntax having in-line documentation.
 
 =head2 __block_meta_re
 
-This method returns one of the following:
-
-=over
-
-=item nothing;
-
-=item two regular expressions;
-
-=item a regular expression with a single capture group and a reference
-to a hash of regular expressions keyed on possible captures;
-
-=item a regular expression with a single capture group and a reference
-to code that accepts the capture as its only argument and returns a
-regular expression.
-
-=back
+This method returns the same things as L<__block_re()|/__block_re>,
+above.
 
 The first return value is used to detect the beginning of block
 metadata. The second return value is used to detect the end of block
-metadata. The hash provides for cases where multiple block metadata
-formats exist.
+metadata.
 
 If this regular expression is provided it is tried after block
 comments.
