@@ -24,7 +24,7 @@ sub __handles_syntax {
     );
 }
 
-__PACKAGE__->__handles_type_mod( qw{ set perl perltest } );
+__PACKAGE__->__handles_type_mod( qw{ set parrot perl perltest } );
 
 {
     my $is_data = { map {; "__${_}__\n" => 1 } qw{ DATA END } };
@@ -92,7 +92,7 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Syntax::Perl - App::AckX::Preflight syntax filter for Perl.
+App::AckX::Preflight::Syntax::Perl - App::AckX::Preflight syntax filter for Perl-like languages.
 
 =head1 SYNOPSIS
 
@@ -101,8 +101,8 @@ No direct user interaction.
 =head1 DESCRIPTION
 
 This L<PerlIO::via|PerlIO::via> I/O layer is intended to be used by
-L<App::AckX::Preflight|App::AckX::Preflight> to process a Perl file,
-returning only those lines the user has requested.
+L<App::AckX::Preflight|App::AckX::Preflight> to process a Perl-like
+syntax, returning only those lines the user has requested.
 
 The supported syntax types are:
 
@@ -117,6 +117,21 @@ The supported syntax types are:
 =item documentation (i.e. POD)
 
 =item metadata (shebang, C<#line>, C<__DATA__>, C<__END__>).
+
+=back
+
+In principal this syntax filter can be used for any syntax that consists
+of code, single-line comments introduced by C<'#'>,
+and in-line POD-style documentation. By default it applies to the
+following file types:
+
+=over
+
+=item c<parrot>
+
+=item C<perl>
+
+=item C<perltest>
 
 =back
 
