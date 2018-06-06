@@ -29,6 +29,15 @@ foreach my $class ( App::AckX::Preflight::Syntax->__plugins() ) {
 }
 
 {
+    my %annotation = (
+	asm	=> 'X86 assembler',
+	asp	=> 'Active Server Pages (HTML with embedded VB)',
+	aspx	=> 'ASP.NET (HTML with embedded VB or C#)',
+	cfmx	=> 'Cold Fusion (HTML templating)',
+	elixir	=> 'Erlang variant',
+	jade	=> 'JavaScript templating engine',
+	smarty	=> 'PHP templating engine',
+    );
     my @cmd = (
 	qw{ ack --help-types },
 	map { $opt{$_} ? "--$_" : "--no$_" } qw{ env },
@@ -39,8 +48,13 @@ foreach my $class ( App::AckX::Preflight::Syntax->__plugins() ) {
 	m/ \A \s* \Q--[no]\E ( \w+ ) /smx
 	    or next;
 	my $type = $1;
-	local $\ = "\n";
-	print "$type\t", $syntax_handler{$type} || '<missing>';
+	my $handler = $syntax_handler{$type};
+	unless ( defined $handler ) {
+	    $handler = $annotation{$type} ?
+		"<missing> - $annotation{$type}" :
+		'<missing>';
+	}
+	print "$type\t$handler\n";
     }
     close $fh;
 }
