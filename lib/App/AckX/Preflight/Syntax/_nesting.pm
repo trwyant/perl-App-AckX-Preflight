@@ -113,7 +113,21 @@ No direct user interaction.
 
 =head1 DESCRIPTION
 
-<<< replace boilerplate >>>
+This Perl class is intended to be subclassed to produce a
+This L<PerlIO::via|PerlIO::via> I/O layer used by
+L<App::AckX::Preflight|App::AckX::Preflight> to process a syntax whose
+comments nest. Specifically, we assume:
+
+=over
+
+=item A possible shebang line is the only metadata;
+
+=item There is only one style of block comment;
+
+=item The regular expression that matches the start of a block comment
+also matches the start of block documentation.
+
+=back
 
 =head1 METHODS
 
