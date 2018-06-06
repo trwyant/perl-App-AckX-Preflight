@@ -26,7 +26,10 @@ my $classifier = {	# Anticipating 'state'.
 #	my ( $self, $attr ) = @_;
 	my ( undef, $attr ) = @_;
 
-	if ( $attr->{in_line_doc_start} && $_ =~ $attr->{in_line_doc_start} ) {
+	if ( 1 == $. && $attr->{shebang} && m/ \A \# ! /smx ) {
+	    return SYNTAX_METADATA;
+	} elsif ( $attr->{in_line_doc_start} &&
+	    $_ =~ $attr->{in_line_doc_start} ) {
 	    my $block_end = _get_block_end( $attr,
 		in_line_doc_end => $1 );
 	    $_ =~ $block_end
@@ -137,6 +140,7 @@ sub __init {
     $attr->{block_start}	= $block_start;
     $attr->{block_end}		= $block_end;
     $attr->{comments_continue_doc}	= $self->__comments_continue_doc();
+    $attr->{shebang}		= $self->__has_shebang();
     $attr->{in_line_doc_start}	= $in_line_doc_start;
     $attr->{in_line_doc_end}	= $in_line_doc_end;
     $attr->{block_meta_start}	= $block_meta_start;
@@ -149,9 +153,14 @@ sub __init {
 
 sub _get_block_end {
     my ( $attr, $kind, $start ) = @_;
-    REGEXP_REF eq ref $attr->{$kind}
-	and return $attr->{$kind};
-    return $attr->{$kind}{$start} || __die_hard(
+    defined $start
+	or $start = '';
+    my $ref = ref( my $info = $attr->{$kind} );
+    REGEXP_REF eq $ref
+	and return $info;
+    CODE_REF eq ref $info
+	and return $info->( $start );
+    return $info->{$start} || __die_hard(
 	"No block end corresponds to '$start'" );
 }
 
@@ -164,6 +173,8 @@ sub _validate_block {
     REGEXP_REF eq ref $start
 	or __die_hard( "$kind start must be regexp or undef" );
     REGEXP_REF eq ref $end
+	and return ( $start, $end );
+    CODE_REF eq ref $end
 	and return ( $start, $end );
     HASH_REF eq ref $end
 	or __die_hard( "$kind end must be regexp or hash ref" );
@@ -199,6 +210,10 @@ sub __in_line_doc_re {
 }
 
 sub __block_meta_re {
+    return;
+}
+
+sub __has_shebang {
     return;
 }
 
@@ -268,9 +283,22 @@ overrides the following methods:
 
 =head2 __block_re
 
-This method returns either nothing, two regular expressions, or a
-regular expression with a single capture group and a reference to a hash
-of regular expressions keyed on possible captures of the first return.
+This method returns one of the following:
+
+=over
+
+=item nothing;
+
+=item two regular expressions;
+
+=item a regular expression with a single capture group and a reference
+to a hash of regular expressions keyed on possible captures;
+
+=item a regular expression with a single capture group and a reference
+to code that accepts the capture as its only argument and returns a
+regular expression.
+
+=back
 
 The first return value is used to detect the beginning of a block
 comment. The second return value is used to detect the end of a block
@@ -297,11 +325,29 @@ true value if and only if:
 
 =back
 
+=head2 __has_shebang
+
+This method returns a false value. It should be overridden to return a
+true value if the syntax permits a shebang line.
+
 =head2 __in_line_doc_re
 
-This method returns either nothing, two regular expressions, or a
-regular expression with a single capture group and a reference to a hash
-of regular expressions keyed on possible captures of the first return.
+This method returns one of the following:
+
+=over
+
+=item nothing;
+
+=item two regular expressions;
+
+=item a regular expression with a single capture group and a reference
+to a hash of regular expressions keyed on possible captures;
+
+=item a regular expression with a single capture group and a reference
+to code that accepts the capture as its only argument and returns a
+regular expression.
+
+=back
 
 The first return value is used to detect the beginning of in-line
 documentation. The second return value is used to detect the end of
@@ -316,9 +362,22 @@ only if it is trying to parse a syntax having in-line documentation.
 
 =head2 __block_meta_re
 
-This method returns either nothing, two regular expressions, or a
-regular expression with a single capture group and a reference to a hash
-of regular expressions keyed on possible captures of the first return.
+This method returns one of the following:
+
+=over
+
+=item nothing;
+
+=item two regular expressions;
+
+=item a regular expression with a single capture group and a reference
+to a hash of regular expressions keyed on possible captures;
+
+=item a regular expression with a single capture group and a reference
+to code that accepts the capture as its only argument and returns a
+regular expression.
+
+=back
 
 The first return value is used to detect the beginning of block
 metadata. The second return value is used to detect the end of block

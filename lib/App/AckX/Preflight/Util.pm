@@ -66,6 +66,7 @@ our @CARP_NOT = qw{
     App::AckX::Preflight::Syntax::Haskell
     App::AckX::Preflight::Syntax::Java
     App::AckX::Preflight::Syntax::Lisp
+    App::AckX::Preflight::Syntax::Lua
     App::AckX::Preflight::Syntax::Make
     App::AckX::Preflight::Syntax::Pascal
     App::AckX::Preflight::Syntax::Perl
@@ -117,6 +118,7 @@ sub __die_hard {
     } else {
 	@arg = ( 'Programming error' );
     }
+    local $Carp::CarpLevel = $Carp::CarpLevel + 1;
     Carp::confess( @arg );
 }
 

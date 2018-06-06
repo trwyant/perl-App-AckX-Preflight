@@ -24,6 +24,7 @@ lib/App/AckX/Preflight/Syntax/Fortran.pm
 lib/App/AckX/Preflight/Syntax/Haskell.pm
 lib/App/AckX/Preflight/Syntax/Java.pm
 lib/App/AckX/Preflight/Syntax/Lisp.pm
+lib/App/AckX/Preflight/Syntax/Lua.pm
 lib/App/AckX/Preflight/Syntax/Make.pm
 lib/App/AckX/Preflight/Syntax/Pascal.pm
 lib/App/AckX/Preflight/Syntax/Perl.pm
@@ -61,6 +62,7 @@ t/data/java_file.java
 t/data/json_file.json
 t/data/make_file.mak
 t/data/lisp_file.lisp
+t/data/lua_file.lua
 t/data/pascal_file.pas
 t/data/perl_file.PL
 t/data/shell_file.sh
@@ -89,6 +91,7 @@ t/syntax_fortran.t
 t/syntax_haskell.t
 t/syntax_java.t
 t/syntax_lisp.t
+t/syntax_lua.t
 t/syntax_make.t
 t/syntax_pascal.t
 t/syntax_perl.t

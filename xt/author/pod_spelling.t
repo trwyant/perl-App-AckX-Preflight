@@ -29,6 +29,7 @@ Fortran
 getopt
 hoc
 Javadoc
+Lua
 merchantability
 preflight
 Vimscript
