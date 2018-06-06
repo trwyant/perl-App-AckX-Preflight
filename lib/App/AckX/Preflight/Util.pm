@@ -68,6 +68,7 @@ our @CARP_NOT = qw{
     App::AckX::Preflight::Syntax::Lisp
     App::AckX::Preflight::Syntax::Lua
     App::AckX::Preflight::Syntax::Make
+    App::AckX::Preflight::Syntax::Ocaml
     App::AckX::Preflight::Syntax::Pascal
     App::AckX::Preflight::Syntax::Perl
     App::AckX::Preflight::Syntax::SQL

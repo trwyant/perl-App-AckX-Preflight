@@ -20,7 +20,7 @@ our $VERSION = '0.000_018';
 	SYNTAX_CODE()	=> sub {
 #	    my ( $self, $attr ) = @_;
 	    my ( undef, $attr ) = @_;
-	    if ( 1 == $. && m/ \A \# ! /smx ) {
+	    if ( $attr->{has_shebang} && 1 == $. && m/ \A \# ! /smx ) {
 		return SYNTAX_METADATA;
 	    } elsif ( $attr->{single_line_doc_re} && $_ =~
 		$attr->{single_line_doc_re } ) {
@@ -60,6 +60,7 @@ sub __init {
     my $attr = $self->__my_attr();
     my ( $block_start, $block_end ) = $self->__block_re();
     $attr->{in} = SYNTAX_CODE;
+    $attr->{has_shebang}	= $self->__has_shebang();
     $attr->{single_line_re}	= $self->__single_line_re();
     $attr->{single_line_doc_re}	= $self->__single_line_doc_re();
     $attr->{block_start}	= $block_start;
@@ -80,6 +81,10 @@ sub _handle_comment {
     my $was = $attr->{in};
     $attr->{in} = SYNTAX_CODE;
     return $was;
+}
+
+sub __has_shebang {
+    return 1;
 }
 
 sub __single_line_re {
@@ -136,6 +141,11 @@ This class overrides or adds the following parent methods:
 =head2 __init
 
 =head2 __classify
+
+=head2 __has_shebang
+
+This method returns a true value. It should be overridden to return a
+false value if the syntax does not permit a shebang line.
 
 =head2 __single_line_re
 
