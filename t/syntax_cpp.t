@@ -81,8 +81,8 @@ $App::Ack::mappings{cpp} = [
 my $resource = ACK_FILE_CLASS->new( CPP_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ],
-    [ qw{ actionscript cpp dart go objc objcpp stylus } ],
-    sprintf '%s handles actionscript, cpp, dart, objc, objcpp, stylus', SYNTAX_FILTER;
+    [ qw{ actionscript cpp dart go kotlin objc objcpp stylus } ],
+    sprintf '%s handles actionscript, cpp, dart, go, kotlin, objc, objcpp, stylus', SYNTAX_FILTER;
 
 
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
