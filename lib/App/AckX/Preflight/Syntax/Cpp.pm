@@ -25,7 +25,7 @@ __PACKAGE__->__handles_type_mod( qw{
 sub __in_line_doc_re {
     return(
 	qr{ \A \s* / [*] [*] }smx,
-	qr{ [*] / }smx,
+	sub { return qr{ [*] / }smx },
     );
 }
 

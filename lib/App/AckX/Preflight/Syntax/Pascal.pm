@@ -22,14 +22,20 @@ __PACKAGE__->__handles_type_mod( qw{
     set delphi pascal
     } );
 
-sub __block_re {
-    return(
-	qr< \A \s* ( [(] [*] | [{] ) >smx,	# } )
-	{
-	    '(*'	=> qr< [*] [)] >smx,
-	    '{'		=> qr< [}] >smx,
-	},
-    );
+{
+    my $block_end = {	# TODO state variable when we get to 5.10
+	'(*'	=> qr< [*] [)] >smx,
+	'{'	=> qr< [}] >smx,
+    };
+    sub __block_re {
+	return(
+	    qr< \A \s* ( [(] [*] | [{] ) >smx,	# } )
+	    sub {
+		my ( $capture ) = @_;
+		return $block_end->{$capture};
+	    },
+	);
+    }
 }
 
 =begin comment
@@ -37,14 +43,21 @@ sub __block_re {
 I find no evidence for any sort of inline documentation for Pascal. The
 following cold code is my presumption for what it would look like.
 
-sub __in_line_doc_re {
-    return(
-	qr< \A \s* ( [(] [*]{2} | [{] [*] ) >smx,	# } )
-	{
-	    '(**'	=> qr< [*] [)] >smx,
-	    '{*'	=> qr< [}] >smx,
-	},
-    );
+{
+    my $block_end = {	# TODO state variable when we get to 5.10
+	'(**'	=> qr< [*] [)] >smx,
+	'{*'	=> qr< [}] >smx,
+    };
+
+    sub __in_line_doc_re {
+	return(
+	    qr< \A \s* ( [(] [*]{2} | [{] [*] ) >smx,	# } )
+	    sub {
+		my ( $capture ) = @_;
+		return $block_end->{$capture};
+	    },
+	);
+    }
 }
 
 =end comment

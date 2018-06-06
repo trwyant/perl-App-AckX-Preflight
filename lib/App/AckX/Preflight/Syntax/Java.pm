@@ -24,14 +24,14 @@ __PACKAGE__->__handles_type_mod( qw{ set groovy java } );
 sub __in_line_doc_re {
     return(
 	qr{ \A \s* / [*] [*] }smx,
-	qr{ [*] / }smx,
+	sub { return qr{ [*] / }smx },
     );
 }
 
 sub __block_meta_re {
     return(
 	qr{ \A \s* \@ \w+ \s* [(] }smx,
-	qr{ [)] }smx,
+	sub { return qr{ [)] }smx },
     );
 }
 

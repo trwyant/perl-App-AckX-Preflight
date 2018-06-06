@@ -27,14 +27,14 @@ sub __comments_continue_doc {
 sub __block_re {
     return(
 	qr< \A \s* [{] - >smx,
-	qr< - [}] >smx,
+	sub { return qr< - [}] >smx },
     );
 }
 
 sub __in_line_doc_re {
     return(
 	qr< \A \s* [{] - \s* [|^] >smx,
-	qr< - [}] >smx,
+	sub { return qr< - [}] >smx },
     );
 }
 

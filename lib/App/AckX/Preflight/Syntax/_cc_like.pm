@@ -155,15 +155,9 @@ sub __init {
 
 sub _get_block_end {
     my ( $attr, $kind, @arg ) = @_;
-    my $ref = ref( my $info = $attr->{$kind} );
-    REGEXP_REF eq $ref
-	and return $info;
-    CODE_REF eq ref $info
-	and return $info->( @arg );
-    defined $arg[0]
-	or $arg[0] = '';
-    return $info->{$arg[0]} || __die_hard(
-	"No block end corresponds to '$arg[0]'" );
+    return $attr->{$kind}->( @arg ) || __die_hard(
+	sprintf q<No block end corresponds to '%s'>,
+	substr $_, $-[0], $+[0] - $-[0] );
 }
 
 # TODO if we can count on Perl 5.9.5 we can return qr{(*FAIL)}smx rather
@@ -173,15 +167,9 @@ sub _validate_block {
     defined $start
 	or return;
     REGEXP_REF eq ref $start
-	or __die_hard( "$kind start must be regexp or undef" );
-    REGEXP_REF eq ref $end
-	and return ( $start, $end );
+	or __die_hard( "$kind start must be Regexp ref or undef" );
     CODE_REF eq ref $end
-	and return ( $start, $end );
-    HASH_REF eq ref $end
-	or __die_hard( "$kind end must be regexp or hash ref" );
-    __any { REGEXP_REF ne ref $_ } values %{ $end }
-	and __die_hard( "$kind end hash values must be regexp" );
+	or __die_hard( "$kind end must be CODE ref" );
     return ( $start, $end );
 }
 
@@ -199,7 +187,7 @@ sub _validate_single_line {
 sub __block_re {
     return(
 	qr{ \A \s* / [*] }smx,
-	qr{ [*] / }smx,
+	sub { return qr{ [*] / }smx },
     );
 }
 
@@ -291,11 +279,6 @@ This method returns one of the following:
 
 =item nothing;
 
-=item two regular expressions;
-
-=item a regular expression with a single capture group and a reference
-to a hash of regular expressions keyed on possible captures;
-
 =item a regular expression and a reference to code that accepts anything
 captured by the regular expression as its arguments and returns a
 regular expression.
@@ -304,8 +287,8 @@ regular expression.
 
 The first return value is used to detect the beginning of a block
 comment. The second return value is used to detect the end of a block
-comment. The hash provides for cases where multiple block comment
-formats exist (e.g. Pascal).
+comment. If nothing is returned, this syntax element will not be
+detected.
 
 This implementation returns
 
