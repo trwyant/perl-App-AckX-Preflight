@@ -19,7 +19,7 @@ sub __handles_syntax {
 }
 
 __PACKAGE__->__handles_type_mod( qw{
-    set actionscript cpp dart go kotlin objc objcpp stylus
+    set actionscript cpp dart go hh hpp kotlin objc objcpp stylus
     } );
 
 sub __in_line_doc_re {
@@ -77,6 +77,10 @@ C<'/** ... */'>.  By default it applies to:
 =item C<dart>
 
 =item C<go>
+
+=item C<hh>
+
+=item C<hpp>
 
 =item C<kotlin>
 

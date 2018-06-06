@@ -57,7 +57,11 @@ solely of code and C-style comments. By default it applies to:
 
 =item css
 
+=item less
+
 =back
+
+Note that we account for builtin type C<hh> in the C++ syntax filter.
 
 =head1 METHODS
 

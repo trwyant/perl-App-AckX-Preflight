@@ -27,6 +27,7 @@ ASCIIbetically
 del
 Fortran
 getopt
+hh
 hoc
 Javadoc
 Lua
