@@ -57,13 +57,17 @@ note 'Syntax filters';
 foreach ( qw{
 	App::AckX::Preflight::Syntax
 	App::AckX::Preflight::Syntax::_cc_like
+	App::AckX::Preflight::Syntax::_nesting
 	App::AckX::Preflight::Syntax::_single_line_comments
+	App::AckX::Preflight::Syntax::Ada
+	App::AckX::Preflight::Syntax::Batch
 	App::AckX::Preflight::Syntax::Cc
-	App::AckX::Preflight::Syntax::Csharp
 	App::AckX::Preflight::Syntax::Cpp
+	App::AckX::Preflight::Syntax::Csharp
 	App::AckX::Preflight::Syntax::Data
 	App::AckX::Preflight::Syntax::Fortran
 	App::AckX::Preflight::Syntax::Haskell
+	App::AckX::Preflight::Syntax::Java
 	App::AckX::Preflight::Syntax::Lisp
 	App::AckX::Preflight::Syntax::Lua
 	App::AckX::Preflight::Syntax::Make
@@ -72,6 +76,7 @@ foreach ( qw{
 	App::AckX::Preflight::Syntax::Perl
 	App::AckX::Preflight::Syntax::SQL
 	App::AckX::Preflight::Syntax::Shell
+	App::AckX::Preflight::Syntax::Swift
 	App::AckX::Preflight::Syntax::Vim
 	App::AckX::Preflight::Syntax::YAML
     } ) {
