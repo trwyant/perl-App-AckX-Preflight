@@ -30,7 +30,6 @@ foreach my $class ( App::AckX::Preflight::Syntax->__plugins() ) {
 
 {
     my %annotation = (
-	asm	=> 'X86 assembler',
 	asp	=> 'Active Server Pages (HTML with embedded VB)',
 	aspx	=> 'ASP.NET (HTML with embedded VB or C#)',
 	cfmx	=> 'Cold Fusion (HTML templating)',

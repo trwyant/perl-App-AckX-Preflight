@@ -60,6 +60,7 @@ foreach ( qw{
 	App::AckX::Preflight::Syntax::_nesting
 	App::AckX::Preflight::Syntax::_single_line_comments
 	App::AckX::Preflight::Syntax::Ada
+	App::AckX::Preflight::Syntax::Asm
 	App::AckX::Preflight::Syntax::Batch
 	App::AckX::Preflight::Syntax::Cc
 	App::AckX::Preflight::Syntax::Cpp
