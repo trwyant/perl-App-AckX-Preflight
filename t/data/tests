@@ -1,6 +1,0 @@
-t/basic.t
-t/execute.t
-t/marshal.t
-t/plugin_file.t
-t/plugin_files_from.t
-t/preflight.t

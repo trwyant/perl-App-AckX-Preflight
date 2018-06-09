@@ -11,7 +11,6 @@ inc/My/Module/TestSyntax.pm
 lib/App/AckX/Preflight.pm
 lib/App/AckX/Preflight/Plugin.pm
 lib/App/AckX/Preflight/Plugin/File.pm
-lib/App/AckX/Preflight/Plugin/FilesFrom.pm
 lib/App/AckX/Preflight/Plugin/Syntax.pm
 lib/App/AckX/Preflight/Syntax.pm
 lib/App/AckX/Preflight/Syntax/Ada.pm
@@ -75,14 +74,11 @@ t/data/swift_file.swift
 t/data/text_file.txt
 t/data/vim_file.vim
 t/data/yaml_file.yml
-t/data/relative
-t/data/tests
 t/data/project/_ackxprc
 t/execute.PL
 t/execute.t
 t/marshal.t
 t/plugin_file.t
-t/plugin_files_from.t
 t/plugin_syntax.t
 t/preflight.t
 t/syntax_ada.t
@@ -113,7 +109,6 @@ xt/author/carp_not.t
 xt/author/changes.t
 xt/author/critic.t
 xt/author/executable.t
-xt/author/have_filter_available.t
 xt/author/kwalitee.t
 xt/author/manifest.t
 xt/author/minimum_perl.t

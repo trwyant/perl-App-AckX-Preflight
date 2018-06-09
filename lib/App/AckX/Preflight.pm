@@ -95,16 +95,14 @@ sub run {
     ref $self
 	or $self = $self->new();
 
-    my $opt = {
-	'ack-filters'	=> $self->__filter_available(),
-    };
+    my %opt;
 
     $self->__process_config_files( $self->__find_config_files() );
 
     $self->{disable} = {};
 
-    __getopt( $opt,
-	qw{ ack-filters! verbose! },
+    __getopt( \%opt,
+	qw{ verbose! },
 	'disable=s'	=> sub {
 	    my ( undef, $plugin ) = @_;
 	    $plugin =~ m/ :: /smx
@@ -163,8 +161,6 @@ EOD
 	},
     );
 
-    $self->{use_ack_filters} = $opt->{ 'ack-filters' };
-
     foreach my $p_rec ( $self->__marshal_plugins ) {
 	my $plugin = $p_rec->{package};
 	my $opt = __getopt_for_plugin( $plugin );
@@ -179,7 +175,7 @@ EOD
 	splice @inject, 0, 0, '-Mblib';
     }
 
-    local $self->{verbose} = $opt->{verbose};
+    local $self->{verbose} = $opt{verbose};
 
     return $self->__execute(
 	perl		=> @inject,
@@ -205,198 +201,6 @@ sub __execute {
     exec { $arg[0] } @arg
 	or __die( "Failed to exec $arg[0]: $!" );
 }
-
-# We go through this to define __filter_files because we are rummaging
-# around in the internals of App::Ack, and who knows what may break?
-{	# Localize $@
-
-    local $@ = undef;
-
-    eval {
-
-	# The following are loaded explicitly because they are used
-	# explicitly.
-
-	require App::Ack::ConfigLoader;
-	App::Ack::ConfigLoader->can( 'retrieve_arg_sources' )
-	    and App::Ack::ConfigLoader->can( 'process_args' )
-	    or return;
-
-	require App::Ack::Filter::Collection;
-	App::Ack::Filter::Collection->can( 'new' )
-	    and App::Ack::Filter::Collection->can( 'filter' )
-	    or return;
-
-	eval sprintf 'require %s; 1', ACK_FILE_CLASS ## no critic (ProhibitStringyEval,RequireCheckingReturnValueOfEval)
-	    and ACK_FILE_CLASS->can( 'new' )
-	    or return;
-
-
-	# Ack filters register themselves on load. You can't derive the
-	# registered name from the class name. So this is a way to get
-	# them registered. This will actually catch
-	# App::Ack::Filter::Collection as well, but I wanted its use out
-	# in the open. It also loads too much, but needs must.
-	#
-	# CAVEAT: force_search_all_paths is undocumented, but I need it
-	# to bypass Module::Pluggable's testing logic, which excludes
-	# plug-ins not in blib/.
-	Module::Pluggable::Object->new(
-	    inner	=> 0,
-	    require	=> 1,
-	    force_search_all_paths	=> 1,
-	    search_path	=> 'App::Ack::Filter',
-	)->plugins();
-
-	*__filter_files = sub {		# sub __filter_files
-	    my ( $self, @files ) = @_;
-
-	    ref $self
-		or __die_hard(
-		'__filter_files() may not be called as static method' );
-
-	    if ( defined $self->{use_ack_filters} &&
-		! $self->{use_ack_filters} ) {
-		__warn( 'ack-style file filters disabled' );
-		return @files;
-	    }
-
-	    unless ( $self->{filters} ) {
-
-		# The only way to get access to App::Ack's filter
-		# mechanism is to rummage in its guts.
-
-		local @ARGV = @ARGV;	# For App::Ack::ConfigLoader
-
-		my @arg_sources =
-		    App::Ack::ConfigLoader::retrieve_arg_sources();
-
-		# We need to get rid of any App::AckX::Preflight options
-		# before we actually parse the args. But we can't know
-		# (in principal) what these are. We are really only
-		# interested in type definitions, but since the types
-		# are options in themselves we need to figure out for
-		# ourselves what's defined so we can go through @ARGV
-		# and strain out unknowns, but recognize that (e.g.)
-		# --perl is a synonym for --type=perl, and retain it.
-		# The sources are undocumented unblessed hashes, so this
-		# is the crux of the gut-rummaging.
-		my %known_type;
-		my $argv;
-
-		foreach my $as ( @arg_sources ) {
-		    'ARGV' eq $as->{name}
-			and $argv = $as;
-		    my $add = sub {
-			my ( $type ) = split qr{ : }smx, $_[1], 2;
-			$known_type{$type} = 1;
-			return;
-		    };
-		    __getopt(
-			[ @{ $as->{contents} } ],
-			'type-add=s'	=> $add,
-			'type-set=s'	=> $add,
-			'type-del=s'	=> sub {
-			    my ( $type ) = split qr{ : }smx, $_[1], 2;
-			    delete $known_type{$type};
-			    return;
-			},
-		    );
-
-		}
-
-		if ( $argv ) {
-
-		    my @rslt;
-		    my $keep_val = sub {
-			push @rslt, "--$_[0]=$_[1]";
-			return;
-		    };
-		    my $keep_bool = sub {
-			$_[1]
-			    and push @rslt, "--$_[0]";
-			return;
-		    };
-		    __getopt(
-			$argv->{contents},
-			'type-add=s'	=> $keep_val,
-			'type-set=s'	=> $keep_val,
-			'type-del=s'	=> $keep_val,
-			'type=s'	=> $keep_val,
-			map {
-			    $_		=> $keep_bool,	## no critic (ProhibitCommaSeparatedStatements)
-			    "no$_"	=> $keep_bool,
-			} sort keys %known_type
-		    );
-		    @{ $argv->{contents} } = @rslt;
-
-		}
-
-		# OK. Now that the argument sources are pristine, we can
-		# actually process them.
-		my $opt = App::Ack::ConfigLoader::process_args( @arg_sources );
-
-		# NOTE that at this point %App::Ack::mappings has been
-		# loaded with all known filters if we want to use them.
-
-		# The filters are all we're interested in.
-		$self->{filters} = $opt->{filters};
-	    }
-
-	    # App::Ack's matching is not a simple as just looking for a
-	    # match. The following mimics that actual matching logic
-	    # within the framework of the App::AckX::Preflight code.
-
-	    # The first step in mimicing App::Ack is to separate the
-	    # filters into two collections: direct and inverted. For the
-	    # inverted filters we collect the direct version of the
-	    # filter.
-	    my $direct_filter = App::Ack::Filter::Collection->new();
-	    my $inverse_filter = App::Ack::Filter::Collection->new();
-	    foreach my $filter ( @{ $self->{filters} } ) {
-		if ( $filter->is_inverted() ) {
-		    $inverse_filter->add( $filter->invert() );
-		} else {
-		    $direct_filter->add( $filter );
-		}
-	    }
-
-	    # The second and last step in mimicing App::Ack is to do the
-	    # match. Files are accepted (by App::Ack's logic) if and
-	    # only if
-	    # - they match a direct filter;
-	    # - they do not match the direct version of an inverted
-	    #   filter.
-	    my @rslt;
-	    foreach my $file ( @files ) {
-		my $r = ACK_FILE_CLASS->new( $file );
-		$direct_filter->filter( $r )
-		    or next;
-		$inverse_filter->filter( $r )
-		    and next;
-		push @rslt, $file;
-	    }
-
-	    return @rslt;
-	};
-
-	*__filter_available = sub { 1 };	# sub __filter_available
-
-	1;
-    } or do {
-	*__filter_files = sub {	# sub __filter_files
-	    my ( $self, @files ) = @_;
-
-
-	    $self->{use_ack_filters}
-		and __warn( 'ack-style file filters unavailable' );
-
-	    return @files;
-	};
-
-	*__filter_available = sub { 0 };	# sub __filter_available
-    };
-}	# End localized $@
 
 sub __find_config_files {
     my ( $self ) = @_;
@@ -686,29 +490,6 @@ and chosen to be compatible with L<App::Ack|App::Ack>:
 If C<new()> is called as a normal method it clones its invocant,
 applying the arguments (if any) after the clone.
 
-=head2 __filter_available
-
- $self->__filter_available()
-     and print "Filters are supported\n";
-
-This method returns a true value if L<App::Ack|App::Ack> filters are
-available, and a false value if not.
-
-The use of L<App::Ack|App::Ack> filters requires a certain amount of
-mucking around in the internals of L<App::Ack|App::Ack>. What a true
-return really means is that all requisite modules loaded and supported
-all requisite methods.
-
-=head2 __filter_files
-
- my @rslt = $self->__filter_files( @files );
-
-This method takes as its arguments zero or more file names. If
-L<App::Ack|App::Ack> filters are supported (see
-L<__filter_available()|/__filter_available>), the return is the names of
-those files that passed the filters specified on the command line. If
-filters are not supported, returns all file names.
-
 =head2 global
 
  say App::Ack::Preflight->global();
@@ -748,16 +529,6 @@ which are removed from the command passed to F<ack> unless otherwise
 documented:
 
 =over
-
-=item C<--ack-filters>
-
-This Boolean option requests the use of ack-style file filtering if it
-is available and if any plug-in requests it.
-
-The default is the value of L<__filter_available()|/__filter_available>.
-
-It is anticipated that the main use of this will be to disable filtering
-in case it turns out to be problematic.
 
 =item C<--disable>
 
