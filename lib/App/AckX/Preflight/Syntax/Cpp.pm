@@ -19,7 +19,7 @@ sub __handles_syntax {
 }
 
 __PACKAGE__->__handles_type_mod( qw{
-    set actionscript cpp dart go hh hpp kotlin objc objcpp stylus
+    set actionscript cpp dart go hh hpp js kotlin objc objcpp stylus
     } );
 
 sub __in_line_doc_re {
@@ -66,7 +66,8 @@ The supported syntax types are:
 In principal this syntax filter can be used for any syntax that consists
 of code, single-line comments introduced by C<'//'>, block comments
 enclosed in C<'/* ... */'>, and in-line documentation enclosed in
-C<'/** ... */'>.  By default it applies to:
+C<'/** ... */'>.  By default it applies to the following built-in F<ack>
+file types:
 
 =over
 
@@ -81,6 +82,8 @@ C<'/** ... */'>.  By default it applies to:
 =item C<hh>
 
 =item C<hpp>
+
+=item C<js>
 
 =item C<kotlin>
 
