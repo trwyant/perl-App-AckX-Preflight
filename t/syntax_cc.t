@@ -73,7 +73,7 @@ my $cc_resource = ACK_FILE_CLASS->new( CC_FILE );
 my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
 
 is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ cc css less } ],
-    sprintf '%s handles cc, cssm less', SYNTAX_FILTER;
+    sprintf '%s handles cc, css, less', SYNTAX_FILTER;
 
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
 
