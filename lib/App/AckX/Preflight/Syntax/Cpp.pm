@@ -19,7 +19,7 @@ sub __handles_syntax {
 }
 
 __PACKAGE__->__handles_type_mod( qw{
-    set actionscript cpp dart go hh hpp js kotlin objc objcpp stylus
+    set actionscript cpp dart go hh hpp js kotlin objc objcpp sass stylus
     } );
 
 sub __in_line_doc_re {
