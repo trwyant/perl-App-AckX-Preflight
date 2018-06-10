@@ -35,6 +35,8 @@ foreach my $class ( App::AckX::Preflight::Syntax->__plugins() ) {
 	cfmx	=> 'Cold Fusion (HTML templating)',
 	elixir	=> 'Erlang variant',
 	jade	=> 'JavaScript templating engine',
+	jsp	=> 'Java Server Pages (HTML with embedded Java)',
+	rst	=> 'ReStructured Text (Python documentation)',
 	smarty	=> 'PHP templating engine',
     );
     my @cmd = (
