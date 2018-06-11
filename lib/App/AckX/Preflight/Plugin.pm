@@ -51,7 +51,15 @@ App::AckX::Preflight::Plugin - Convenience superclass for plugins
 
  package App::AckX::Preflight::Plugin::MyPlugin;
  
- use parent qw{ App::AckX::Preflight::Plugin };
+ # Subclassing this way is needed for the single-file version.
+ 
+ require App::AckX::Preflight::Plugin;
+ 
+ our @ISA;
+ 
+ BEGIN {
+     @ISA = qw{ App::AckX::Preflight::Plugin };
+ }
  
  # May override this if you want options processing done for you. The
  # superclass' method returns nothing.

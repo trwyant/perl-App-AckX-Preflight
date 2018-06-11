@@ -5,7 +5,13 @@ use 5.008008;
 use strict;
 use warnings;
 
-use parent qw{ App::AckX::Preflight::Syntax::_nesting };
+require App::AckX::Preflight::Syntax::_nesting;
+
+our @ISA;
+
+BEGIN {
+    @ISA = qw{ App::AckX::Preflight::Syntax::_nesting };
+}
 
 use App::AckX::Preflight::Util ();
 BEGIN {

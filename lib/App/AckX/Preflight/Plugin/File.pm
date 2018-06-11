@@ -5,7 +5,13 @@ use 5.008008;
 use strict;
 use warnings;
 
-use parent qw{ App::AckX::Preflight::Plugin };
+require App::AckX::Preflight::Plugin;
+
+our @ISA;
+
+BEGIN {
+    @ISA = qw{ App::AckX::Preflight::Plugin };
+}
 
 use App::AckX::Preflight::Util ();
 BEGIN {

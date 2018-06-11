@@ -5,7 +5,13 @@ use 5.008008;
 use strict;
 use warnings;
 
-use parent qw{ App::AckX::Preflight::Syntax::_single_line_comments };
+require App::AckX::Preflight::Syntax::_single_line_comments;
+
+our @ISA;
+
+BEGIN {
+    @ISA = qw{ App::AckX::Preflight::Syntax::_single_line_comments };
+}
 
 use App::AckX::Preflight::Util ();
 BEGIN {

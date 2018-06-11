@@ -5,6 +5,14 @@ use 5.008008;
 use strict;
 use warnings;
 
+require App::AckX::Preflight::Plugin;
+
+our @ISA;
+
+BEGIN {
+    @ISA = qw{ App::AckX::Preflight::Plugin };
+}
+
 use App::AckX::Preflight::Syntax;
 use App::AckX::Preflight::Util ();
 BEGIN {
@@ -15,8 +23,6 @@ BEGIN {
     );
 }
 use Text::Abbrev ();
-
-use parent qw{ App::AckX::Preflight::Plugin };
 
 our $VERSION;
 
