@@ -18,10 +18,6 @@ use Text::Abbrev ();
 
 our $VERSION = '0.000_018';
 
-our @EXPORT_OK = qw{
-    __normalize_options
-};
-
 use constant IN_SERVICE		=> 1;
 use constant IS_EXHAUSTIVE	=> 1;
 
