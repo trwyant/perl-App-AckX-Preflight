@@ -10,77 +10,85 @@ use Exporter qw{ import };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
 use List::Util 1.45 ();	# For uniqstr, which this module does not use
 
-our $VERSION = '0.000_018';
+our $VERSION;
+our @EXPORT_OK;
+our %EXPORT_TAGS;
+our @CARP_NOT;
 
-our @EXPORT_OK = qw{
-    __any
-    __die
-    __die_hard
-    __err_exclusive
-    __file_id
-    __getopt
-    __getopt_for_plugin
-    __open_for_read
-    __syntax_types
-    __warn
+BEGIN {
 
-    ACK_FILE_CLASS
+    $VERSION = '0.000_018';
 
-    ARRAY_REF
-    CODE_REF
-    HASH_REF
-    REGEXP_REF
-    SCALAR_REF
+    @EXPORT_OK = qw{
+	__any
+	__die
+	__die_hard
+	__err_exclusive
+	__file_id
+	__getopt
+	__getopt_for_plugin
+	__open_for_read
+	__syntax_types
+	__warn
 
-    SYNTAX_CODE
-    SYNTAX_COMMENT
-    SYNTAX_DATA
-    SYNTAX_DOCUMENTATION
-    SYNTAX_METADATA
-    SYNTAX_OTHER
+	ACK_FILE_CLASS
 
-    @CARP_NOT
-};
+	ARRAY_REF
+	CODE_REF
+	HASH_REF
+	REGEXP_REF
+	SCALAR_REF
 
-our %EXPORT_TAGS = (
-    all		=> \@EXPORT_OK,
-    croak	=> [ qw{ __die __die_hard __warn } ],
-    ref		=> [ grep { m/ _REF \z /smx } @EXPORT_OK ],
-    syntax	=> [ grep { m/ \A SYNTAX_ /smx } @EXPORT_OK ],
-);
+	SYNTAX_CODE
+	SYNTAX_COMMENT
+	SYNTAX_DATA
+	SYNTAX_DOCUMENTATION
+	SYNTAX_METADATA
+	SYNTAX_OTHER
 
-our @CARP_NOT = qw{
-    App::AckX::Preflight
-    App::AckX::Preflight::Plugin
-    App::AckX::Preflight::Plugin::File
-    App::AckX::Preflight::Plugin::Syntax
-    App::AckX::Preflight::Syntax
-    App::AckX::Preflight::Syntax::Ada
-    App::AckX::Preflight::Syntax::Asm
-    App::AckX::Preflight::Syntax::Batch
-    App::AckX::Preflight::Syntax::Cc
-    App::AckX::Preflight::Syntax::Cpp
-    App::AckX::Preflight::Syntax::Csharp
-    App::AckX::Preflight::Syntax::Data
-    App::AckX::Preflight::Syntax::Fortran
-    App::AckX::Preflight::Syntax::Haskell
-    App::AckX::Preflight::Syntax::Java
-    App::AckX::Preflight::Syntax::Lisp
-    App::AckX::Preflight::Syntax::Lua
-    App::AckX::Preflight::Syntax::Make
-    App::AckX::Preflight::Syntax::Ocaml
-    App::AckX::Preflight::Syntax::Pascal
-    App::AckX::Preflight::Syntax::Perl
-    App::AckX::Preflight::Syntax::SQL
-    App::AckX::Preflight::Syntax::Shell
-    App::AckX::Preflight::Syntax::Swift
-    App::AckX::Preflight::Syntax::Vim
-    App::AckX::Preflight::Syntax::YAML
-    App::AckX::Preflight::Syntax::_cc_like
-    App::AckX::Preflight::Syntax::_nesting
-    App::AckX::Preflight::Syntax::_single_line_comments
-    App::AckX::Preflight::Util
-};
+	@CARP_NOT
+    };
+
+    %EXPORT_TAGS = (
+	all		=> \@EXPORT_OK,
+	croak	=> [ qw{ __die __die_hard __warn } ],
+	ref		=> [ grep { m/ _REF \z /smx } @EXPORT_OK ],
+	syntax	=> [ grep { m/ \A SYNTAX_ /smx } @EXPORT_OK ],
+    );
+
+    @CARP_NOT = qw{
+	App::AckX::Preflight
+	App::AckX::Preflight::Plugin
+	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::Syntax
+	App::AckX::Preflight::Syntax
+	App::AckX::Preflight::Syntax::Ada
+	App::AckX::Preflight::Syntax::Asm
+	App::AckX::Preflight::Syntax::Batch
+	App::AckX::Preflight::Syntax::Cc
+	App::AckX::Preflight::Syntax::Cpp
+	App::AckX::Preflight::Syntax::Csharp
+	App::AckX::Preflight::Syntax::Data
+	App::AckX::Preflight::Syntax::Fortran
+	App::AckX::Preflight::Syntax::Haskell
+	App::AckX::Preflight::Syntax::Java
+	App::AckX::Preflight::Syntax::Lisp
+	App::AckX::Preflight::Syntax::Lua
+	App::AckX::Preflight::Syntax::Make
+	App::AckX::Preflight::Syntax::Ocaml
+	App::AckX::Preflight::Syntax::Pascal
+	App::AckX::Preflight::Syntax::Perl
+	App::AckX::Preflight::Syntax::SQL
+	App::AckX::Preflight::Syntax::Shell
+	App::AckX::Preflight::Syntax::Swift
+	App::AckX::Preflight::Syntax::Vim
+	App::AckX::Preflight::Syntax::YAML
+	App::AckX::Preflight::Syntax::_cc_like
+	App::AckX::Preflight::Syntax::_nesting
+	App::AckX::Preflight::Syntax::_single_line_comments
+	App::AckX::Preflight::Util
+    };
+}
 
 use constant ARRAY_REF	=> ref [];
 use constant CODE_REF	=> ref sub {};

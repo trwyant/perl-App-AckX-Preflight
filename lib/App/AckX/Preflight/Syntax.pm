@@ -16,7 +16,11 @@ use Module::Pluggable::Object 5.2;
 use List::Util 1.45 ();	# for uniqstr
 use Text::Abbrev ();
 
-our $VERSION = '0.000_018';
+our $VERSION;
+
+BEGIN {
+    $VERSION = '0.000_018';
+}
 
 use constant IN_SERVICE		=> 1;
 use constant IS_EXHAUSTIVE	=> 1;

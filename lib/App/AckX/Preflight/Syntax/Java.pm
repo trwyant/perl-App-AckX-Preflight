@@ -12,7 +12,11 @@ use App::AckX::Preflight::Util qw{
     @CARP_NOT
 };
 
-our $VERSION = '0.000_018';
+our $VERSION;
+
+BEGIN {
+    $VERSION = '0.000_018';
+}
 
 sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION,

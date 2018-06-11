@@ -15,7 +15,11 @@ use App::AckX::Preflight::Util qw{
     @CARP_NOT
 };
 
-our $VERSION = '0.000_018';
+our $VERSION;
+
+BEGIN {
+    $VERSION = '0.000_018';
+}
 
 sub __handles_syntax {
     __die_hard( '__handles_syntax() must be overridden' );
