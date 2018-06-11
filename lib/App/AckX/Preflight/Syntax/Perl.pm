@@ -7,10 +7,15 @@ use warnings;
 
 use parent qw{ App::AckX::Preflight::Syntax };
 
-use App::AckX::Preflight::Util qw{
-    :syntax
-    @CARP_NOT
-};
+use App::AckX::Preflight::Util ();
+BEGIN {
+    App::AckX::Preflight::Util->import(
+	qw{
+	    :syntax
+	    @CARP_NOT
+	}
+    );
+}
 
 our $VERSION;
 

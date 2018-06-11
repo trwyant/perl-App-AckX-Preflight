@@ -6,7 +6,14 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight::Syntax;
-use App::AckX::Preflight::Util qw{ @CARP_NOT };
+use App::AckX::Preflight::Util ();
+BEGIN {
+    App::AckX::Preflight::Util->import(
+	qw{
+	    @CARP_NOT
+	}
+    );
+}
 use Text::Abbrev ();
 
 use parent qw{ App::AckX::Preflight::Plugin };

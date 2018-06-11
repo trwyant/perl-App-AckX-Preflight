@@ -5,9 +5,16 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Util qw{ :all };
-
 use parent qw{ App::AckX::Preflight::Plugin };
+
+use App::AckX::Preflight::Util ();
+BEGIN {
+    App::AckX::Preflight::Util->import(
+	qw{
+	    :all
+	}
+    );
+}
 
 our $VERSION;
 

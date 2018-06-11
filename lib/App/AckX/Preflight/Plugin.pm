@@ -5,7 +5,15 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Util qw{ :croak @CARP_NOT };
+use App::AckX::Preflight::Util ();
+BEGIN {
+    App::AckX::Preflight::Util->import(
+	qw{
+	    :croak
+	    @CARP_NOT
+	}
+    );
+}
 
 our $VERSION;
 

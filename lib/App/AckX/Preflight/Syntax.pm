@@ -5,13 +5,18 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Util qw{
-    :croak
-    :syntax
-    __syntax_types
-    ACK_FILE_CLASS
-    @CARP_NOT
-};
+use App::AckX::Preflight::Util ();
+BEGIN {
+    App::AckX::Preflight::Util->import(
+	qw{
+	    :croak
+	    :syntax
+	    __syntax_types
+	    ACK_FILE_CLASS
+	    @CARP_NOT
+	}
+    );
+}
 use Module::Pluggable::Object 5.2;
 use List::Util 1.45 ();	# for uniqstr
 use Text::Abbrev ();

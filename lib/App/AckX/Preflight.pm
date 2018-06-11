@@ -6,7 +6,10 @@ use strict;
 use warnings;
 
 use App::Ack ();
-use App::AckX::Preflight::Util qw{ :all };
+use App::AckX::Preflight::Util ();
+BEGIN {
+    App::AckX::Preflight::Util->import( ':all' );
+}
 use Cwd ();
 use File::Spec;
 use Module::Pluggable::Object 5.2;
