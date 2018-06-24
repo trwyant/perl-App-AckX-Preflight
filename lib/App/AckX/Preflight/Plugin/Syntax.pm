@@ -30,8 +30,10 @@ BEGIN {
     $VERSION = '0.000_018';
 }
 
-# sub __normalize_options {...}
-*__normalize_options = \&App::AckX::Preflight::Syntax::__normalize_options;
+BEGIN {
+    # sub __normalize_options {...}
+    *__normalize_options = \&App::AckX::Preflight::Syntax::__normalize_options;
+}
 
 sub __options {
     return( qw{ syntax=s@ syntax-type! } );

@@ -36,9 +36,14 @@ use constant PLUGIN_MAX_DEPTH	=> do {
     1 + @parts;
 };
 
-*__uniqstr = \&List::Util::uniqstr;	# sub __uniqstr {...}
 
-my $arg_sep_re = qr{ \s* [:;,] \s* }smx;
+my $arg_sep_re;
+
+BEGIN {
+    *__uniqstr = \&List::Util::uniqstr;	# sub __uniqstr {...}
+
+    $arg_sep_re = qr{ \s* [:;,] \s* }smx;
+}
 
 sub __getopt {
     my ( $class, $arg, $opt ) = @_;
@@ -285,7 +290,7 @@ use constant SYNTAX_FILTER_LAYER =>
 
 # Hot patch the open() method on the App::Ack class that represents a
 # file, so that we can inject ourselves as a PerlIO::via layer.
-{
+BEGIN {
     eval sprintf 'require %s; 1', ACK_FILE_CLASS ## no critic (ProhibitStringyEval,RequireCheckingReturnValueOfEval)
 	and my $open = ACK_FILE_CLASS->can( 'open' )
 	or __die_hard( sprintf '%s does not implement open()', ACK_FILE_CLASS );

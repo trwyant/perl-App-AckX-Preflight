@@ -112,7 +112,9 @@ use constant ACK_FILE_CLASS	=> do {
     $version ge '2.999' ? 'App::Ack::File' : 'App::Ack::Resource';
 };
 
-*__any = \&List::Util::any;	# sub any {...}
+BEGIN {
+    *__any = \&List::Util::any;	# sub __any {...}
+}
 
 sub __die {
     $Carp::Verbose

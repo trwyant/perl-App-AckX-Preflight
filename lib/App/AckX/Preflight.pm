@@ -41,14 +41,18 @@ use constant PLUGIN_MAX_DEPTH	=> do {
 };
 
 {
-    my %default = (
-	global	=> IS_VMS ? undef :	# TODO what, exactly?
-	    IS_WINDOWS ? Win32::CSIDL_COMMON_APPDATA() :
-	    '/etc',
-	home	=> IS_VMS ? $ENV{'SYS$LOGIN'} :
-	    IS_WINDOWS ? Win32::CSIDL_APPDATA() :
-	    $ENV{HOME},
-    );
+    my %default;
+
+    BEGIN {
+	%default = (
+	    global	=> IS_VMS ? undef :	# TODO what, exactly?
+		IS_WINDOWS ? Win32::CSIDL_COMMON_APPDATA() :
+		'/etc',
+	    home	=> IS_VMS ? $ENV{'SYS$LOGIN'} :
+		IS_WINDOWS ? Win32::CSIDL_APPDATA() :
+		$ENV{HOME},
+	);
+    }
 
     sub new {
 	my ( $class, %arg ) = @_;
