@@ -104,6 +104,7 @@ t/syntax_vim.t
 t/syntax_yaml.t
 tools/ackxp-out-of-service
 tools/number
+tools/squash
 tools/syntax-filters
 xt/author/carp_not.t
 xt/author/changes.t

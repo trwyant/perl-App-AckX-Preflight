@@ -1,0 +1,112 @@
+#!/usr/bin/env perl
+
+use 5.008008;
+
+use strict;
+use warnings;
+
+use App::AckX::Preflight::Util ();
+use Getopt::Long 2.33 qw{ :config auto_version };
+use Pod::Usage;
+
+our $VERSION = '0.000_018';
+
+my %opt;
+
+GetOptions( \%opt,
+    help => sub { pod2usage( { -verbose => 2 } ) },
+) or pod2usage( { -verbose => 0 } );
+
+my @modules;
+{
+    my %priority = map { $_ => 1 } qw{ App::AckX::Preflight::Util };
+
+    foreach my $m ( @App::AckX::Preflight::Util::CARP_NOT ) {
+	if ( $priority{$m} ) {
+	    unshift @modules, $m;
+	} else {
+	    push @modules, $m;
+	}
+    }
+}
+
+print <<'EOD';
+#!/usr/bin/env perl
+#
+# This file is generated code. Please do not edit it or send patches for
+# it.
+#
+
+package main;
+
+use strict;
+use warnings;
+
+App::AckX::Preflight->run();
+
+EOD
+
+warn 'TODO - ack itself';
+
+foreach my $path ( @modules ) {
+    $path =~ s< :: ></>smxg;
+    $path = "lib/$path.pm";
+    open my $fh, '<', $path
+	or die "Unable to open $path: $!\n";
+    warn "Processing $path\n";
+    while ( <$fh> ) {
+	s/ \A __END__ $/# /smx;
+	s/ \A \s* (?: use | require ) \s+ App::AckX? \b /# /smx;
+	print;
+    }
+    close $fh;
+}
+
+__END__
+
+=head1 TITLE
+
+squash - Gather ackxp into a single file.
+
+=head1 SYNOPSIS
+
+ squash >ackxp
+ squash -help
+ squash -version
+
+=head1 OPTIONS
+
+=head2 -help
+
+This option displays the documentation for this script. The script then
+exits.
+
+=head2 -version
+
+This option displays the version of this script. The script then exits.
+
+=head1 DETAILS
+
+This Perl script gathers all the components of F<ackxp> into a single
+file, and writes that file to standard out. It is analogous to the
+script of the same name that comes with L<App::Ack|App::Ack>.
+
+=head1 AUTHOR
+
+Thomas R. Wyant, III F<wyant at cpan dot org>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2018 by Thomas R. Wyant, III
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl 5.10.0. For more details, see the full text
+of the licenses in the directory LICENSES.
+
+This program is distributed in the hope that it will be useful, but
+without any warranty; without even the implied warranty of
+merchantability or fitness for a particular purpose.
+
+=cut
+
+# ex: set textwidth=72 :
