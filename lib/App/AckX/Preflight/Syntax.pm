@@ -13,6 +13,7 @@ BEGIN {
 	    :syntax
 	    __syntax_types
 	    ACK_FILE_CLASS
+	    IS_SINGLE_FILE
 	    @CARP_NOT
 	}
     );
@@ -73,6 +74,7 @@ my %SYNTAX_OPT;
 
 sub import {
     my ( $class, @arg ) = @_;
+    __hot_patch();
     my $opt = $class->__getopt( \@arg );
     %SYNTAX_OPT  = map { $_ => $opt->{$_} } qw{ syntax-type };
     %WANT_SYNTAX = map { $_ => 1 } @{ $opt->{syntax} || [] };
@@ -290,63 +292,77 @@ use constant SYNTAX_FILTER_LAYER =>
 
 # Hot patch the open() method on the App::Ack class that represents a
 # file, so that we can inject ourselves as a PerlIO::via layer.
-BEGIN {
-    eval sprintf 'require %s; 1', ACK_FILE_CLASS ## no critic (ProhibitStringyEval,RequireCheckingReturnValueOfEval)
-	and my $open = ACK_FILE_CLASS->can( 'open' )
-	or __die_hard( sprintf '%s does not implement open()', ACK_FILE_CLASS );
+{
+    my $open;
+    sub __hot_patch {
+	$open
+	    and return;
 
-    no warnings qw{ redefine };	## no critic (ProhibitNoWarnings)
-    no strict qw{ refs };
-
-    my $repl = join '::', ACK_FILE_CLASS, 'open';
-
-    *$repl = sub {
-	my ( $self ) = @_;
-
-	# If the caller is a resource or a filter we're not opening for
-	# the main scan. Just use the normal machinery.
-	my $caller = caller;
-	foreach my $c ( ACK_FILE_CLASS, qw{ App::Ack::Filter } ) {
-	    $caller->isa( $c )
-		and return $open->( $self );
+	unless ( IS_SINGLE_FILE ) {
+	    local $@ = undef;
+	    eval sprintf 'require %s; 1', ACK_FILE_CLASS ## no critic (ProhibitStringyEval,RequireCheckingReturnValueOfEval)
+		or __die_hard( sprintf 'Can not load %s', ACK_FILE_CLASS );
 	}
 
-	# Foreach of the syntax filter plug-ins
-	foreach my $syntax ( App::AckX::Preflight::Syntax->__plugins() ) {
+	$open = ACK_FILE_CLASS->can( 'open' )
+	    or __die_hard( sprintf '%s does not implement open()', ACK_FILE_CLASS );
 
-	    # See if this resource is of the type serviced by this
-	    # module. If not, try the next.
-	    $syntax->__handles_resource( $self )
-		or next;
+	no warnings qw{ redefine };	## no critic (ProhibitNoWarnings)
+	no strict qw{ refs };
 
-	    # Open the file.
-	    my $fh = $open->( $self );
+	my $repl = join '::', ACK_FILE_CLASS, 'open';
 
-	    # If we want everything and we're not reporting syntax types
-	    # we don't need the filter.
-	    $syntax->__want_everything()
-		and not $syntax->__syntax_opt()->{'syntax-type'}
-		and return $fh;
+	*$repl = sub {
+	    my ( $self ) = @_;
 
-	    # Check to see if we're already on the PerlIO stack. If so,
-	    # just return the file handle.
-	    foreach my $layer ( PerlIO::get_layers( $fh ) ) {
-		$layer =~ SYNTAX_FILTER_LAYER
-		    and return $fh;
+	    # If the caller is a resource or a filter we're not opening for
+	    # the main scan. Just use the normal machinery.
+	    my $caller = caller;
+	    foreach my $c ( ACK_FILE_CLASS, qw{ App::Ack::Filter } ) {
+		$caller->isa( $c )
+		    and return $open->( $self );
 	    }
 
-	    # Insert the correct syntax filter into the PerlIO stack.
-	    binmode $fh, ":via($syntax)";
+	    # Foreach of the syntax filter plug-ins
+	    foreach my $syntax ( App::AckX::Preflight::Syntax->__plugins() ) {
 
-	    # Return the handle
-	    return $fh;
-	}
+		# See if this resource is of the type serviced by this
+		# module. If not, try the next.
+		$syntax->__handles_resource( $self )
+		    or next;
 
-	# No syntax filter found. Just open the file and return the
-	# handle.
-	return $open->( $self );
-    };
+		# Open the file.
+		my $fh = $open->( $self );
 
+		# If we want everything and we're not reporting syntax types
+		# we don't need the filter.
+		$syntax->__want_everything()
+		    and not $syntax->__syntax_opt()->{'syntax-type'}
+		    and return $fh;
+
+		# Check to see if we're already on the PerlIO stack. If so,
+		# just return the file handle. The original open() is
+		# idempotent, and ack makes use of this, so we have to
+		# be idempotent also.
+		foreach my $layer ( PerlIO::get_layers( $fh ) ) {
+		    $layer =~ SYNTAX_FILTER_LAYER
+			and return $fh;
+		}
+
+		# Insert the correct syntax filter into the PerlIO stack.
+		binmode $fh, ":via($syntax)";
+
+		# Return the handle
+		return $fh;
+	    }
+
+	    # No syntax filter found. Just open the file and return the
+	    # handle.
+	    return $open->( $self );
+	};
+
+	return;
+    }
 }
 
 1;
