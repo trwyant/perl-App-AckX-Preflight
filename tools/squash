@@ -42,6 +42,8 @@ package main;
 use strict;
 use warnings;
 
+use constant 'App::AckX::Preflight::Util::IS_SINGLE_FILE' => 1;
+
 App::AckX::Preflight->run();
 
 EOD

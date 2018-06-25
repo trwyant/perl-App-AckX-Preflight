@@ -10,6 +10,28 @@ use Exporter qw{ import };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
 use List::Util 1.45 ();	# For uniqstr, which this module does not use
 
+use constant ARRAY_REF	=> ref [];
+use constant CODE_REF	=> ref sub {};
+use constant HASH_REF	=> ref {};
+use constant REGEXP_REF	=> ref qr{};
+use constant SCALAR_REF	=> ref \0;
+
+use constant SYNTAX_CODE		=> 'code';
+use constant SYNTAX_COMMENT		=> 'comment';
+use constant SYNTAX_DATA		=> 'data';
+use constant SYNTAX_DOCUMENTATION	=> 'documentation';
+use constant SYNTAX_METADATA		=> 'metadata';
+use constant SYNTAX_OTHER		=> 'other';
+
+use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
+    qw{ dos os2 MSWin32 VMS } }->{$^O};
+
+use constant ACK_FILE_CLASS	=> do {
+    require App::Ack;
+    ( my $version = App::Ack->VERSION() ) =~ s/ _ //smxg;
+    $version ge '2.999' ? 'App::Ack::File' : 'App::Ack::Resource';
+};
+
 our $VERSION;
 our @EXPORT_OK;
 our %EXPORT_TAGS;
@@ -32,6 +54,8 @@ BEGIN {
 	__warn
 
 	ACK_FILE_CLASS
+
+	IS_SINGLE_FILE
 
 	ARRAY_REF
 	CODE_REF
@@ -88,29 +112,10 @@ BEGIN {
 	App::AckX::Preflight::Syntax::_single_line_comments
 	App::AckX::Preflight::Util
     };
+
+    __PACKAGE__->can( 'IS_SINGLE_FILE' )
+	or constant->import( IS_SINGLE_FILE => 0 );
 }
-
-use constant ARRAY_REF	=> ref [];
-use constant CODE_REF	=> ref sub {};
-use constant HASH_REF	=> ref {};
-use constant REGEXP_REF	=> ref qr{};
-use constant SCALAR_REF	=> ref \0;
-
-use constant SYNTAX_CODE		=> 'code';
-use constant SYNTAX_COMMENT		=> 'comment';
-use constant SYNTAX_DATA		=> 'data';
-use constant SYNTAX_DOCUMENTATION	=> 'documentation';
-use constant SYNTAX_METADATA		=> 'metadata';
-use constant SYNTAX_OTHER		=> 'other';
-
-use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
-    qw{ dos os2 MSWin32 VMS } }->{$^O};
-
-use constant ACK_FILE_CLASS	=> do {
-    require App::Ack;
-    ( my $version = App::Ack->VERSION() ) =~ s/ _ //smxg;
-    $version ge '2.999' ? 'App::Ack::File' : 'App::Ack::Resource';
-};
 
 BEGIN {
     *__any = \&List::Util::any;	# sub __any {...}
@@ -333,6 +338,10 @@ exported by default.
 This is the name of the Ack class that represents a file. It is
 C<'App::Ack::File'> if the version of L<App::Ack|App::Ack> is at least
 C<2.999>; otherwise it is C<'App::Ack::Resource'>.
+
+=head2 IS_SINGLE_FILE
+
+This Boolean value will be true if running the single-file version.
 
 =head2 ARRAY_REF
 
