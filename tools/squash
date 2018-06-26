@@ -17,6 +17,11 @@ GetOptions( \%opt,
     help => sub { pod2usage( { -verbose => 2 } ) },
 ) or pod2usage( { -verbose => 0 } );
 
+my $ack = @ARGV ? shift @ARGV : do {
+    require File::Which;
+    File::Which::which( 'ack' );
+};
+
 my @modules;
 {
     my %priority = map { $_ => 1 } qw{ App::AckX::Preflight::Util };
@@ -48,8 +53,6 @@ App::AckX::Preflight->run();
 
 EOD
 
-warn 'TODO - ack itself';
-
 foreach my $path ( @modules ) {
     $path =~ s< :: ></>smxg;
     $path = "lib/$path.pm";
@@ -64,6 +67,23 @@ foreach my $path ( @modules ) {
     close $fh;
 }
 
+{
+    local $/ = undef;
+    open my $fh, '<', $ack
+	or die "Unable to open $ack: $!\n";
+    print <$fh>;
+    close $fh;
+}
+
+print <<'EOD';
+
+BEGIN {
+    App::AckX::Preflight::Syntax->__hot_patch();
+}
+EOD
+
+warn 'TODO - ack itself';
+
 __END__
 
 =head1 TITLE
@@ -73,6 +93,7 @@ squash - Gather ackxp into a single file.
 =head1 SYNOPSIS
 
  squash >ackxp
+ squash `which ack` >ackxp
  squash -help
  squash -version
 
@@ -92,6 +113,10 @@ This option displays the version of this script. The script then exits.
 This Perl script gathers all the components of F<ackxp> into a single
 file, and writes that file to standard out. It is analogous to the
 script of the same name that comes with L<App::Ack|App::Ack>.
+
+It needs a copy of the single-file version of F<ack> to work with. The
+path to this can be speified on the command line. If no F<ack> is
+provided, L<File::Which|File::Which> is loaded and used to find F<ack>.
 
 =head1 AUTHOR
 
