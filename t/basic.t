@@ -91,7 +91,7 @@ foreach ( qw{
     can_ok $class, qw{
 	IN_SERVICE
 	IS_EXHAUSTIVE
-	__getopt
+	__get_syntax_opt
 	__handles_syntax
 	__handles_type
 	import

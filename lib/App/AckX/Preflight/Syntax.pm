@@ -6,7 +6,21 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight::Util ();
+use Exporter;
+use Module::Pluggable::Object 5.2;
+use List::Util 1.45 ();	# for uniqstr
+use Text::Abbrev ();
+
+our @EXPORT_OK;
+our $VERSION;
+
+my $ARG_SEP_RE;
+
+my %VALID_EXPORT;
+
+
 BEGIN {
+
     App::AckX::Preflight::Util->import(
 	qw{
 	    :croak
@@ -17,14 +31,16 @@ BEGIN {
 	    @CARP_NOT
 	}
     );
-}
-use Module::Pluggable::Object 5.2;
-use List::Util 1.45 ();	# for uniqstr
-use Text::Abbrev ();
 
-our $VERSION;
+    *__uniqstr = \&List::Util::uniqstr;	# sub __uniqstr {...}
 
-BEGIN {
+    $ARG_SEP_RE = qr{ \s* [:;,] \s* }smx;
+
+    # This is PRIVATE to the App-AckX-Preflight package.
+    @EXPORT_OK = qw{ __normalize_options };
+
+    %VALID_EXPORT = map { $_ => 1 } @EXPORT_OK;
+
     $VERSION = '0.000_018';
 }
 
@@ -37,16 +53,10 @@ use constant PLUGIN_MAX_DEPTH	=> do {
     1 + @parts;
 };
 
+my %WANT_SYNTAX;
+my %SYNTAX_OPT;
 
-my $arg_sep_re;
-
-BEGIN {
-    *__uniqstr = \&List::Util::uniqstr;	# sub __uniqstr {...}
-
-    $arg_sep_re = qr{ \s* [:;,] \s* }smx;
-}
-
-sub __getopt {
+sub __get_syntax_opt {
     my ( $class, $arg, $opt ) = @_;
     my $strict = ! $opt;
     $opt ||= {};
@@ -66,21 +76,45 @@ sub __getopt {
 	__die( "Unsupported arguments @{ $arg }" );
     }
     $class->__normalize_options( $opt );
-    return $opt;
-}
-
-my %WANT_SYNTAX;
-my %SYNTAX_OPT;
-
-sub import {
-    my ( $class, @arg ) = @_;
-    __hot_patch();
-    my $opt = $class->__getopt( \@arg );
     %SYNTAX_OPT  = map { $_ => $opt->{$_} } qw{ syntax-type };
     %WANT_SYNTAX = map { $_ => 1 } @{ $opt->{syntax} || [] };
     foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
 	my ( $filter, $mod, @val ) = @{ $_ };
 	$filter->__handles_type_mod( $mod, @val );
+    }
+
+    wantarray
+	or return $opt;
+
+    my @arg;
+    $opt->{syntax}
+	and @{ $opt->{syntax} }
+	and push @arg, '-syntax=' . join( ':', @{ $opt->{syntax} } );
+    $opt->{'syntax-type'}
+	and push @arg, '-syntax-type';
+    foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
+	my ( undef, $mod, @val ) = @{ $_ };
+	local $" = ':';
+	push @arg, "-syntax-$mod=@val";
+    }
+
+    return @arg;
+}
+
+sub import {	## no critic (RequireArgUnpacking)
+    my ( $class, @arg ) = @_;
+    my @import;
+    @arg = grep { $VALID_EXPORT{$_} ? do { push @import, $_; 0 } : 1 } @arg;
+    __hot_patch();
+    $class->__get_syntax_opt( \@arg );
+    if ( @import ) {
+	# The following line is what the (RequireArgUnpacking)
+	# annotation actually refers to. But we have to dispatch
+	# &Exporter::import via goto so that the symbols are exported to
+	# our caller not to us, and we have to load the arguments into
+	# @_ so that &Exporter::import will see them.
+	@_ = ( $class, @import );
+	goto &Exporter::import;
     }
     return;
 }
@@ -200,7 +234,7 @@ sub TELL {
 	    @{ $opt->{syntax} } = sort { $a cmp $b } __uniqstr(
 		map { $syntax_abbrev->{$_} || 
 		    __die( "Unsupported syntax type '$_'" ) }
-		map { split $arg_sep_re }
+		map { split $ARG_SEP_RE }
 		@{ $opt->{syntax} } );
 	}
 
@@ -232,7 +266,7 @@ sub TELL {
 	( my $mod = $name ) =~ s/ .* - //smx;
 	my $filter = ref $invocant || $invocant;
 	if ( __PACKAGE__ eq $filter ) {
-	    $val =~ s/ \A ( \w+ (?: :: \w+ )* ) $arg_sep_re? //smx
+	    $val =~ s/ \A ( \w+ (?: :: \w+ )* ) $ARG_SEP_RE? //smx
 		or __die( "Invalid syntax filter name in -$name=$val" );
 	    my $filter = $1;
 	    $filter =~ m/ :: /smx
@@ -240,7 +274,7 @@ sub TELL {
 	}
 	$plugins->{$filter}
 	    or __die( "Unknown syntax filter $filter" );
-	return ( $filter, $mod, split $arg_sep_re, $val );
+	return ( $filter, $mod, split $ARG_SEP_RE, $val );
     }
 }
 
@@ -396,7 +430,7 @@ In addition to the methods needed to implement a
 L<PerlIO::via|PerlIO::via> PerlIO layer, the following methods are
 provided:
 
-=head2 __getopt
+=head2 __get_syntax_opt
 
 This method is passed a reference to the argument list, and returns a
 reference to an options hash. Anything parsed as an option will be
@@ -478,10 +512,10 @@ each line returned with the syntax type computed for that line.
 This static method does not actually export or import anything; instead
 it parses the import list to configure the syntax filters.
 
-The import list is parsed by L<__getopt()|/__getopt>. The import list
-must be completely consumed by this operation, or an exception is
-raised. All C<--syntax> arguments must be valid or an exception is
-raised.
+The import list is parsed by L<__get_syntax_opt()|/__get_syntax_opt>.
+The import list must be completely consumed by this operation, or an
+exception is raised. All C<--syntax> arguments must be valid or an
+exception is raised.
 
 =head2 __handles_resource
 

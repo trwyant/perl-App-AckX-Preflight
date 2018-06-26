@@ -6,6 +6,9 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight::Util ();
+
+our $VERSION;
+
 BEGIN {
     App::AckX::Preflight::Util->import(
 	qw{
@@ -13,11 +16,7 @@ BEGIN {
 	    @CARP_NOT
 	}
     );
-}
 
-our $VERSION;
-
-BEGIN {
     $VERSION = '0.000_018';
 }
 

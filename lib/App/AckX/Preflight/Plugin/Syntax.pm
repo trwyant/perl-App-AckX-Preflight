@@ -5,34 +5,28 @@ use 5.008008;
 use strict;
 use warnings;
 
-require App::AckX::Preflight::Plugin;
+use App::AckX::Preflight::Plugin;
+use App::AckX::Preflight::Syntax ();
+use App::AckX::Preflight::Util ();
 
 our @ISA;
 
-BEGIN {
-    @ISA = qw{ App::AckX::Preflight::Plugin };
-}
+our $VERSION;
 
-use App::AckX::Preflight::Syntax;
-use App::AckX::Preflight::Util ();
 BEGIN {
     App::AckX::Preflight::Util->import(
 	qw{
 	    @CARP_NOT
 	}
     );
-}
-use Text::Abbrev ();
 
-our $VERSION;
+    App::AckX::Preflight::Syntax->import( qw{
+	__normalize_options
+	} );
 
-BEGIN {
+    @ISA = qw{ App::AckX::Preflight::Plugin };
+
     $VERSION = '0.000_018';
-}
-
-BEGIN {
-    # sub __normalize_options {...}
-    *__normalize_options = \&App::AckX::Preflight::Syntax::__normalize_options;
 }
 
 sub __options {
@@ -46,19 +40,8 @@ sub __process {
 	or $opt->{'syntax-type'}
 	or return;
 
-    App::AckX::Preflight::Syntax->__getopt( \@ARGV, $opt );
+    my @arg = App::AckX::Preflight::Syntax->__get_syntax_opt( \@ARGV, $opt );
 
-    my @arg;
-    $opt->{syntax}
-	and @{ $opt->{syntax} }
-	and push @arg, '-syntax=' . join( ':', @{ $opt->{syntax} } );
-    $opt->{'syntax-type'}
-	and push @arg, '-syntax-type';
-    foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
-	my ( undef, $mod, @val ) = @{ $_ };
-	local $" = ':';
-	push @arg, "-syntax-$mod=@val";
-    }
     local $" = ',';
     $aaxp->__inject(
 	"-MApp::AckX::Preflight::Syntax=@arg" );

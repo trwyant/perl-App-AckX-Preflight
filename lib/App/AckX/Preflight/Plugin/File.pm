@@ -5,26 +5,22 @@ use 5.008008;
 use strict;
 use warnings;
 
-require App::AckX::Preflight::Plugin;
+use App::AckX::Preflight::Plugin;
+use App::AckX::Preflight::Util ();
 
 our @ISA;
 
-BEGIN {
-    @ISA = qw{ App::AckX::Preflight::Plugin };
-}
+our $VERSION;
 
-use App::AckX::Preflight::Util ();
 BEGIN {
+
     App::AckX::Preflight::Util->import(
 	qw{
 	    :all
 	}
     );
-}
+    @ISA = qw{ App::AckX::Preflight::Plugin };
 
-our $VERSION;
-
-BEGIN {
     $VERSION = '0.000_018';
 }
 

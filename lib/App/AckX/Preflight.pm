@@ -7,9 +7,6 @@ use warnings;
 
 use App::Ack ();
 use App::AckX::Preflight::Util ();
-BEGIN {
-    App::AckX::Preflight::Util->import( ':all' );
-}
 use Cwd ();
 use File::Spec;
 use Module::Pluggable::Object 5.2;
@@ -19,17 +16,18 @@ use Text::ParseWords ();
 our $VERSION;
 our $COPYRIGHT;
 
-BEGIN {
-    $VERSION = '0.000_018';
-    $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
-}
-
 use constant DEVELOPMENT => grep { m{ \b blib \b }smx } @INC;
 
 use constant IS_VMS	=> 'VMS' eq $^O;
 use constant IS_WINDOWS	=> { map { $_ => 1 } qw{ dos MSWin32 } }->{$^O};
 
 BEGIN {
+
+    App::AckX::Preflight::Util->import( ':all' );
+
+    $VERSION = '0.000_018';
+    $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
+
     IS_WINDOWS
 	and require Win32;
 }
