@@ -71,8 +71,6 @@ sub requires {
 ##  }
     return +{
 	'App::Ack'			=> 0,
-	'App::Ack::ConfigLoader'	=> 0,
-	'App::Ack::Filter::Collection'	=> 0,
 	'Carp'				=> 0,
 	'Cwd'				=> 0,
 	'Exporter'			=> 0,
@@ -80,12 +78,10 @@ sub requires {
 	'File::Spec'			=> 0,
 	'Getopt::Long'			=> 2.39,	# getoptionsfromarray
 	'List::Util'			=> 1.45,	# uniqstr
-	'Module::Pluggable::Object'	=> 5.2,
 	'Pod::Usage'			=> 0,
 	'Text::Abbrev'			=> 0,
 	'Text::ParseWords'		=> 0,
 	'constant'			=> 0,
-	'parent'			=> 0,
 	'strict'			=> 0,
 	'warnings'			=> 0,
 	@extra,

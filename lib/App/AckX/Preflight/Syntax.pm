@@ -7,7 +7,6 @@ use warnings;
 
 use App::AckX::Preflight::Util ();
 use Exporter;
-use Module::Pluggable::Object 5.2;
 use List::Util 1.45 ();	# for uniqstr
 use Text::Abbrev ();
 
@@ -47,11 +46,7 @@ BEGIN {
 use constant IN_SERVICE		=> 1;
 use constant IS_EXHAUSTIVE	=> 1;
 
-use constant PLUGIN_SEARCH_PATH	=> __PACKAGE__;
-use constant PLUGIN_MAX_DEPTH	=> do {
-    my @parts = split qr{ :: }smx, PLUGIN_SEARCH_PATH;
-    1 + @parts;
-};
+use constant PLUGIN_MATCH	=> qr< \A @{[ __PACKAGE__ ]} :: >smx;
 
 my %WANT_SYNTAX;
 my %SYNTAX_OPT;
@@ -279,20 +274,21 @@ sub TELL {
 }
 
 {
-    my $mpo;
+    my %loaded;
 
     sub __plugins {
-	$mpo ||= Module::Pluggable::Object->new(
-	    inner	=> 0,
-	    max_depth	=> PLUGIN_MAX_DEPTH,
-	    require	=> 1,
-	    search_path	=> PLUGIN_SEARCH_PATH,
-	);
-	return (
-	    grep {
-		$_->IN_SERVICE &&
-		m/ \b [[:alpha:]] \w* \z /smx
-	    } $mpo->plugins() );
+	my @rslt;
+	foreach my $plugin ( @CARP_NOT ) {
+	    $plugin =~ PLUGIN_MATCH
+		or next;
+	    IS_SINGLE_FILE
+		or ( $loaded{$plugin} ||= eval "require $plugin; 1" )
+		or next;
+	    $plugin->IN_SERVICE()
+		or next;
+	    push @rslt, $plugin;
+	}
+	return @rslt;
     }
 }
 

@@ -9,7 +9,6 @@ use App::Ack ();
 use App::AckX::Preflight::Util ();
 use Cwd ();
 use File::Spec;
-use Module::Pluggable::Object 5.2;
 use Pod::Usage ();
 use Text::ParseWords ();
 
@@ -33,10 +32,7 @@ BEGIN {
 }
 
 use constant PLUGIN_SEARCH_PATH	=> join '::', __PACKAGE__, 'Plugin';
-use constant PLUGIN_MAX_DEPTH	=> do {
-    my @parts = split qr{ :: }smx, PLUGIN_SEARCH_PATH;
-    1 + @parts;
-};
+use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 
 {
     my %default;
@@ -366,21 +362,24 @@ sub __marshal_plugins {
 }
 
 {
-
-    my $mpo;
+    my %loaded;
 
     sub __plugins {
 	my ( $self ) = @_;
-	$mpo ||= Module::Pluggable::Object->new(	# Oh, for state()
-	    $self->__module_pluggable_object_new_args(),
-	);
+
 	my %disable;
 	ref $self
 	    and %disable = %{ $self->{disable} };
 	my @rslt;
-	foreach my $plugin ( $mpo->plugins() ) {
+#	foreach my $plugin ( $mpo->plugins() ) {
+	foreach my $plugin ( @CARP_NOT ) {
+	    $plugin =~ PLUGIN_MATCH
+		or next;
 	    delete $disable{$plugin}
 		and next;
+	    IS_SINGLE_FILE
+		or ( $loaded{$plugin} ||= eval "require $plugin; 1" )
+		or next;
 	    $plugin->IN_SERVICE()
 		or next;
 	    push @rslt, $plugin;
@@ -393,15 +392,6 @@ sub __marshal_plugins {
 	}
 	return @rslt;
     }
-}
-
-sub __module_pluggable_object_new_args {
-    return (
-	inner		=> 0,
-	max_depth	=> PLUGIN_MAX_DEPTH,
-	require		=> 1,
-	search_path	=> PLUGIN_SEARCH_PATH,
-    );
 }
 
 sub __process_config_files {
