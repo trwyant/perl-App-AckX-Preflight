@@ -53,21 +53,8 @@ App::AckX::Preflight->run();
 
 EOD
 
-foreach my $path ( @modules ) {
-    $path =~ s< :: ></>smxg;
-    $path = "lib/$path.pm";
-    open my $fh, '<', $path
-	or die "Unable to open $path: $!\n";
-    warn "Processing $path\n";
-    while ( <$fh> ) {
-	s/ \A __END__ $/# /smx;
-	s/ \A \s* (?: use | require ) \s+ App::AckX? \b /# /smx;
-	print;
-    }
-    close $fh;
-}
-
 {
+    warn "Processing $ack\n";
     local $/ = undef;
     open my $fh, '<', $ack
 	or die "Unable to open $ack: $!\n";
@@ -75,15 +62,44 @@ foreach my $path ( @modules ) {
     close $fh;
 }
 
-print <<'EOD';
-
-BEGIN {
-    App::AckX::Preflight::Syntax->__hot_patch();
+{
+    # It is critical that the modules be loaded into the single file in
+    # the correct order. Fortunately this can be derived from their
+    # names. Objectively this is sheer ad-hocery, but on the other hand
+    # if it breaks I know who to talk to.
+    foreach my $module (
+	map { $_->[0] }
+	sort { $a->[1] cmp $b->[1] }
+	map { [ $_, module_sort_key( $_ ) ] }
+	@App::AckX::Preflight::Util::CARP_NOT
+    ) {
+	( my $path = "lib/$module.pm" ) =~ s< :: ></>smxg;
+	open my $fh, '<', $path
+	    or die "Unable to open $path: $!\n";
+	warn "Processing $path\n";
+	print "\n";
+	while ( <$fh> ) {
+	    s/ \A __END__ $/# /smx;
+	    s/ \A (?= \s* (?: use | require ) \s+ App::AckX? \b ) /# /smx;
+	    print;
+	}
+	close $fh;
+    }
 }
-EOD
 
-warn 'TODO - ack itself';
-
+sub module_sort_key {
+    my ( $module ) = @_;
+    local $_ = $module;
+    # App::AckX::Preflight::Util must sort first.
+    s/ \A App::AckX::Preflight::Util \z / /smx
+	and return $_;
+    # Syntax filters that begin with an underscore must sort before
+    # syntax filters that do not.
+    s/ (?<= \A App::AckX::Preflight::Syntax:: ) _ / /smx
+	and return $_;
+    # No other special cases.
+    return $module;
+}
 __END__
 
 =head1 TITLE

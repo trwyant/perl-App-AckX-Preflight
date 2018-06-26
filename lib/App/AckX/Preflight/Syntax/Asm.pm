@@ -23,13 +23,13 @@ BEGIN {
     @ISA = qw{ App::AckX::Preflight::Syntax::_single_line_comments };
 
     $VERSION = '0.000_018';
+
+    __PACKAGE__->__handles_type_mod( qw{ set asm } );
 }
 
 sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_METADATA );
 }
-
-__PACKAGE__->__handles_type_mod( qw{ set asm } );
 
 sub __shebang_re {
     return;

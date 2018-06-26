@@ -23,13 +23,13 @@ BEGIN {
     @ISA = qw{ App::AckX::Preflight::Syntax::_cc_like };
 
     $VERSION = '0.000_018';
+
+    __PACKAGE__->__handles_type_mod( qw{ set haskell } );
 }
 
 sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION );
 }
-
-__PACKAGE__->__handles_type_mod( qw{ set haskell } );
 
 sub __comments_continue_doc {
     return 1;

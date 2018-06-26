@@ -46,7 +46,7 @@ BEGIN {
 use constant IN_SERVICE		=> 1;
 use constant IS_EXHAUSTIVE	=> 1;
 
-use constant PLUGIN_MATCH	=> qr< \A @{[ __PACKAGE__ ]} :: >smx;
+use constant PLUGIN_MATCH	=> qr< \A @{[ __PACKAGE__ ]} :: [A-Z] >smxi;
 
 my %WANT_SYNTAX;
 my %SYNTAX_OPT;

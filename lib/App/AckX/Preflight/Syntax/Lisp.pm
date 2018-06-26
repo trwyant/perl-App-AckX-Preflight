@@ -24,14 +24,14 @@ BEGIN {
     @ISA = qw{ App::AckX::Preflight::Syntax::_nesting };
 
     $VERSION = '0.000_018';
+
+    __PACKAGE__->__handles_type_mod( qw{ set clojure elisp lisp scheme } );
 }
 
 sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION,
 	SYNTAX_METADATA );
 }
-
-__PACKAGE__->__handles_type_mod( qw{ set clojure elisp lisp scheme } );
 
 sub __single_line_re {
     return qr{ \A \s* ;;? }smx;

@@ -173,36 +173,31 @@ EOD
 	$plugin->__process( $self, $opt );
     }
 
-    my @inject = @{ $self->{inject} };
-
-    if ( DEVELOPMENT &&
-	__any { m/ \A -MApp::AckX::Preflight\b /smx } @inject
-    ) {
-	splice @inject, 0, 0, '-Mblib';
-    }
-
     local $self->{verbose} = $opt{verbose};
 
-    return $self->__execute(
-	perl		=> @inject,
-	qw{ -S ack }	=> @ARGV );
+    if ( IS_SINGLE_FILE ) {
+	$self->_trace( ack => @ARGV );
+	return;
+    } else {
+
+	my @inject = @{ $self->{inject} };
+
+	if ( DEVELOPMENT &&
+	    __any { m/ \A -MApp::AckX::Preflight\b /smx } @inject
+	) {
+	    splice @inject, 0, 0, '-Mblib';
+	}
+
+	return $self->__execute(
+	    perl		=> @inject,
+	    qw{ -S ack }	=> @ARGV );
+    }
 }
 
 sub __execute {
     my ( $self, @arg ) = @_;
 
-    if ( ref $self && $self->{verbose} ) {
-	my @out;
-	foreach my $in ( @arg ) {
-	    if ( $in =~ m/ [\s'"\\] /smx ) {
-		( my $temp = $in ) =~ s/ (?= ["\\] ) /\\/smxg;
-		push @out, qq<"$temp">;
-	    } else {
-		push @out, $in;
-	    }
-	}
-	print STDERR "\$ @out\n";
-    }
+    $self->_trace();
 
     exec { $arg[0] } @arg
 	or __die( "Failed to exec $arg[0]: $!" );
@@ -413,6 +408,24 @@ sub __process_config_files {
 	}
 	splice @ARGV, 0, 0, @args;
     }
+    return;
+}
+
+sub _trace {
+    my ( $self, @arg ) = @_;
+    ref $self
+	and $self->{verbose}
+	or return;
+    my @out;
+    foreach my $in ( @arg ) {
+	if ( $in =~ m/ [\s'"\\] /smx ) {
+	    ( my $temp = $in ) =~ s/ (?= ["\\] ) /\\/smxg;
+	    push @out, qq<"$temp">;
+	} else {
+	    push @out, $in;
+	}
+    }
+    print STDERR "\$ @out\n";
     return;
 }
 

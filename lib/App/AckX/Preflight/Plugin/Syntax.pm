@@ -16,6 +16,7 @@ our $VERSION;
 BEGIN {
     App::AckX::Preflight::Util->import(
 	qw{
+	    IS_SINGLE_FILE
 	    @CARP_NOT
 	}
     );
@@ -42,9 +43,13 @@ sub __process {
 
     my @arg = App::AckX::Preflight::Syntax->__get_syntax_opt( \@ARGV, $opt );
 
-    local $" = ',';
-    $aaxp->__inject(
-	"-MApp::AckX::Preflight::Syntax=@arg" );
+    if ( IS_SINGLE_FILE ) {
+	App::AckX::Preflight::Syntax->__hot_patch();
+    } else {
+	local $" = ',';
+	$aaxp->__inject(
+	    "-MApp::AckX::Preflight::Syntax=@arg" );
+    }
 
     return;
 

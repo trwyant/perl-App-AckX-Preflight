@@ -23,13 +23,13 @@ BEGIN {
     @ISA = qw{ App::AckX::Preflight::Syntax };
 
     $VERSION = '0.000_018';
+
+    __PACKAGE__->__handles_type_mod( qw{ set json } );
 }
 
 sub __handles_syntax {
     return( SYNTAX_DATA );
 }
-
-__PACKAGE__->__handles_type_mod( qw{ set json } );
 
 sub __classify {
     return SYNTAX_DATA;

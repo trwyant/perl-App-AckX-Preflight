@@ -23,13 +23,13 @@ BEGIN {
     @ISA = qw{ App::AckX::Preflight::Syntax::_single_line_comments };
 
     $VERSION = '0.000_018';
+
+    __PACKAGE__->__handles_type_mod( qw{ set fortran } );
 }
 
 sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT );
 }
-
-__PACKAGE__->__handles_type_mod( qw{ set fortran } );
 
 sub __single_line_re {
     return qr{ \A (?: [C*] | \s* ! ) }smxi;

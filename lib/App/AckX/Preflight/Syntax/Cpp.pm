@@ -23,15 +23,15 @@ BEGIN {
     @ISA = qw{ App::AckX::Preflight::Syntax::_cc_like };
 
     $VERSION = '0.000_018';
+
+    __PACKAGE__->__handles_type_mod( qw{
+	set actionscript cpp dart go hh hpp js kotlin objc objcpp sass
+	stylus } );
 }
 
 sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION );
 }
-
-__PACKAGE__->__handles_type_mod( qw{
-    set actionscript cpp dart go hh hpp js kotlin objc objcpp sass stylus
-    } );
 
 sub __in_line_doc_re {
     return(

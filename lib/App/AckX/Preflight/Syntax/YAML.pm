@@ -23,13 +23,13 @@ BEGIN {
     @ISA = qw{ App::AckX::Preflight::Syntax };
 
     $VERSION = '0.000_018';
+
+    __PACKAGE__->__handles_type_mod( qw{ set yaml } );
 }
 
 sub __handles_syntax {
     return( SYNTAX_DATA, SYNTAX_COMMENT, SYNTAX_METADATA );
 }
-
-__PACKAGE__->__handles_type_mod( qw{ set yaml } );
 
 sub __classify {
 #   my ( $self ) = @_;

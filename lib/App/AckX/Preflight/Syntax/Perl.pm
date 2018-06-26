@@ -23,6 +23,8 @@ BEGIN {
     @ISA = qw{ App::AckX::Preflight::Syntax };
 
     $VERSION = '0.000_018';
+
+    __PACKAGE__->__handles_type_mod( qw{ set parrot perl perltest } );
 }
 
 sub __handles_syntax {
@@ -34,8 +36,6 @@ sub __handles_syntax {
 	SYNTAX_METADATA,
     );
 }
-
-__PACKAGE__->__handles_type_mod( qw{ set parrot perl perltest } );
 
 {
     my $is_data;

@@ -58,6 +58,7 @@ t/data/batch_file.bat
 t/data/cc_file.c
 t/data/cpp_file.cpp
 t/data/csharp_file.cs
+t/data/file
 t/data/fortran_file.for
 t/data/haskell_file.hs
 t/data/java_file.java
@@ -102,6 +103,7 @@ t/syntax_sql.t
 t/syntax_swift.t
 t/syntax_vim.t
 t/syntax_yaml.t
+t/whole_app.t
 tools/ackxp-out-of-service
 tools/number
 tools/squash
