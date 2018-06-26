@@ -5,15 +5,13 @@ use 5.008008;
 use strict;
 use warnings;
 
-require App::AckX::Preflight::Syntax;
+use App::AckX::Preflight::Syntax ();
+use App::AckX::Preflight::Util ();
 
 our @ISA;
 
-BEGIN {
-    @ISA = qw{ App::AckX::Preflight::Syntax };
-}
+our $VERSION;
 
-use App::AckX::Preflight::Util ();
 BEGIN {
     App::AckX::Preflight::Util->import(
 	qw{
@@ -21,11 +19,9 @@ BEGIN {
 	    @CARP_NOT
 	}
     );
-}
 
-our $VERSION;
+    @ISA = qw{ App::AckX::Preflight::Syntax };
 
-BEGIN {
     $VERSION = '0.000_018';
 }
 
@@ -42,35 +38,40 @@ sub __handles_syntax {
 __PACKAGE__->__handles_type_mod( qw{ set parrot perl perltest } );
 
 {
-    my $is_data = { map {; "__${_}__\n" => 1 } qw{ DATA END } };
+    my $is_data;
+    my $classify;
 
-    my $classify = {
-	SYNTAX_CODE()		=> sub {
-#	    my ( $self, $attr ) = @_;
-	    my ( undef, $attr ) = @_;
-	    if ( m/ \A \s* \# /smx ) {
-		1 == $.
-		    and m/ perl /smx
-		    and return SYNTAX_METADATA;
-		m/ \A \#line \s+ [0-9]+ /smx
-		    and return SYNTAX_METADATA;
-		return SYNTAX_COMMENT;
-	    }
-	    if ( $is_data->{$_} ) {
-		$attr->{in} = SYNTAX_DATA;
-		return SYNTAX_METADATA;
-	    }
-	    goto &_handle_possible_pod;
-	},
-	SYNTAX_DATA()		=> \&_handle_possible_pod,
-	SYNTAX_DOCUMENTATION()	=> sub {
-#	    my ( $self, $attr ) = @_;
-	    my ( undef, $attr ) = @_;
-	    m/ \A = cut \b /smx
-		and $attr->{in} = delete $attr->{cut};
-	    return SYNTAX_DOCUMENTATION;
-	},
-    };
+    BEGIN {
+	$is_data = { map {; "__${_}__\n" => 1 } qw{ DATA END } };
+
+	$classify = {
+	    SYNTAX_CODE()		=> sub {
+    #	    my ( $self, $attr ) = @_;
+		my ( undef, $attr ) = @_;
+		if ( m/ \A \s* \# /smx ) {
+		    1 == $.
+			and m/ perl /smx
+			and return SYNTAX_METADATA;
+		    m/ \A \#line \s+ [0-9]+ /smx
+			and return SYNTAX_METADATA;
+		    return SYNTAX_COMMENT;
+		}
+		if ( $is_data->{$_} ) {
+		    $attr->{in} = SYNTAX_DATA;
+		    return SYNTAX_METADATA;
+		}
+		goto &_handle_possible_pod;
+	    },
+	    SYNTAX_DATA()		=> \&_handle_possible_pod,
+	    SYNTAX_DOCUMENTATION()	=> sub {
+    #	    my ( $self, $attr ) = @_;
+		my ( undef, $attr ) = @_;
+		m/ \A = cut \b /smx
+		    and $attr->{in} = delete $attr->{cut};
+		return SYNTAX_DOCUMENTATION;
+	    },
+	};
+    }
 
     sub __classify {
 	my ( $self ) = @_;

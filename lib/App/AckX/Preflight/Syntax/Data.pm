@@ -5,15 +5,13 @@ use 5.008008;
 use strict;
 use warnings;
 
-require App::AckX::Preflight::Syntax;
+use App::AckX::Preflight::Syntax ();
+use App::AckX::Preflight::Util ();
 
 our @ISA;
 
-BEGIN {
-    @ISA = qw{ App::AckX::Preflight::Syntax };
-}
+our $VERSION;
 
-use App::AckX::Preflight::Util ();
 BEGIN {
     App::AckX::Preflight::Util->import(
 	qw{
@@ -21,11 +19,9 @@ BEGIN {
 	    @CARP_NOT
 	}
     );
-}
 
-our $VERSION;
+    @ISA = qw{ App::AckX::Preflight::Syntax };
 
-BEGIN {
     $VERSION = '0.000_018';
 }
 

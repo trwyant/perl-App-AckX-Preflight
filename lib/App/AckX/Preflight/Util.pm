@@ -5,6 +5,7 @@ use 5.008008;
 use strict;
 use warnings;
 
+use App::Ack ();
 use Carp ();
 use Exporter qw{ import };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
@@ -27,7 +28,6 @@ use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
     qw{ dos os2 MSWin32 VMS } }->{$^O};
 
 use constant ACK_FILE_CLASS	=> do {
-    require App::Ack;
     ( my $version = App::Ack->VERSION() ) =~ s/ _ //smxg;
     $version ge '2.999' ? 'App::Ack::File' : 'App::Ack::Resource';
 };
@@ -115,9 +115,7 @@ BEGIN {
 
     __PACKAGE__->can( 'IS_SINGLE_FILE' )
 	or constant->import( IS_SINGLE_FILE => 0 );
-}
 
-BEGIN {
     *__any = \&List::Util::any;	# sub __any {...}
 }
 
