@@ -9,7 +9,6 @@ use App::Ack ();
 use Carp ();
 use Exporter qw{ import };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
-use List::Util 1.45 ();	# For uniqstr, which this module does not use
 
 use constant ARRAY_REF	=> ref [];
 use constant CODE_REF	=> ref sub {};
@@ -42,7 +41,6 @@ BEGIN {
     $VERSION = '0.000_018';
 
     @EXPORT_OK = qw{
-	__any
 	__die
 	__die_hard
 	__err_exclusive
@@ -115,8 +113,6 @@ BEGIN {
 
     __PACKAGE__->can( 'IS_SINGLE_FILE' )
 	or constant->import( IS_SINGLE_FILE => 0 );
-
-    *__any = \&List::Util::any;	# sub __any {...}
 }
 
 sub __die {
@@ -228,12 +224,6 @@ L<App::AckX::Preflight|App::AckX::Preflight>.
 
 This package can export the following subroutines. None are exported by
 default.
-
-=head2 __any
-
- __any { ref } @data
-
-This is just an alias to C<List::Util::any>.
 
 =head2 __die
 

@@ -14,11 +14,11 @@ foreach my $app ( qw{ script/ackxp script/ackxp-standalone } ) {
     note "Testing $app";
 
     xqt( $app, qw{ -syntax code -w Wyant lib/ }, <<'EOD' );
-lib/App/AckX/Preflight.pm:28:    $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
+lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
 EOD
 
     xqt( $app, qw{ -syntax code -file t/data/file lib/ }, <<'EOD' );
-lib/App/AckX/Preflight.pm:28:    $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
+lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
 EOD
 }
 

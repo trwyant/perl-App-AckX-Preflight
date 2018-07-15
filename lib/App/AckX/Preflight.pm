@@ -9,6 +9,7 @@ use App::Ack ();
 use App::AckX::Preflight::Util ();
 use Cwd ();
 use File::Spec;
+use List::Util 1.45 ();	# For uniqstr, which this module does not use
 use Pod::Usage ();
 use Text::ParseWords ();
 
@@ -183,7 +184,7 @@ EOD
 	my @inject = @{ $self->{inject} };
 
 	if ( DEVELOPMENT &&
-	    __any { m/ \A -MApp::AckX::Preflight\b /smx } @inject
+	    List::Util::any { m/ \A -MApp::AckX::Preflight\b /smx } @inject
 	) {
 	    splice @inject, 0, 0, '-Mblib';
 	}

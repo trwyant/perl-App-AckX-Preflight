@@ -31,8 +31,6 @@ BEGIN {
 	}
     );
 
-    *__uniqstr = \&List::Util::uniqstr;	# sub __uniqstr {...}
-
     $ARG_SEP_RE = qr{ \s* [:;,] \s* }smx;
 
     # This is PRIVATE to the App-AckX-Preflight package.
@@ -149,7 +147,7 @@ sub __handles_syntax {
 
     sub _handles_type_add {
 	my ( $class, @arg ) = @_;
-	$handles_type{$class} = [ __uniqstr( 
+	$handles_type{$class} = [ List::Util::uniqstr( 
 		@{ $handles_type{$class} || [] }, @arg ) ];
 	return;
     }
@@ -164,7 +162,7 @@ sub __handles_syntax {
 
     sub _handles_type_set {
 	my ( $class, @arg ) = @_;
-	$handles_type{$class} = [ __uniqstr( @arg ) ];
+	$handles_type{$class} = [ List::Util::uniqstr( @arg ) ];
 	return;
     }
 
@@ -226,7 +224,7 @@ sub TELL {
 	my $class = ref $invocant || $invocant;
 
 	if ( $opt->{syntax} ) {
-	    @{ $opt->{syntax} } = sort { $a cmp $b } __uniqstr(
+	    @{ $opt->{syntax} } = sort { $a cmp $b } List::Util::uniqstr(
 		map { $syntax_abbrev->{$_} || 
 		    __die( "Unsupported syntax type '$_'" ) }
 		map { split $ARG_SEP_RE }
