@@ -7,7 +7,11 @@ use warnings;
 
 use Test::More 0.88;	# Because of done_testing();
 
-foreach my $app ( qw{ script/ackxp script/ackxp-standalone } ) {
+unless ( -x 'ackxp-standalone' ) {
+    system { 'perl' } qw{ perl -Mblib tools/squash -o ackxp-standalone };
+}
+
+foreach my $app ( qw{ script/ackxp ackxp-standalone } ) {
     -x $app
 	or next;
 
@@ -15,6 +19,26 @@ foreach my $app ( qw{ script/ackxp script/ackxp-standalone } ) {
 
     xqt( $app, qw{ -syntax code -w Wyant lib/ }, <<'EOD' );
 lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
+EOD
+    xqt( $app, qw{ -syntax-type . t/data/perl_file.PL }, <<'EOD' );
+meta:#!/usr/bin/env perl
+code:
+code:use strict;
+code:use warnings;
+code:
+code:printf "Hello %s!\n", @ARGV ? $ARGV[0] : 'world';
+code:
+meta:__END__
+data:
+data:This is data, kinda sorta.
+data:
+docu:=head1 TEST
+docu:
+docu:This is documentation.
+docu:
+docu:=cut
+data:
+data:# ex: set textwidth=72 :
 EOD
 
     xqt( $app, qw{ -syntax code -file t/data/file lib/ }, <<'EOD' );

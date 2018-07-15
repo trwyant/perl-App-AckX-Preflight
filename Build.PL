@@ -23,7 +23,7 @@ my %args = (
     ),
     script_files => [ qw{ script/ackxp } ],
     license => 'perl',
-    add_to_cleanup => [ qw{ cover_db xt/author/optionals } ],
+    add_to_cleanup => [ qw{ ackxp-standalone cover_db xt/author/optionals } ],
 );
 
 if ( $mbv >= 0.28 ) {

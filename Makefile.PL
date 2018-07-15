@@ -21,7 +21,7 @@ my %args = (
     AUTHOR => 'Thomas R. Wyant, III F<wyant at cpan dot org>',
     ABSTRACT => 'Extend App::Ack',
     EXE_FILES => [ qw{ script/ackxp} ],
-    realclean	=> { FILES => 'cover_db xt/author/optionals' },
+    realclean	=> { FILES => 'ackxp-standalone cover_db xt/author/optionals' },
 );
 
 $mmv >= 6.31

@@ -1,5 +1,6 @@
 ^\.#
 /\.#
+^ackxp-standalone$
 ^_build/
 ^blib/
 ^Build$
