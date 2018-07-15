@@ -75,8 +75,12 @@ ability to restrict the search to lines of a file that match one or more
 syntax types which may (or may not) be defined for that file's file
 type.
 
-This functionality depends on the C<--syntax> option, which can take one
-or more of the following values:
+This plug-in recognizes and processes the following options:
+
+=head2 --syntax
+
+This specifies the syntax types which are to be searched. It can take
+one or more of the following values:
 
 =over
 
@@ -117,6 +121,16 @@ B<should> adhere to the above-defined types. Additional types might be
 implemented, but the implementor is urged to think long and hard before
 doing so. See the documentation for these for what file types are
 actually supported, and what syntax types are available for each.
+
+=head2 --syntax-type
+
+If this Boolean option is asserted, the four-letter syntax type of each
+line is prepended to that line.
+
+If you are trying to get a dump of the syntax types of a file, remember
+that because this is C<ack>, you must specify a pattern. Something like
+C<'.'> will be useful here.
+
 
 =head1 SEE ALSO
 
