@@ -5,21 +5,40 @@ use 5.008008;
 use strict;
 use warnings;
 
+BEGIN {
+    -d 'inc'
+	and push @INC, 'inc';
+}
+
 use App::AckX::Preflight::Util ();
+use Fcntl qw{ :mode };
 use Getopt::Long 2.33 qw{ :config auto_version };
 use Pod::Usage;
 
 our $VERSION = '0.000_018';
 
-my %opt;
+my %opt = (
+    o	=> '-',
+);
 
 GetOptions( \%opt,
+    qw{ o=s },
     help => sub { pod2usage( { -verbose => 2 } ) },
 ) or pod2usage( { -verbose => 0 } );
 
+if ( { '-' => 1, '' => 1 }->{$opt{o}} ) {
+    delete $opt{o};
+    binmode STDOUT, ':encoding(utf-8)';
+} else {
+    open my $fh, '>:encoding(utf-8)', $opt{o}
+	or die "Failed to open $opt{o}: $!\n";
+    select $fh;
+}
+
 my $ack = @ARGV ? shift @ARGV : do {
     require File::Which;
-    File::Which::which( 'ack' );
+    File::Which::which( 'ack-standalone' ) || File::Which::which( 'ack' ) ||
+	die "Location of ack not specified, and default not found\n";
 };
 
 my @modules;
@@ -87,6 +106,16 @@ EOD
     }
 }
 
+if ( $opt{o} ) {
+    my $fh = select STDOUT;
+    close $fh;
+    if ( my ( undef, undef, $mode ) = stat $opt{o} ) {
+	$mode = S_IMODE( $mode );
+	$mode |= S_IXUSR | S_IXGRP | S_IXOTH;
+	chmod $mode, $opt{o};
+    }
+}
+
 sub module_sort_key {
     my ( $module ) = @_;
     local $_ = $module;
@@ -110,6 +139,7 @@ squash - Gather ackxp into a single file.
 
  squash >ackxp
  squash `which ack` >ackxp
+ squash -o ackxp
  squash -help
  squash -version
 
@@ -119,6 +149,17 @@ squash - Gather ackxp into a single file.
 
 This option displays the documentation for this script. The script then
 exits.
+
+=head2 -o
+
+ -o ackxp-standalone
+
+This option specifies the output file. If specified as something other
+than C<''> or C<'-'>, output will be to this file, which will have its
+execute bits set if possible.
+
+By default, or if specified as C<''> or C<'-'>, output is to standard
+out.
 
 =head2 -version
 
@@ -130,9 +171,18 @@ This Perl script gathers all the components of F<ackxp> into a single
 file, and writes that file to standard out. It is analogous to the
 script of the same name that comes with L<App::Ack|App::Ack>.
 
+This script should be run in the top-level C<App-AckX-Preflight>
+directory.
+
 It needs a copy of the single-file version of F<ack> to work with. The
 path to this can be speified on the command line. If no F<ack> is
-provided, L<File::Which|File::Which> is loaded and used to find F<ack>.
+provided, L<File::Which|File::Which> is loaded and used to find
+F<ack-standalone> or F<ack>, in that order. An exception is thrown if
+F<ack> is defaulted and no default can be determined.
+
+A copy of L<File::Which|File::Which> (which may or may not be current)
+is provided in the F<inc/> directory of the distribution. This copy will
+be used if an installed copy can not be found.
 
 =head1 AUTHOR
 
