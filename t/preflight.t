@@ -110,7 +110,7 @@ SKIP: {
 	    or diag 'Got ', explain xqt( $aaxp, qw{ fubar } );
 }
 
-$got = xqt( qw{ --syntax=code } );
+$got = xqt( qw{ --noenv --syntax=code } );
 is_deeply $got,
     [ qw{
 	perl
@@ -118,12 +118,12 @@ is_deeply $got,
 	-MApp::AckX::Preflight::Syntax=-syntax=code
 	-S
 	ack
-	--project=t/data/project/_ackxprc
+	--noenv
 	} ],
-    '--syntax=code'
+    '--noenv --syntax=code'
 	or diag 'Got ', explain $got;
 
-$got = xqt( qw{ --syntax data } );
+$got = xqt( qw{ --noenv --syntax data } );
 is_deeply $got,
     [ qw{
 	perl
@@ -131,12 +131,12 @@ is_deeply $got,
 	-MApp::AckX::Preflight::Syntax=-syntax=data
 	-S
 	ack
-	--project=t/data/project/_ackxprc
+	--noenv
 	} ],
-    '--syntax=data'
+    '--noenv --syntax=data'
 	or diag 'Got ', explain $got;
 
-$got = xqt( qw{ --syntax doc } );
+$got = xqt( qw{ --noenv --syntax doc } );
 is_deeply $got,
     [ qw{
 	perl
@@ -144,13 +144,13 @@ is_deeply $got,
 	-MApp::AckX::Preflight::Syntax=-syntax=documentation
 	-S
 	ack
-	--project=t/data/project/_ackxprc
+	--noenv
 	} ],
-    '--syntax=doc'
+    '--noenv --syntax=doc'
 	or diag 'Got ', explain $got;
 
 {
-    $got = xqt( qw{ --syntax code;doc } );
+    $got = xqt( qw{ --noenv --syntax code;doc } );
     is_deeply $got,
 	[ qw{
 	    perl
@@ -158,13 +158,13 @@ is_deeply $got,
 	    -MApp::AckX::Preflight::Syntax=-syntax=code:documentation
 	    -S
 	    ack
-	    --project=t/data/project/_ackxprc
+	    --noenv
 	    } ],
-	'--syntax code;doc'
+	'--noenv --syntax code;doc'
 	    or diag 'Got ', explain $got;
 }
 
-$got = xqt( qw{ --syntax=code:data:doc } );
+$got = xqt( qw{ --noenv --syntax=code:data:doc } );
 is_deeply $got,
     [ qw{
 	perl
@@ -172,9 +172,9 @@ is_deeply $got,
 	-MApp::AckX::Preflight::Syntax=-syntax=code:data:documentation
 	-S
 	ack
-	--project=t/data/project/_ackxprc
+	--noenv
 	} ],
-    '--syntax=code:data:doc'
+    '--noenv --syntax=code:data:doc'
 	or diag 'Got ', explain $got;
 
 done_testing;
