@@ -22,7 +22,7 @@ my @want;
 
 @got = PLUGIN->__options();
 is_deeply \@got,
-    [ qw{ file=s } ],
+    [ qw{ file=s file-extended! } ],
     'Options'
     or diag explain 'Got ', @got;
 
@@ -88,7 +88,7 @@ is_deeply \@got,
 SKIP: {
 
     '5.010' le $]
-	or skip( "Perl 5.10 required; this is $]", 2 );
+	or skip( "Perl 5.10 required; this is $]", 4 );
 
     @got = prs( qw{ --file=t/data/fubar } );
     @want = ( { file => 't/data/fubar' } );
@@ -101,8 +101,31 @@ SKIP: {
 	[ qw{ --match (?|(?i:\bfu\b)|(?i:\bbar\b)) } ],
 	'--file=t/data/fubar'
 	or diag explain 'Got ', \@got;
+
+    @got = prs( qw{ --file=t/data/foo-extended } );
+    @want = ( { file => 't/data/foo-extended' } );
+    is_deeply \@got, \@want,
+	q<Parse '--file=t/data/foo-extended'>
+	or diag explain 'Got ', \@got;
+
+    @got = xqt( @want );
+    is_deeply \@got,
+        [ '--match', '(?|(?#)|(?:# This is a comment)|(?i:\bfoo\b))' ],
+	'--file=t/data/foo-extended'
+	or diag explain 'Got ', \@got;
 }
 
+@got = prs( qw{ --file=t/data/foo-extended --file-extended } );
+@want = ( { file => 't/data/foo-extended', 'file-extended' => 1 } );
+is_deeply \@got, \@want,
+    q<Parse '--file=t/data/foo-extended --file-extended'>
+    or diag explain 'Got ', \@got;
+
+@got = xqt( @want );
+is_deeply \@got,
+    [ qw{ --match (?i:\bfoo\b) } ],
+    '--file=t/data/foo-extended --file-extended'
+    or diag explain 'Got ', \@got;
 
 @got = prs( qw{ foo --match=bar bazzle } );
 @want = ( { match => 'bar' }, qw{ foo --match=bar bazzle } );

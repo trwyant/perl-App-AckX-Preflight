@@ -25,7 +25,7 @@ BEGIN {
 }
 
 sub __options {
-    return( qw{ file=s } );
+    return( qw{ file=s file-extended! } );
 }
 
 sub __peek_opt {
@@ -54,6 +54,12 @@ sub __process {
     # Find any patterns in the file.
     while ( <$fh> ) {
 	chomp;
+	if ( $opt->{ 'file-extended' } ) {
+	    '' eq $_
+		and next;
+	    m/ \A \s* \# /smx
+		and next;
+	}
 	push @pattern, '' eq $_ ? '(?#)' :
 	    $opt->{literal} ? quotemeta $_ : $_;
     }
@@ -116,9 +122,13 @@ C<--file> option is incompatible with the C<--match> option. If the
 C<--literal> option is used (or its synonym C<-Q>), the patterns are
 taken literally -- that is, metacharacters are escaped.
 
-Each line of the file represents a pattern. An empty file results in an
-exception. An empty pattern matches the empty string, and therefore any
-line in the file.
+By default, each line of the file represents a pattern. An empty file
+results in an exception. An empty pattern matches the empty string, and
+therefore any line in the file.
+
+If C<--file-extended> is asserted, the file syntax is extended to ignore
+empty lines and lines whose first non-blank character is C<'#'>.
+Otherwise all lines are considered to be patterns, like F<grep>.
 
 Files containing more than one pattern can only be processed when
 running under at least Perl 5.9.5. An attempt to use such a file under

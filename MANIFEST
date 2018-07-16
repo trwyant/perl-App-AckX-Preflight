@@ -50,6 +50,7 @@ script/ackxp
 t/basic.t
 t/data/ackxprc
 t/data/foo
+t/data/foo-extended
 t/data/fubar
 t/data/global/ackxprc
 t/data/home/_ackxprc
