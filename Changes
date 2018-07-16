@@ -1,3 +1,27 @@
+0.000_019	2018-07-16	T. R. Wyant
+    Add --file-extended to File plug-in. This allows for extended
+    syntax, which means that empty lines and comments are ignored.
+
+    Add support for building a standalone ackxp.
+
+    Remove the FilesFrom plug-in.
+
+    Add the following built-in file types to the Cpp syntax filter:
+    - .h
+    - .hh
+    - .js
+    - .kotlin
+    - .sass
+    - .stylus
+
+    Add the following built-in file types to the Perl syntax filter:
+    - .parrot
+
+    Add the following syntax filters:
+    - Asm (.asm, .s)
+    - Lua
+    - Ocaml
+
 0.000_018	2018-06-03	T. R. Wyant
     Take the FilesFrom plugin out of service.
     
