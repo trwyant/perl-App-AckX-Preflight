@@ -141,7 +141,7 @@ EOD
 		Pod::Usage::pod2usage( { -verbose => 2 } );
 	    } elsif ( 'config' eq $val ) {
 		foreach ( @config_files ) {
-		    print STDERR '    ', $_->name();
+		    print STDERR '    ', $_->name(), "\n";
 		}
 		@config_files
 		    or print STDERR "    No configuration files found\n";
