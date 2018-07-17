@@ -22,7 +22,7 @@ BEGIN {
 
     @ISA = qw{ App::AckX::Preflight::Syntax::_cc_like };
 
-    $VERSION = '0.000_019';
+    $VERSION = '0.000_020';
 
     __PACKAGE__->__handles_type_mod( qw{ set delphi pascal } );
 }
