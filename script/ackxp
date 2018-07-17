@@ -31,52 +31,78 @@ ackxp - Ad-hoc preflight munging of F<ack>'s arguments.
 
 The following options are interpreted directly. Others may be
 interpreted by plug-ins or by F<ack>. See the relevant documentation for
-these.
 
-=head2 -ack-filters
+=head2 --disable
 
-This option enables or disables ack-style file filtering for plug-ins
-that use it.
+ --disable=plugin_name
 
-The default is C<-ack-filters> if ack-style filtering is available, and
-C<-no-ack-filters> otherwise. The main anticipated use of this option is
-turning the filter code off if it causes trouble.
+This option disables the named plugin. The name is either the complete
+class name or the name without the C<'App::AckX::Preflight::Plugin::'>
+prefix.
 
-=head2 -help
+An exception occurs if the name of an unknown plugin is given.
 
-This option displays the documentation for this script. The script then
-exits.
+=head2 --enable
 
-You can provide the following optional arguments:
+ --enable=plugin_name
+
+This option enables the named plug-in. That is, it undoes a previous
+C<--disable>; specifying this will not make an unavailable plug-in
+available. The name is either the complete class name or the name
+without the C<'App::AckX::Preflight::Plugin::'> prefix.
+
+An exception occurs if the name of an unknown plugin is given.
+
+=head2 --env
+
+This Boolean option requests the use of the environment (i.e.
+environment variables, configuration files) to configure
+C<App::AckX::Preflight>. This option is passed on to F<ack> itself.
+
+The default is C<--env>, but this can be negated with C<--noenv>.
+
+=head2 --help
+
+This options causes the POD of the top-level script (as determined by
+C<$0>) to be displayed. The script then exits.
+
+This option can also be given one of the following arguments:
 
 =over
 
 =item C<'config'>
 
-This argument causes all the configuration files that would be used to
-be displayed. The script then exits.
+This argument causes the names of any configuration files used to be
+displayed.
 
 =item C<'plugins'>
 
-This argument causes the installed plugins to be listed. The script then
-exits.
+This argument causes the names of any available plugins to be displayed.
 
 =item plugin name
 
-If the argument is a name from the list provided by C<'plugins'>, the
-documentation for that plugin is displayed. The script then exits.
+If this argument is an item from the plugins list, the POD for that
+plugin will be displayed.
 
 =back
 
-Any other argument is an error.
+All other arguments to C<--help> are invalid and result in an error.
 
-=head2 -man
+=head2 --man
 
-This option is a synonym for L<-help|/-help>.
+This is a synonym for C<--help>, and takes the same optional arguments.
 
-=head2 -version
+=head2 --verbose
 
-This option displays the version of this script. The script then exits.
+This causes C<App::AckX::Preflight> to write certain information to
+standard error. The exact nature of this information is undocumented,
+and subject to change without notice.
+
+=head2 --version
+
+This option causes the versions of C<App::AckX::Preflight>,
+L<App::Ack|App::Ack>, and Perl to be displayed. The script then exits.
+these.
 
 =head1 DETAILS
 

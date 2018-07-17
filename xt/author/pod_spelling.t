@@ -26,6 +26,7 @@ ASCIIbetical
 ASCIIbetically
 Asm
 del
+env
 Fortran
 getopt
 hh
