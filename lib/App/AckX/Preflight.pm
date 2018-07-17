@@ -104,7 +104,8 @@ sub run {
 
     my %opt;
 
-    $self->__process_config_files( $self->__find_config_files() );
+    $self->__process_config_files(
+	my @config_files = $self->__find_config_files() );
 
     $self->{disable} = {};
 
@@ -134,36 +135,33 @@ Perl $^V
 EOD
 	    exit;
 	},
-	'help|man' => sub {
-	    @ARGV
-		and defined $ARGV[0]
-		and '' ne $ARGV[0]
-		or Pod::Usage::pod2usage( { -verbose => 2 } );
-	    if ( 'config' eq $ARGV[0] ) {
-		my $count;
-		foreach ( $self->__find_config_files() ) {
-		    $count++;
+	'help|man:s' => sub {
+	    my ( undef, $val ) = @_;
+	    if ( '' eq $val ) {
+		Pod::Usage::pod2usage( { -verbose => 2 } );
+	    } elsif ( 'config' eq $val ) {
+		foreach ( @config_files ) {
 		    print STDERR '    ',
 			ref $_ ? "ACKXP_OPTIONS=$$_\n" : "$_\n";
 		}
-		$count
+		@config_files
 		    or print STDERR "    No configuration files found\n";
 		exit 1;
-	    } elsif ( 'plugins' eq $ARGV[0] ) {
+	    } elsif ( 'plugins' eq $val ) {
 		foreach ( $self->__plugins() ) {
 		    s/ .* :: //smx;
 		    print STDERR "    $_\n";
 		}
 		exit 1;
 	    }
-	    my $match = qr{ :: \Q$ARGV[0]\E \z }smx;
+	    my $match = qr{ :: \Q$val\E \z }smx;
 	    foreach ( $self->__plugins() ) {
 		$_ =~ $match
 		    or next;
 		( my $file = "$_.pm" ) =~ s| :: |/|smxg;
 		Pod::Usage::pod2usage( { -verbose => 2, -input => $INC{$file} } );
 	    }
-	    __warn( "No such plug-in as '$ARGV[0]'" );
+	    __warn( "No such plug-in as '$val'" );
 	    exit 1;
 	},
     );
@@ -540,86 +538,17 @@ injected before the first such item.
 
 This method first handles C<App::AckX::Preflight>-specific options,
 which are removed from the command passed to F<ack> unless otherwise
-documented:
+documented.
 
-=over
-
-=item C<--disable>
-
- --disable=plugin_name
-
-This option disables the named plugin. The name is either the complete
-class name or the name without the C<'App::AckX::Preflight::Plugin::'>
-prefix.
-
-An exception occurs if the name of an unknown plugin is given.
-
-=item C<--enable>
-
- --enable=plugin_name
-
-This option enables the named plug-in. That is, it undoes a previous
-C<--disable>; specifying this will not make an unavailable plug-in
-available. The name is either the complete class name or the name
-without the C<'App::AckX::Preflight::Plugin::'> prefix.
-
-An exception occurs if the name of an unknown plugin is given.
-
-=item C<--env>
-
-This Boolean option requests the use of the environment (i.e.
-environment variables, configuration files) to configure
-C<App::AckX::Preflight>. This option is passed on to F<ack> itself.
-
-The default is C<--env>, but this can be negated with C<--noenv>.
-
-=item C<--help>
-
-This options causes the POD of the top-level script (as determined by
-C<$0>) to be displayed. The script then exits.
-
-This option can also be given one of the following arguments:
-
-=over
-
-=item C<'config'>
-
-This argument causes the names of any configuration files used to be
-displayed.
-
-=item C<'plugins'>
-
-This argument causes the names of any available plugins to be displayed.
-
-=item plugin name
-
-If this argument is an item from the plugins list, the POD for that
-plugin will be displayed.
-
-=back
-
-All other arguments to C<--help> are invalid and result in an error.
-
-=item C<--man>
-
-This is a synonym for C<--help>, and takes the same optional arguments.
-
-=item C<--verbose>
-
-This causes C<App::AckX::Preflight> to write certain information to
-standard error. The exact nature of this information is undocumented,
-and subject to change without notice.
-
-=item C<--version>
-
-This option causes the versions of C<App::AckX::Preflight>,
-L<App::Ack|App::Ack>, and Perl to be displayed. The script then exits.
-
-=back
+For the convenience of the user, these are documented in
+L<ackxp|/ackxp>. For the convenience of the author, that documentation
+is not repeated here.
 
 This method then reads all the configuration files, calls the plugins,
 and then C<exec()>s F<ack>, passing it C<@ARGV> as it stands after all
-the plugins have finished with it.
+the plugins have finished with it. See the
+L<CONFIGURATION|ackxp/CONFIGURATION> documentation in L<ackxp|ackxo> for
+the details.
 
 Plug-ins that have an L<__options()|/__options> method are called in the
 order the specified options appear on the command line. If a plug-in's
@@ -640,64 +569,6 @@ Plugins B<must> be named
 C<App::AckX::Preflight::Plugin::something_or_other>. They B<may> be
 subclassed from C<App::AckX::Preflight::Plugin>, but need not as long as
 they conform to its interface.
-
-=head1 CONFIGURATION
-
-The configuration system mirrors that of L<App::Ack|App::Ack> itself, as
-nearly as I can manage. The only known difference is support for VMS.
-Any other differences will be resolved in favor of C<App::Ack|App::Ack>.
-
-Like L<App::Ack|App::Ack>'s configuration system,
-C<App::AckX::Preflight>'s configuration is simply a list of default
-command line options to be prepended to the command line. Options
-specific to C<App::AckX::Preflight> will be removed before the command
-line is presented to F<ack>.
-
-The Configuration comes from the following sources, in order from
-most-general to most-specific. If an option is specified more than once,
-the most-specific one rules. It is probably a 'feature' (in the sense of
-'documented bug') that C<App::AckX::Preflight> configuration data trumps
-L<App::Ack|App::Ack> configuration data.
-
-=over
-
-=item Global configuration file.
-
-This optional file is named F<ackxprc>, and lives in the directory
-reported by the L<global()|/global> method.
-
-This configuration file is ignored if C<--noenv> is specified.
-
-=item User-specific configuration file.
-
-If environment variable C<ACKXPRC> exists and is non-empty, it points to
-the user-specific configuration file, which must exist.
-
-Otherwise this optional file is whichever of F<.ackxprc> or F<_ackxprc>
-actually exists. It is an error if both exist.
-
-This configuration file is ignored if C<--noenv> is specified.
-
-=item Project-specific configuration file.
-
-This optional file is the first of F<.ackxprc> or F<_ackxprc> found by
-walking up the directory tree from the current directory. It is an error
-if both files are found in the same directory.
-
-This configuration file is ignored if C<--noenv> is specified.
-
-=item Configuration file specified by C<--ackxprc>
-
-If this option is specified, the file must exist.
-
-=item The contents of environment variable C<ACKXP_OPTIONS>
-
-This optional environment variable will be parsed by
-C<Text::Parsewords::shellwords()>.
-
-This environment variable is ignored if C<--noenv> is specified.
-
-=back
 
 =head1 SEE ALSO
 

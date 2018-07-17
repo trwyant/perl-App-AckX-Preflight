@@ -32,6 +32,20 @@ ackxp - Ad-hoc preflight munging of F<ack>'s arguments.
 The following options are interpreted directly. Others may be
 interpreted by plug-ins or by F<ack>. See the relevant documentation for
 
+=head2 --ackxprc
+
+ --ackxprc=extra_ackxp_resource_file
+
+This option specifies an F<ackxp> resource file. This is in addition to,
+not in replacement of, the global, default, or project files.
+
+By default there is none. See the L<CONFIGURATION|/CONFIGURATION>
+documentation for what files may be processed, and
+
+ ackxp --help config
+
+for what files are actually processed.
+
 =head2 --disable
 
  --disable=plugin_name
@@ -73,7 +87,8 @@ This option can also be given one of the following arguments:
 =item C<'config'>
 
 This argument causes the names of any configuration files used to be
-displayed.
+displayed. Command options that affect this are taken into account, even
+if they occur after C<--help>.
 
 =item C<'plugins'>
 
@@ -87,6 +102,16 @@ plugin will be displayed.
 =back
 
 All other arguments to C<--help> are invalid and result in an error.
+
+=head2 --ignore-ackxp-defaults
+
+If asserted, this Boolean option causes the built-in defaults to be
+ignored.
+
+At the moment this does nothing because there are no built-in defaults.
+But if it ever gets any, this will cause them to be ignored.
+
+The default is C<--no-ignore-ackxp-defaults>.
 
 =head2 --man
 
@@ -116,6 +141,64 @@ No, none of this makes F<ack> do anything it would not have done before.
 But it can come close. A plug-in could do something like load patterns
 from a file, or restrict the search to files whose names appear in a
 F<MANIFEST>. At this level it's really an exercise in imagination.
+
+=head1 CONFIGURATION
+
+The configuration system mirrors that of L<App::Ack|App::Ack> itself, as
+nearly as I can manage. The only known difference is support for VMS.
+Any other differences will be resolved in favor of C<App::Ack|App::Ack>.
+
+Like L<App::Ack|App::Ack>'s configuration system,
+C<App::AckX::Preflight>'s configuration is simply a list of default
+command line options to be prepended to the command line. Options
+specific to C<App::AckX::Preflight> will be removed before the command
+line is presented to F<ack>.
+
+The Configuration comes from the following sources, in order from
+most-general to most-specific. If an option is specified more than once,
+the most-specific one rules. It is probably a 'feature' (in the sense of
+'documented bug') that C<App::AckX::Preflight> configuration data trumps
+L<App::Ack|App::Ack> configuration data.
+
+=over
+
+=item Global configuration file.
+
+This optional file is named F<ackxprc>, and lives in the directory
+reported by the L<global()|/global> method.
+
+This configuration file is ignored if C<--noenv> is specified.
+
+=item User-specific configuration file.
+
+If environment variable C<ACKXPRC> exists and is non-empty, it points to
+the user-specific configuration file, which must exist.
+
+Otherwise this optional file is whichever of F<.ackxprc> or F<_ackxprc>
+actually exists. It is an error if both exist.
+
+This configuration file is ignored if C<--noenv> is specified.
+
+=item Project-specific configuration file.
+
+This optional file is the first of F<.ackxprc> or F<_ackxprc> found by
+walking up the directory tree from the current directory. It is an error
+if both files are found in the same directory.
+
+This configuration file is ignored if C<--noenv> is specified.
+
+=item Configuration file specified by C<--ackxprc>
+
+If this option is specified, the file must exist.
+
+=item The contents of environment variable C<ACKXP_OPTIONS>
+
+This optional environment variable will be parsed by
+C<Text::Parsewords::shellwords()>.
+
+This environment variable is ignored if C<--noenv> is specified.
+
+=back
 
 =head1 AUTHOR
 
