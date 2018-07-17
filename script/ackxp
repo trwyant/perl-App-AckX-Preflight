@@ -127,7 +127,6 @@ and subject to change without notice.
 
 This option causes the versions of C<App::AckX::Preflight>,
 L<App::Ack|App::Ack>, and Perl to be displayed. The script then exits.
-these.
 
 =head1 DETAILS
 
@@ -146,7 +145,7 @@ F<MANIFEST>. At this level it's really an exercise in imagination.
 
 The configuration system mirrors that of L<App::Ack|App::Ack> itself, as
 nearly as I can manage. The only known difference is support for VMS.
-Any other differences will be resolved in favor of C<App::Ack|App::Ack>.
+Any other differences will be resolved in favor of L<App::Ack|App::Ack>.
 
 Like L<App::Ack|App::Ack>'s configuration system,
 C<App::AckX::Preflight>'s configuration is simply a list of default
@@ -175,7 +174,8 @@ If environment variable C<ACKXPRC> exists and is non-empty, it points to
 the user-specific configuration file, which must exist.
 
 Otherwise this optional file is whichever of F<.ackxprc> or F<_ackxprc>
-actually exists. It is an error if both exist.
+actually exists in the user's home directory. It is an error if both
+exist.
 
 This configuration file is ignored if C<--noenv> is specified.
 
@@ -199,6 +199,15 @@ C<Text::Parsewords::shellwords()>.
 This environment variable is ignored if C<--noenv> is specified.
 
 =back
+
+If a configuration source is found more than once, the most-general
+occurrence is the one used. One could argue that it should be the
+most-specific, but most-general is what F<ack> implements.
+
+For example: if working on code under a user's home directory, the
+user-specific file will also be found by the scan for the
+project-specific file. In this case the file will be treated as a
+user-specific file.
 
 =head1 AUTHOR
 
