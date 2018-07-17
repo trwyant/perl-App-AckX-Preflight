@@ -141,8 +141,7 @@ EOD
 		Pod::Usage::pod2usage( { -verbose => 2 } );
 	    } elsif ( 'config' eq $val ) {
 		foreach ( @config_files ) {
-		    print STDERR '    ',
-			ref $_ ? "ACKXP_OPTIONS=$$_\n" : "$_\n";
+		    print STDERR '    ', $_->name();
 		}
 		@config_files
 		    or print STDERR "    No configuration files found\n";
@@ -220,10 +219,13 @@ sub __find_config_files {
     $use_env
 	and defined $ENV{ACKXP_OPTIONS}
 	and '' ne $ENV{ACKXP_OPTIONS}
-	and push @files, \$ENV{ACKXP_OPTIONS};
+	and push @files, App::AckX::Preflight::_Config::Env->new(
+	    name	=> 'ACKXP_OPTIONS' );;
+
     # --ackxprc
     defined $opt->{ackxprc}
-	and push @files, $opt->{ackxprc};
+	and push @files, App::AckX::Preflight::_Config::File->new(
+	    name	=> $opt->{ackxprc} );
 
     if ( $use_env ) {
 	# Project ackprc (walk directories current to root inclusive)(*)
@@ -231,9 +233,9 @@ sub __find_config_files {
 	# TODO ack untaints this, but ...
 	my @parts = File::Spec->splitdir( $cwd );
 	while ( @parts ) {
-	    my $path = $self->_file_from_parts( catdir => @parts )
+	    my $cfg = $self->_file_from_parts( catdir => @parts )
 		or next;
-	    push @files, $path;
+	    push @files, $cfg;
 	    last;
 	} continue {
 	    pop @parts;
@@ -248,7 +250,7 @@ sub __find_config_files {
     # Built-in defaults (unless --ignore-ackxp-defaults)
 
     my %seen;
-    return ( grep { ! $seen{__file_id( $_ )}++ } @files );
+    return ( grep { ! $seen{ $_->id() }++ } @files );
 }
 
 sub _file_from_env {	## no critic (RequireArgUnpacking)
@@ -271,9 +273,9 @@ sub _file_from_parts {
 	_ackxprc } ];
     @arg
 	or __die_hard( 'No file parts specified' );
-    my $path = @arg > 1 ? File::Spec->$method( @arg ) : $arg[0];
+    my $path = File::Spec->$method( @arg );
     -d $path
-	or return $path;
+	or return App::AckX::Preflight::_Config::File->new( name => $path );
     my @f;
     foreach my $base ( @{ $names } ) {
 	my $p = File::Spec->catfile( $path, $base );
@@ -285,7 +287,7 @@ sub _file_from_parts {
     local $" = ' and ';
     @f > 1
 	and __die( "Both @f found; delete one" );
-    return $f[0];
+    return App::AckX::Preflight::_Config::File->new( name => $f[0] );
 }
 
 # Its own code so we can test it.
@@ -390,21 +392,18 @@ sub __marshal_plugins {
 
 sub __process_config_files {
     my ( undef, @files ) = @_;			# Invocant unused
-    foreach my $fn ( @files ) {
+    foreach my $cfg ( @files ) {
 	my @args;
-	if ( SCALAR_REF eq ref $fn ) {
-	    @args = Text::ParseWords::shellwords( ${ $fn } );
-	} else {
-	    my $fh = __open_for_read( $fn );	# Dies on error.
-	    while ( <$fh> ) {
-		m/ \S /smx
-		    and not m/ \A \s* [#] /smx
-		    or next;
-		chomp;
-		push @args, $_;
-	    }
-	    close $fh;
+	$cfg->open();
+	local $_ = undef;
+	while ( defined ( $_ = $cfg->read() ) ) {
+	    m/ \S /smx
+		and not m/ \A \s* [#] /smx
+		or next;
+	    chomp;
+	    push @args, $_;
 	}
+	$cfg->close();
 	splice @ARGV, 0, 0, @args;
     }
     return;
@@ -426,6 +425,104 @@ sub _trace {
     }
     print STDERR "\$ @out\n";
     return;
+}
+
+# Cargo cult to prevent indexing
+package		## no critic (ProhibitMultiplePackages)
+App::AckX::Preflight::_Config;
+
+use App::AckX::Preflight::Util qw{ :croak @CARP_NOT };
+
+sub new {
+    my ( $class, %arg ) = @_;
+    defined $arg{name}
+	and '' ne $arg{name}
+	or __die_hard( 'Programming error - no name specified' );
+    return bless \%arg, ref $class || $class;
+}
+
+sub name {
+    my ( $self ) = @_;
+    return $self->{name};
+}
+
+# Cargo cult to prevent indexing
+package		## no critic (ProhibitMultiplePackages)
+App::AckX::Preflight::_Config::File;
+
+use App::AckX::Preflight::Util qw{ :croak __file_id @CARP_NOT };
+
+our @ISA;
+
+BEGIN {
+    @ISA = qw{ App::AckX::Preflight::_Config };
+}
+
+sub close : method {	## no critic (ProhibitBuiltinHomonyms)
+    my ( $self ) = @_;
+    $self->{fh}
+	and close delete $self->{fh};
+    return $self;
+}
+
+sub id {
+    my ( $self ) = @_;
+    return join ':', file => __file_id( $self->name() );
+}
+
+sub open : method {	## no critic (ProhibitBuiltinHomonyms)
+    my ( $self ) = @_;
+    $self->close();
+    open $self->{fh}, '<:encoding(utf-8)', $self->name()
+	or __die( sprintf 'Failed to open %s: %s', $self->name(), $! );
+    return $self;
+}
+
+sub read : method {	## no critic (ProhibitBuiltinHomonyms)
+    my ( $self ) = @_;
+    my $fh = $self->{fh} ||= $self->open()
+	or __die_hard( 'open() not called' );
+    return <$fh>;
+}
+
+# Cargo cult to prevent indexing
+package		## no critic (ProhibitMultiplePackages)
+App::AckX::Preflight::_Config::Env;
+
+use App::AckX::Preflight::Util qw{ :croak @CARP_NOT };
+use Text::ParseWords ();
+
+our @ISA;
+
+BEGIN {
+    @ISA = qw{ App::AckX::Preflight::_Config };
+}
+
+sub close : method {	## no critic (ProhibitBuiltinHomonyms)
+    my ( $self ) = @_;
+    delete $self->{data};
+    return $self;
+}
+
+sub id {
+    my ( $self ) = @_;
+    return join ':', env => $self->name();
+}
+
+sub read : method {	## no critic (ProhibitBuiltinHomonyms)
+    my ( $self ) = @_;
+    my $data = $self->{data}
+	or __die_hard( 'open() not called' );
+    return shift @{ $data };
+}
+
+sub open : method {	## no critic (ProhibitBuiltinHomonyms)
+    my ( $self ) = @_;
+    my $name = $self->name();
+    defined $ENV{$name}
+	or __die( sprintf 'Environment variable %s not defined', $name );
+    $self->{data} = [ Text::ParseWords::shellwords( $ENV{$name} ) ];
+    return $self;
 }
 
 1;
