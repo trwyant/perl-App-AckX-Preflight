@@ -109,6 +109,8 @@ sub run {
 
     $self->{disable} = {};
 
+    my @argv = @ARGV;
+
     __getopt( \%opt,
 	qw{ verbose! },
 	'disable=s'	=> sub {
@@ -165,6 +167,9 @@ EOD
 	},
     );
 
+    $opt{verbose}
+	and print scalar _shell_quote( '$', $0, @argv ), "\n";
+
     foreach my $p_rec ( $self->__marshal_plugins ) {
 	my $plugin = $p_rec->{package};
 	my $opt = __getopt_for_plugin( $plugin );
@@ -195,7 +200,7 @@ EOD
 sub __execute {
     my ( $self, @arg ) = @_;
 
-    $self->_trace();
+    $self->_trace( @arg );
 
     exec { $arg[0] } @arg
 	or __die( "Failed to exec $arg[0]: $!" );
@@ -409,21 +414,25 @@ sub __process_config_files {
     return;
 }
 
+sub _shell_quote {
+    my @args = @_;
+    defined wantarray
+	or __die_hard( '_shell_quote() called in void context' );
+    foreach ( @args ) {
+	m/ ["'\s] /smx
+	    or next;
+	s/ (?= ['\\] ) /\\/smxg;
+	$_ = "\$'$_'";
+    }
+    return wantarray ? @args : "@args";
+}
+
 sub _trace {
     my ( $self, @arg ) = @_;
     ref $self
 	and $self->{verbose}
 	or return;
-    my @out;
-    foreach my $in ( @arg ) {
-	if ( $in =~ m/ [\s'"\\] /smx ) {
-	    ( my $temp = $in ) =~ s/ (?= ["\\] ) /\\/smxg;
-	    push @out, qq<"$temp">;
-	} else {
-	    push @out, $in;
-	}
-    }
-    print STDERR "\$ @out\n";
+    print STDERR scalar _shell_quote( '$', @arg ), "\n";
     return;
 }
 
