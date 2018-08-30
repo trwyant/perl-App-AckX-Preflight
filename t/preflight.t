@@ -21,6 +21,7 @@ my $got;
 
 is_deeply [ My::Module::Preflight->__plugins() ],
     [ qw{
+	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Syntax
 	} ],

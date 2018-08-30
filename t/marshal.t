@@ -16,6 +16,7 @@ use constant PACKAGE	=> 'My::Module::Preflight';
 
 is_deeply [ sort My::Module::Preflight->__plugins() ],
     [ qw{
+	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
@@ -31,6 +32,7 @@ is_deeply [ sort My::Module::Preflight->__plugins() ],
     }, PACKAGE;
     is_deeply [ sort $aapx->__plugins() ],
 	[ qw{
+	    App::AckX::Preflight::Plugin::Expand
 	    App::AckX::Preflight::Plugin::Syntax
 	    } ],
 	'Plugins with File disabled'
@@ -39,6 +41,7 @@ is_deeply [ sort My::Module::Preflight->__plugins() ],
 
 is_deeply marshal( qw{ A B C } ),
     [ qw{
+	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
@@ -81,6 +84,7 @@ is_deeply marshal( qw{ --manifest --file x A B C } ),	# FilesFrom
 is_deeply marshal( qw{ --file x --manifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
     '--file x --manifest uses that order';
@@ -88,6 +92,7 @@ is_deeply marshal( qw{ --file x --manifest A B C } ),
 is_deeply marshal( qw{ --manifest --file x --no-manifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
     '--manifest --file x --no-manifest pulls File to front';
@@ -95,6 +100,7 @@ is_deeply marshal( qw{ --manifest --file x --no-manifest A B C } ),
 is_deeply marshal( qw{ --syntax=code A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::Syntax
+	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
 	} ],
     '--syntax=code pulls Syntax to front';

@@ -11,6 +11,7 @@ inc/My/Module/TestPlugin.pm
 inc/My/Module/TestSyntax.pm
 lib/App/AckX/Preflight.pm
 lib/App/AckX/Preflight/Plugin.pm
+lib/App/AckX/Preflight/Plugin/Expand.pm
 lib/App/AckX/Preflight/Plugin/File.pm
 lib/App/AckX/Preflight/Plugin/Syntax.pm
 lib/App/AckX/Preflight/Syntax.pm
@@ -81,6 +82,7 @@ t/data/project/_ackxprc
 t/execute.PL
 t/execute.t
 t/marshal.t
+t/plugin_expand.t
 t/plugin_file.t
 t/plugin_syntax.t
 t/preflight.t

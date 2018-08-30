@@ -36,6 +36,7 @@ Javadoc
 Lua
 merchantability
 preflight
+unabbreviated
 Vimscript
 VMS
 Wyant

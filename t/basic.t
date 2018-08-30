@@ -27,6 +27,7 @@ note 'Plugins';
 
 foreach ( qw{
 	App::AckX::Preflight::Plugin
+	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Syntax
     } ) {

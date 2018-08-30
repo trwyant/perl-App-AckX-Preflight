@@ -81,6 +81,7 @@ BEGIN {
     @CARP_NOT = qw{
 	App::AckX::Preflight
 	App::AckX::Preflight::Plugin
+	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Syntax
 	App::AckX::Preflight::Syntax
