@@ -1,3 +1,7 @@
+0.000_022	2018-08-30	T. R. Wyant
+    Add the ::Expand plug-in. This essentially allows the user-specified
+    expansion of options to other options and arguments.
+
 0.000_021	2018-07-17	T. R. Wyant
     Fix output of --help config. It was missing the newline at the end.
 
