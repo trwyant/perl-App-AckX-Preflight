@@ -81,8 +81,8 @@ the name is specified as an unabbreviated option in the command line,
 the expansion is parsed by C<Text::ParseWords::shellwords()>, and the
 result of that parse replaces the original option.
 
-Bundles are actually pretty pointless on the command line, but they can
-be placed in the user's F<.ackxprc> file. For example, the entry
+Expansions are actually pretty pointless on the command line, but they
+can be placed in the user's F<.ackxprc> file. For example, the entry
 
  --expand=manifest=--files-from MANIFEST
 
