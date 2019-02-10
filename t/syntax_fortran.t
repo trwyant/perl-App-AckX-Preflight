@@ -35,7 +35,7 @@ EOD
 use constant FORTRAN_COMMENT	=> <<'EOD';
   12: C Author: Thomas R. Wyant, III F<wyant at cpan dot org>
   13: C
-  14: C Copyright (C) 2018 by Thomas R. Wyant, III
+  14: C Copyright (C) 2018-2019 by Thomas R. Wyant, III
   15: C
   16: C This program is distributed in the hope that it will be useful, but
   17: C without any warranty; without even the implied warranty of
@@ -57,7 +57,7 @@ use constant FORTRAN_CODE_COMMENT => <<'EOD';
   11:
   12: C Author: Thomas R. Wyant, III F<wyant at cpan dot org>
   13: C
-  14: C Copyright (C) 2018 by Thomas R. Wyant, III
+  14: C Copyright (C) 2018-2019 by Thomas R. Wyant, III
   15: C
   16: C This program is distributed in the hope that it will be useful, but
   17: C without any warranty; without even the implied warranty of
