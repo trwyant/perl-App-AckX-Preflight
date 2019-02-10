@@ -17,10 +17,10 @@ foreach my $app ( qw{ script/ackxp ackxp-standalone } ) {
 
     note "Testing $app";
 
-    xqt( $app, qw{ -noenv -syntax code -w Wyant lib/ }, <<'EOD' );
+    xqt( $app, qw{ --noenv -syntax code -w Wyant lib/ }, <<'EOD' );
 lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
 EOD
-    xqt( $app, qw{ -noenv -syntax-type . t/data/perl_file.PL }, <<'EOD' );
+    xqt( $app, qw{ --noenv -syntax-type . t/data/perl_file.PL }, <<'EOD' );
 meta:#!/usr/bin/env perl
 code:
 code:use strict;
@@ -41,7 +41,7 @@ data:
 data:# ex: set textwidth=72 :
 EOD
 
-    xqt( $app, qw{ -noenv -syntax code -file t/data/file lib/ }, <<'EOD' );
+    xqt( $app, qw{ --noenv -syntax code -file t/data/file lib/ }, <<'EOD' );
 lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018 by Thomas R. Wyant, III';
 EOD
 }
