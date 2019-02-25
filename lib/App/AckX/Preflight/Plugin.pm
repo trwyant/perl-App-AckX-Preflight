@@ -17,7 +17,7 @@ BEGIN {
 	}
     );
 
-    $VERSION = '0.000_022';
+    $VERSION = '0.000_023';
 }
 
 use constant IN_SERVICE	=> 1;
