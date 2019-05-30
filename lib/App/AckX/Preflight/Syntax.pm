@@ -514,7 +514,7 @@ exception is raised.
 =head2 __handles_resource
 
 This static convenience method takes as its argument an
-L<App::Ack::File|App::Ack::File> or L<App::Ack::File|App::Ack::File>
+L<App::Ack::File|App::Ack::File> or L<App::Ack::Filter|App::Ack::Filter>
 object and returns a true value if this syntax filter handles the file.
 Otherwise it returns a false value.
 
@@ -533,7 +533,8 @@ This should be self-explanatory.
 =item comment
 
 This is comments, both single-line and block comments that occupy whole
-lines. Inline documentation should be C<'doc'> if that can be managed.
+lines. Inline documentation should be C<'documentation'> if that can be
+managed.
 
 =item data
 
