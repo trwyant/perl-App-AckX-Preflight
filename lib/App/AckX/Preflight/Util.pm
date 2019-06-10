@@ -261,7 +261,7 @@ That being said, the return is normally the file's device and inode
 numbers (as reported by C<stat()>), joined by a colon (C<':'>), except
 for systems where F<perlport> says this is not meaningful or reliable.
 For such systems it is the full path name of the file as determined by
-L<Cwd::abs_path()|Cwd/abs_path>.
+L<Cwd::abs_path()|Cwd/abs_path and friends>.
 
 In this implementation, the device and inode are used for all values of
 C<$^O> except C<'dos'>, C<'os2'>, C<'VMS'>, and C<'MSWin32'>. I am

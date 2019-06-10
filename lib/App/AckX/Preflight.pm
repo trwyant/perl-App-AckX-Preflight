@@ -647,25 +647,26 @@ which are removed from the command passed to F<ack> unless otherwise
 documented.
 
 For the convenience of the user, these are documented in
-L<ackxp|/ackxp>. For the convenience of the author, that documentation
+L<ackxp|ackxp>. For the convenience of the author, that documentation
 is not repeated here.
 
 This method then reads all the configuration files, calls the plugins,
 and then C<exec()>s F<ack>, passing it C<@ARGV> as it stands after all
 the plugins have finished with it. See the
-L<CONFIGURATION|ackxp/CONFIGURATION> documentation in L<ackxp|ackxo> for
+L<CONFIGURATION|ackxp/CONFIGURATION> documentation in L<ackxp|ackxp> for
 the details.
 
-Plug-ins that have an L<__options()|/__options> method are called in the
-order the specified options appear on the command line. If a plug-in's
-L<__options()|/__options> method returns more than one option, or if an
-option is specified more than once, the last one seen determines the
-order. If more than one plug-in specifies the same option, they are
-processed in ASCIIbetical order.
+Plug-ins that have an
+L<__options()|App::AckX::Preflight::Plugin/__options> method are called
+in the order the specified options appear on the command line. If a
+plug-in's L<__options()|App::AckX::Preflight::Plugin/__options> method
+returns more than one option, or if an option is specified more than
+once, the last one seen determines the order. If more than one plug-in
+specifies the same option, they are processed in ASCIIbetical order.
 
 Plug-ins whose options do not appear in the actual command, or that do
-not implement an L<__options()|/__options> method are called last, in
-ASCIIbetical order.
+not implement an L<__options()|App::AckX::Preflight::Plugin/__options>
+method are called last, in ASCIIbetical order.
 
 This method B<does not return.>
 

@@ -164,7 +164,8 @@ L<App::Ack|App::Ack> configuration data.
 =item Global configuration file.
 
 This optional file is named F<ackxprc>, and lives in the directory
-reported by the L<global()|/global> method.
+reported by the L<App::AckX::Preflight|App::AckX::Preflight>
+L<global()|App::AckX::Preflight/global> method.
 
 This configuration file is ignored if C<--noenv> is specified.
 

@@ -708,7 +708,7 @@ is:
 
 =item syntax-type
 
-See L<-syntax-type|/-syntax-type> above.
+See C<-syntax-type> above.
 
 =back
 
