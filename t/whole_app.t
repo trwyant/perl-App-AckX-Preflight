@@ -7,11 +7,14 @@ use warnings;
 
 use Test::More 0.88;	# Because of done_testing();
 
-unless ( -x 'ackxp-standalone' ) {
-    system { 'perl' } qw{ perl -Mblib tools/squash -o ackxp-standalone };
+use constant ACKXP_STANDALONE	=> 'ackxp-standalone';
+
+if ( need_to_regenerate_ackxp_standalone() ) {
+    note 'Regenerating ', ACKXP_STANDALONE;
+    system { 'perl' } qw{ perl -Mblib tools/squash -o }, ACKXP_STANDALONE;
 }
 
-foreach my $app ( qw{ script/ackxp ackxp-standalone } ) {
+foreach my $app ( 'script/ackxp', ACKXP_STANDALONE ) {
     -x $app
 	or next;
 
@@ -47,6 +50,18 @@ EOD
 }
 
 done_testing;
+
+# We need to regenerate ackxp-standalone if:
+# * It does not exist, or
+# * App::Ack is newer.
+sub need_to_regenerate_ackxp_standalone {
+    -x ACKXP_STANDALONE
+	or return 1;
+    my $ackxp_mv = ( stat _ )[9];
+    require App::Ack;
+    my $ack_mv = ( stat $INC{'App/Ack.pm'} )[9];
+    return $ackxp_mv < $ack_mv;
+}
 
 sub xqt {
     my @arg = @_;
