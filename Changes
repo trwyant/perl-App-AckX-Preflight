@@ -1,11 +1,17 @@
+0.000_025	2019-08-10	T. R. Wyant
+    Add Python syntax.
+
+    Regenerate ackxp-standalone on App::Ack install as well as if it
+    does not exist.
+
+    Include eg/ and tools/ in POD link check.
+
 0.000_024	2019-06-10	T. R. Wyant
     Fix broken POD links and add test to ensure they stay fixed.
 
     Update embedded File::Which
 
 0.000_023	2019-02-25	T. R. Wyant
-    Update copyright to 2019.
-
     Fix typos.
 
 0.000_022	2018-08-30	T. R. Wyant
