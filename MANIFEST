@@ -31,6 +31,7 @@ lib/App/AckX/Preflight/Syntax/Make.pm
 lib/App/AckX/Preflight/Syntax/Ocaml.pm
 lib/App/AckX/Preflight/Syntax/Pascal.pm
 lib/App/AckX/Preflight/Syntax/Perl.pm
+lib/App/AckX/Preflight/Syntax/Python.pm
 lib/App/AckX/Preflight/Syntax/Shell.pm
 lib/App/AckX/Preflight/Syntax/SQL.pm
 lib/App/AckX/Preflight/Syntax/Swift.pm
@@ -72,6 +73,7 @@ t/data/ocaml_file.ml
 t/data/make_file.mak
 t/data/pascal_file.pas
 t/data/perl_file.PL
+t/data/python_file.py
 t/data/shell_file.sh
 t/data/sql_file.sql
 t/data/swift_file.swift
@@ -102,6 +104,7 @@ t/syntax_make.t
 t/syntax_ocaml.t
 t/syntax_pascal.t
 t/syntax_perl.t
+t/syntax_python.t
 t/syntax_shell.t
 t/syntax_sql.t
 t/syntax_swift.t

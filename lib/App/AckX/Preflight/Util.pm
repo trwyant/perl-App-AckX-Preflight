@@ -101,6 +101,7 @@ BEGIN {
 	App::AckX::Preflight::Syntax::Ocaml
 	App::AckX::Preflight::Syntax::Pascal
 	App::AckX::Preflight::Syntax::Perl
+	App::AckX::Preflight::Syntax::Python
 	App::AckX::Preflight::Syntax::SQL
 	App::AckX::Preflight::Syntax::Shell
 	App::AckX::Preflight::Syntax::Swift
