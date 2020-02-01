@@ -3,14 +3,14 @@ package main;
 use strict;
 use warnings;
 
-use ExtUtils::Manifest qw{maniread};
-use Test::More 0.88;
+use Test2::V0;
+use Test2::Tools::LoadModule;
+
+load_module_or_skip_all 'ExtUtils::Manifest', undef, [ 'maniread' ];
 
 my $manifest = maniread();
 
 foreach ( sort keys %{ $manifest } ) {
-    m{ \A bin / }smx
-	and next;
     m{ \A eg / }smx
 	and next;
     m{ \A script / }smx
@@ -27,13 +27,12 @@ sub is_executable {
     my @stat = stat $_;
     $stat[2] & oct(111)
 	and return 1;
-# I now think the following is irrelevant, because the shebang line only
-# gets read if the execute bit is on.
-#    open my $fh, '<', $_ or die "Unable to open $_: $!\n";
-#    local $_ = <$fh>;
-#    close $fh;
-#    return m{ \A [#]! .* perl }smx;
-    return;
+    m| \A t/data |smx
+	and return 0;
+    open my $fh, '<', $_ or die "Unable to open $_: $!\n";
+    local $_ = <$fh>;
+    close $fh;
+    return m{ \A [#]! .* perl }smx;
 }
 
 1;

@@ -9,7 +9,7 @@ use App::AckX::Preflight;
 use App::AckX::Preflight::Util qw{ :ref };
 use Cwd qw{ abs_path };
 use ExtUtils::Manifest qw{ maniread };
-use Test::More 0.88;	# Because of done_testing();
+use Test2::V0;
 
 use lib qw{ inc };
 use My::Module::Preflight;
@@ -19,7 +19,7 @@ my @manifest = sort keys %{ maniread() };
 
 my $got;
 
-is_deeply [ My::Module::Preflight->__plugins() ],
+is [ My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
@@ -27,11 +27,11 @@ is_deeply [ My::Module::Preflight->__plugins() ],
 	} ],
     'Plugins';
 
-is_deeply xqt( qw{ --noenv A B C } ),
+is xqt( qw{ --noenv A B C } ),
     [ qw{ perl -S ack --noenv A B C } ],
     'No reversal by default';
 
-is_deeply xqt( qw{ --noenv --file t/data/foo } ),
+is xqt( qw{ --noenv --file t/data/foo } ),
     [ qw{ perl -S ack --match (?i:\bfoo\b) --noenv } ],
     '--file t/data/foo';
 
@@ -40,14 +40,14 @@ SKIP: {
     '5.010' le $]
 	or skip( "Perl 5.10 required; this is $]", 1 );
 
-    is_deeply xqt( qw{ --noenv --file t/data/fubar } ),
+    is xqt( qw{ --noenv --file t/data/fubar } ),
 	[ qw{ perl -S ack --match (?|(?i:\bfu\b)|(?i:\bbar\b)) --noenv } ],
 	'--file t/data/fubar';
 }
 
 # Test combining plug-ins.
 
-is_deeply xqt( qw{ --noenv --ackxprc t/data/ackxprc } ),
+is xqt( qw{ --noenv --ackxprc t/data/ackxprc } ),
     [ qw{ perl -S ack --from=t/data/ackxprc --noenv } ],
     '--ackxprc t/data/ackxprc';
 
@@ -83,7 +83,7 @@ SKIP: {
 
     local $ENV{ACKXP_OPTIONS} = '--ackxp-options=ACKXP_OPTIONS';
 
-    is_deeply xqt( $aaxp, qw{ --command-line } ),
+    is xqt( $aaxp, qw{ --command-line } ),
 	[ qw{
 	    perl
 	    -S
@@ -93,12 +93,11 @@ SKIP: {
 	    --project=t/data/project/_ackxprc
 	    --ackxp-options=ACKXP_OPTIONS
 	    --command-line } ],
-	'Pick up configuration'
-	    or diag 'Got ', explain xqt( $aaxp, qw{ fubar } );
+	'Pick up configuration';
 
     local $ENV{ACKXPRC} = $ackxprc;
 
-    is_deeply xqt( $aaxp, qw{ --command-line } ),
+    is xqt( $aaxp, qw{ --command-line } ),
 	[ qw{
 	    perl
 	    -S
@@ -107,12 +106,11 @@ SKIP: {
 	    --project=t/data/project/_ackxprc
 	    --ackxp-options=ACKXP_OPTIONS
 	    --command-line } ],
-	'ACKXPRC plus deduplicaiton'
-	    or diag 'Got ', explain xqt( $aaxp, qw{ fubar } );
+	'ACKXPRC plus deduplicaiton';
 }
 
 $got = xqt( qw{ --noenv --syntax=code } );
-is_deeply $got,
+is $got,
     [ qw{
 	perl
 	-Mblib
@@ -121,11 +119,10 @@ is_deeply $got,
 	ack
 	--noenv
 	} ],
-    '--noenv --syntax=code'
-	or diag 'Got ', explain $got;
+    '--noenv --syntax=code';
 
 $got = xqt( qw{ --noenv --syntax data } );
-is_deeply $got,
+is $got,
     [ qw{
 	perl
 	-Mblib
@@ -134,11 +131,10 @@ is_deeply $got,
 	ack
 	--noenv
 	} ],
-    '--noenv --syntax=data'
-	or diag 'Got ', explain $got;
+    '--noenv --syntax=data';
 
 $got = xqt( qw{ --noenv --syntax doc } );
-is_deeply $got,
+is $got,
     [ qw{
 	perl
 	-Mblib
@@ -147,12 +143,11 @@ is_deeply $got,
 	ack
 	--noenv
 	} ],
-    '--noenv --syntax=doc'
-	or diag 'Got ', explain $got;
+    '--noenv --syntax=doc';
 
 {
     $got = xqt( qw{ --noenv --syntax code;doc } );
-    is_deeply $got,
+    is $got,
 	[ qw{
 	    perl
 	    -Mblib
@@ -161,12 +156,11 @@ is_deeply $got,
 	    ack
 	    --noenv
 	    } ],
-	'--noenv --syntax code;doc'
-	    or diag 'Got ', explain $got;
+	'--noenv --syntax code;doc';
 }
 
 $got = xqt( qw{ --noenv --syntax=code:data:doc } );
-is_deeply $got,
+is $got,
     [ qw{
 	perl
 	-Mblib
@@ -175,8 +169,7 @@ is_deeply $got,
 	ack
 	--noenv
 	} ],
-    '--noenv --syntax=code:data:doc'
-	or diag 'Got ', explain $got;
+    '--noenv --syntax=code:data:doc';
 
 done_testing;
 

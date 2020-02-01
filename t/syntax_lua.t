@@ -8,7 +8,7 @@ use warnings;
 use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Lua;
 use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test::More 0.88;	# Because of done_testing();
+use Test2::V0;
 
 use lib qw{ inc };
 use My::Module::TestSyntax;	# for slurp() and TEXT_*
@@ -76,7 +76,7 @@ $App::Ack::mappings{lua} = [
 
 my $resource = ACK_FILE_CLASS->new( LUA_FILE );
 
-is_deeply [ SYNTAX_FILTER->__handles_type() ],
+is [ SYNTAX_FILTER->__handles_type() ],
     [ qw{ lua } ],
     sprintf '%s handles lua', SYNTAX_FILTER;
 

@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight;
-use Test::More 0.88;	# Because of done_testing();
+use Test2::V0;
 
 use lib qw{ inc };
 use My::Module::Preflight;
@@ -14,14 +14,13 @@ use My::Module::Preflight;
 use constant PACKAGE	=> 'My::Module::Preflight';
 
 
-is_deeply [ sort My::Module::Preflight->__plugins() ],
+is [ sort My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
-    'Plugins'
-	or diag explain [ App::AckX::Preflight->__plugins() ];
+    'Plugins';
 
 {
     # DANGER WILL ROBINSON! ENCAPSULATION VIOLATION!
@@ -30,16 +29,15 @@ is_deeply [ sort My::Module::Preflight->__plugins() ],
 	    'App::AckX::Preflight::Plugin::File'	=> 1,
 	},
     }, PACKAGE;
-    is_deeply [ sort $aapx->__plugins() ],
+    is [ sort $aapx->__plugins() ],
 	[ qw{
 	    App::AckX::Preflight::Plugin::Expand
 	    App::AckX::Preflight::Plugin::Syntax
 	    } ],
-	'Plugins with File disabled'
-	    or diag explain [ App::AckX::Preflight->__plugins() ];
+	'Plugins with File disabled';
 }
 
-is_deeply marshal( qw{ A B C } ),
+is marshal( qw{ A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
@@ -49,28 +47,28 @@ is_deeply marshal( qw{ A B C } ),
 
 =begin comment
 
-is_deeply marshal( qw{ --manifest A B C } ),		# FilesFrom
+is marshal( qw{ --manifest A B C } ),		# FilesFrom
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
     '--manifest ignored';
 
-is_deeply marshal( qw{ --nomanifest A B C } ),		# FilesFrom
+is marshal( qw{ --nomanifest A B C } ),		# FilesFrom
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
     '--nomanifest ignored';
 
-is_deeply marshal( qw{ --no-manifest A B C } ),		# FilesFrom
+is marshal( qw{ --no-manifest A B C } ),		# FilesFrom
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
     '--no-manifest ignored';
 
-is_deeply marshal( qw{ --manifest --file x A B C } ),	# FilesFrom
+is marshal( qw{ --manifest --file x A B C } ),	# FilesFrom
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Syntax
@@ -81,7 +79,7 @@ is_deeply marshal( qw{ --manifest --file x A B C } ),	# FilesFrom
 
 =cut
 
-is_deeply marshal( qw{ --file x --manifest A B C } ),
+is marshal( qw{ --file x --manifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Expand
@@ -89,7 +87,7 @@ is_deeply marshal( qw{ --file x --manifest A B C } ),
 	} ],
     '--file x --manifest uses that order';
 
-is_deeply marshal( qw{ --manifest --file x --no-manifest A B C } ),
+is marshal( qw{ --manifest --file x --no-manifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Expand
@@ -97,7 +95,7 @@ is_deeply marshal( qw{ --manifest --file x --no-manifest A B C } ),
 	} ],
     '--manifest --file x --no-manifest pulls File to front';
 
-is_deeply marshal( qw{ --syntax=code A B C } ),
+is marshal( qw{ --syntax=code A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::Syntax
 	App::AckX::Preflight::Plugin::Expand

@@ -9,7 +9,7 @@ use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Perl;
 use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Scalar::Util qw{ blessed openhandle };
-use Test::More 0.88;	# Because of done_testing();
+use Test2::V0;
 
 use lib qw{ inc };
 use My::Module::TestSyntax;	# for slurp() and TEXT_*
@@ -58,12 +58,12 @@ my $perl_resource = ACK_FILE_CLASS->new( PERL_FILE );
 
 my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
 
-is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ parrot perl perltest } ],
+is [ SYNTAX_FILTER->__handles_type() ], [ qw{ parrot perl perltest } ],
     sprintf '%s handles parrot, perl, perltest', SYNTAX_FILTER;
 
 SYNTAX_FILTER->import( qw{ -syntax-add perlpod } );
 
-is_deeply [ SYNTAX_FILTER->__handles_type() ],
+is [ SYNTAX_FILTER->__handles_type() ],
     [ qw{ parrot perl perltest perlpod } ],
     sprintf 'Added perlpod to %s', SYNTAX_FILTER;
 

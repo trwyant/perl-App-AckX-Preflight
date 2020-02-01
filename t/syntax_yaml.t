@@ -8,7 +8,7 @@ use warnings;
 use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::YAML;
 use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test::More 0.88;	# Because of done_testing();
+use Test2::V0;
 
 use lib qw{ inc };
 use My::Module::TestSyntax;	# for slurp() and TEXT_*
@@ -45,7 +45,7 @@ $App::Ack::mappings{yaml} = [
 
 my $resource = ACK_FILE_CLASS->new( DATA_FILE );
 
-is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ yaml } ],
+is [ SYNTAX_FILTER->__handles_type() ], [ qw{ yaml } ],
     sprintf '%s handles yaml', SYNTAX_FILTER;
 
 

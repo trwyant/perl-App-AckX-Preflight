@@ -3,25 +3,23 @@ package main;
 use strict;
 use warnings;
 
-use Test::More 0.88;
+use Test2::V0;
+use Test2::Plugin::BailOnFail;
+use Test2::Tools::LoadModule;
 
-require_ok 'App::AckX::Preflight::Util'
-    or BAIL_OUT $@;
+load_module_ok 'App::AckX::Preflight::Util';
 
-can_ok 'App::AckX::Preflight::Util', qw{
+can_ok 'App::AckX::Preflight::Util', [ qw{
     ARRAY_REF HASH_REF SCALAR_REF
     SYNTAX_CODE SYNTAX_COMMENT SYNTAX_DATA SYNTAX_DOCUMENTATION
 	SYNTAX_OTHER
     __die __err_exclusive __file_id
     __getopt __getopt_for_plugin __open_for_read __warn
-    }
-    or BAIL_OUT;
+    } ];
 
-require_ok 'App::AckX::Preflight'
-    or BAIL_OUT $@;
+load_module_ok 'App::AckX::Preflight';
 
-can_ok 'App::AckX::Preflight', qw{ new global home run }
-    or BAIL_OUT;
+can_ok 'App::AckX::Preflight', [ qw{ new global home run } ];
 
 note 'Plugins';
 
@@ -36,16 +34,15 @@ foreach ( qw{
 
     my $in_service = ( $class =~ s/ \A - //smx ) ? 0 : 1;
 
-    require_ok $class
-	or BAIL_OUT $@;
+    load_module_ok $class;
 
-    can_ok $class, qw{
+    can_ok $class, [ qw{
 	IN_SERVICE
 	__normalize_options
 	__options
 	__peek_opt
 	__process
-    };
+    } ];
 
     cmp_ok $class->IN_SERVICE, '==', $in_service,
 	"$class is@{[ $in_service ? ' ' : ' not ' ]}in service";
@@ -87,10 +84,9 @@ foreach ( qw{
 
     my $in_service = ( $class =~ s/ \A - //smx ) ? 0 : 1;
 
-    require_ok $class
-	or BAIL_OUT $@;
+    load_module_ok $class;
 
-    can_ok $class, qw{
+    can_ok $class, [ qw{
 	IN_SERVICE
 	IS_EXHAUSTIVE
 	__get_syntax_opt
@@ -101,8 +97,7 @@ foreach ( qw{
 	__plugins
 	__want_everything
 	__want_syntax
-    }
-	or BAIL_OUT;
+    } ];
 
     cmp_ok $class->IN_SERVICE, '==', $in_service,
 	"$class is@{[ $in_service ? ' ' : ' not ' ]}in service";

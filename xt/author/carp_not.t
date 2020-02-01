@@ -7,7 +7,8 @@ use warnings;
 
 use ExtUtils::Manifest qw{ maniread };
 use App::AckX::Preflight::Util qw{ @CARP_NOT };
-use Test::More 0.88;	# Because of done_testing();
+use Test2::V0;
+use Test2::Tools::LoadModule;
 
 my %carp_allowed = map { $_ => 1 } qw{
     App::AckX::Preflight::Util
@@ -23,7 +24,7 @@ foreach my $fn ( sort keys %{ maniread() } ) {
     s< / ><::>smxg;
     push @modules, $_;
 
-    require_ok $_;	# Redundant with t/basic.t, but loads module.
+    load_module_ok $_;	# Redundant with t/basic.t, but loads module.
 
     SKIP: {
 	$_->can( 'IN_SERVICE' )
@@ -45,11 +46,11 @@ foreach my $fn ( sort keys %{ maniread() } ) {
 	my $content = <$fh>;
 	close $fh;
 
-	ok $content !~ m/ \b use \s+ Carp \b /smx,
+	unlike $content, qr/ \b use \s+ Carp \b /smx,
 	    "$_ should not 'use Carp;'";
     }
 }
-is_deeply \@CARP_NOT, \@modules,
+is \@CARP_NOT, \@modules,
     'Ensure that @App::AckX::Preflight::Util::CARP_NOT is correct';
 
 done_testing;

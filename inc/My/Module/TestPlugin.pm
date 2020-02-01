@@ -18,7 +18,7 @@ our $VERSION = '0.000_025';
 sub prs {
     local @ARGV = @_;
     my $caller = caller;
-    my $opt = __getopt_for_plugin( $caller->PLUGIN() );
+    my $opt = __getopt_for_plugin( $caller->CLASS() );
     return ( $opt, @ARGV );
 }
 
@@ -29,7 +29,7 @@ sub xqt {
 	shift @ARGV :
 	App::AckX::Preflight->new();
     my $opt = HASH_REF eq ref $ARGV[0] ? shift @ARGV : {};
-    $caller->PLUGIN()->__process( $aaxp, $opt );
+    $caller->CLASS()->__process( $aaxp, $opt );
     return ( @ARGV );
 }
 
@@ -65,7 +65,7 @@ The following subroutines are exported by default:
 
 This subroutine is just a convenience wrapper for
 L<__getopt_for_plugin()|App::AckX::Preflight::Util/__getopt_for_plugin>.
-The plugin class name is obtained from manifest constant C<PLUGIN>,
+The plugin class name is obtained from manifest constant C<CLASS>,
 defined in the caller. Arguments if any are loaded into a localized
 @ARGV. The return is the options hash and anything that was left in
 C<@ARGV> after the parse.
@@ -80,7 +80,7 @@ This subroutine loads C<@argv> into a localized C<@ARGV>, and then calls
 
 on the plugin. It returns whatever was left in C<@ARGV> after the call.
 
-The plugin class name is obtained from manifest constant C<PLUGIN>,
+The plugin class name is obtained from manifest constant C<CLASS>,
 
 The first argument is the desired instance of
 L<App::AckX::Preflight|App::AckX::Preflight> to pass to the plugin. If

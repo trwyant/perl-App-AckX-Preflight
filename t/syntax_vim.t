@@ -8,7 +8,7 @@ use warnings;
 use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Vim;
 use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test::More 0.88;	# Because of done_testing();
+use Test2::V0;
 
 use lib qw{ inc };
 use My::Module::TestSyntax;	# for slurp() and TEXT_*
@@ -38,7 +38,7 @@ $App::Ack::mappings{vim} = [
 
 my $resource = ACK_FILE_CLASS->new( VIM_FILE );
 
-is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ vim } ],
+is [ SYNTAX_FILTER->__handles_type() ], [ qw{ vim } ],
     sprintf '%s handles vim', SYNTAX_FILTER;
 
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );

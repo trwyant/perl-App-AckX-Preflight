@@ -8,7 +8,7 @@ use warnings;
 use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Ada;
 use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test::More 0.88;	# Because of done_testing();
+use Test2::V0;
 
 use lib qw{ inc };
 use My::Module::TestSyntax;	# for slurp() and TEXT_*
@@ -66,7 +66,7 @@ my $shell_resource = ACK_FILE_CLASS->new( ADA_FILE );
 
 my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
 
-is_deeply [ SYNTAX_FILTER->__handles_type() ], [ qw{ ada } ],
+is [ SYNTAX_FILTER->__handles_type() ], [ qw{ ada } ],
     sprintf '%s handles ada', SYNTAX_FILTER;
 
 SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );

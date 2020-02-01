@@ -6,18 +6,12 @@ use strict;
 use warnings;
 
 use ExtUtils::MakeMaker;
-use Test::More 0.88;	# Because of done_testing();
+use Test2::V0;
+use Test2::Tools::LoadModule;
 
-BEGIN {
-    local $@ = undef;
-    eval {
-	require Module::CheckVersion;
-	Module::CheckVersion->import( qw{ check_module_version } );
-	1;
-    } or plan skip_all => 'Module::CheckVersion needed for test';
+use lib qw{ inc };	# Ensure we find the File::Which in inc/.
 
-    unshift @INC, 'inc';	# Ensure our module is found first
-}
+load_module_or_skip_all 'Module::CheckVersion';
 
 SKIP: {
     my $rslt = eval {

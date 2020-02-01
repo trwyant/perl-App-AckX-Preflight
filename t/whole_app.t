@@ -5,7 +5,7 @@ use 5.008008;
 use strict;
 use warnings;
 
-use Test::More 0.88;	# Because of done_testing();
+use Test2::V0;
 
 use constant ACKXP_STANDALONE	=> 'ackxp-standalone';
 

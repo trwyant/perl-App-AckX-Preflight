@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight;
-use Test::More 0.88;	# Because of done_testing();
+use Test2::V0;
 
 use constant WANT_VERSION	=>
 "App::AckX::Preflight $App::AckX::Preflight::VERSION

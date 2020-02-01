@@ -22,7 +22,9 @@ sub build_requires {
 	'App::Ack::Filter::Extension'	=> 0,
 	'lib'		=> 0,		# To load inc/ stuff.
 	'Scalar::Util'	=> 0,		# For blessed(), openhandle().
-	'Test::More'	=> 0.88,	# Because of done_testing().
+	'Test2::V0'		=> 0,
+	'Test2::Plugin::BailOnFail'	=> 0,
+	'Test2::Tools::LoadModule'	=> 0,
     };
 }
 
