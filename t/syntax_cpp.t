@@ -38,7 +38,7 @@ use constant CPP_COMMENT	=> <<'EOD';
   19: /*
   20:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
   21:  *
-  22:  * Copyright (C) 2018-2019 by Thomas R. Wyant, III
+  22:  * Copyright (C) 2018-2020 by Thomas R. Wyant, III
   23:  *
   24:  * This program is distributed in the hope that it will be useful, but
   25:  * without any warranty; without even the implied warranty of

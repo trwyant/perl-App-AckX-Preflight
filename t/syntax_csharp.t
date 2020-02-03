@@ -33,7 +33,7 @@ use constant CSHARP_COMMENT	=> <<'EOD';
   12: /*
   13:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
   14:  *
-  15:  * Copyright (C) 2018-2019 by Thomas R. Wyant, III
+  15:  * Copyright (C) 2018-2020 by Thomas R. Wyant, III
   16:  *
   17:  * This program is distributed in the hope that it will be useful, but
   18:  * without any warranty; without even the implied warranty of
@@ -63,7 +63,7 @@ use constant CSHARP_CODE_COMMENT_DOC => <<'EOD';
   12: /*
   13:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
   14:  *
-  15:  * Copyright (C) 2018-2019 by Thomas R. Wyant, III
+  15:  * Copyright (C) 2018-2020 by Thomas R. Wyant, III
   16:  *
   17:  * This program is distributed in the hope that it will be useful, but
   18:  * without any warranty; without even the implied warranty of

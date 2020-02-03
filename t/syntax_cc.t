@@ -32,7 +32,7 @@ use constant CC_COMMENTS	=> <<'EOD';
    9: /*
   10:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
   11:  *
-  12:  * Copyright (C) 2018-2019 by Thomas R. Wyant, III
+  12:  * Copyright (C) 2018-2020 by Thomas R. Wyant, III
   13:  *
   14:  * This program is distributed in the hope that it will be useful, but
   15:  * without any warranty; without even the implied warranty of
@@ -54,7 +54,7 @@ use constant CC_CODE_COMMENTS => <<'EOD';
    9: /*
   10:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
   11:  *
-  12:  * Copyright (C) 2018-2019 by Thomas R. Wyant, III
+  12:  * Copyright (C) 2018-2020 by Thomas R. Wyant, III
   13:  *
   14:  * This program is distributed in the hope that it will be useful, but
   15:  * without any warranty; without even the implied warranty of
