@@ -1,3 +1,15 @@
+0.000_026	2020-02-03	T. R. Wyant
+
+    Fix tools/squash for older Perls. The problem was that I was trying
+    to define a constant in someone else's name space. Newer constant.pm
+    modules accept a fully-qualified name, but older ones do not.
+
+    Convert testing to Test2::V0 and Test2::Tools::LoadModule.
+
+    Suppress warning when ackxp-standalone uses ack, not ack-standalone.
+
+    Eliminate redirections in POD URL links
+
 0.000_025	2019-08-10	T. R. Wyant
     Add Python syntax.
 

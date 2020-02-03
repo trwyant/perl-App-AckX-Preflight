@@ -22,7 +22,7 @@ BEGIN {
 
     @ISA = qw{ App::AckX::Preflight::Syntax::_single_line_comments };
 
-    $VERSION = '0.000_025';
+    $VERSION = '0.000_026';
 
     __PACKAGE__->__handles_type_mod( qw{ set vim } );
 }

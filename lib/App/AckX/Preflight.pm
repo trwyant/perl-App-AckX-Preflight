@@ -25,7 +25,7 @@ BEGIN {
 
     App::AckX::Preflight::Util->import( ':all' );
 
-    $VERSION = '0.000_025';
+    $VERSION = '0.000_026';
     $COPYRIGHT = 'Copyright (C) 2018-2020 by Thomas R. Wyant, III';
 
     IS_WINDOWS
