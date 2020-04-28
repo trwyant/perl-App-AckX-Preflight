@@ -5,7 +5,7 @@ use warnings;
 
 use Test2::V0;
 use Test2::Plugin::BailOnFail;
-use Test2::Tools::LoadModule;
+use Test2::Tools::LoadModule 0.002;	# For all_modules_tried_ok
 
 load_module_ok 'App::AckX::Preflight::Util';
 
@@ -103,6 +103,8 @@ foreach ( qw{
 	"$class is@{[ $in_service ? ' ' : ' not ' ]}in service";
 
 }
+
+all_modules_tried_ok;
 
 done_testing;
 

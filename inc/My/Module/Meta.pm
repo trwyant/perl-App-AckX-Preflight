@@ -24,7 +24,7 @@ sub build_requires {
 	'Scalar::Util'	=> 0,		# For blessed(), openhandle().
 	'Test2::V0'		=> 0,
 	'Test2::Plugin::BailOnFail'	=> 0,
-	'Test2::Tools::LoadModule'	=> 0,
+	'Test2::Tools::LoadModule'	=> 0.002, # for all_modules_tried_ok
     };
 }
 
