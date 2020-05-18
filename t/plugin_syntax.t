@@ -23,7 +23,7 @@ is \@got,
 
 
 @got = CLASS->__peek_opt();
-is \@got, [],
+is \@got, [ qw{ match=s } ],
     'Peek options';
 
 

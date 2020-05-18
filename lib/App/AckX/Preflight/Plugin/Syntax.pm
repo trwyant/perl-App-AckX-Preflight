@@ -34,6 +34,10 @@ sub __options {
     return( qw{ syntax=s@ syntax-type! syntax-wc! } );
 }
 
+sub __peek_opt {
+    return( qw{ match=s } );
+}
+
 sub __process {
     my ( undef, $aaxp, $opt ) = @_;
     $opt->{syntax}
@@ -45,7 +49,7 @@ sub __process {
     my @arg = App::AckX::Preflight::Syntax->__get_syntax_opt( \@ARGV, $opt );
 
     if ( $opt->{'syntax-type'} || $opt->{'syntax-wc'} ) {
-	grep { m/ \A --match \z /smx } @ARGV
+	$opt->{match}
 	    or splice @ARGV, 0, 0, qw{ --match (?:) };
     }
 
