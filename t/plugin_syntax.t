@@ -18,7 +18,7 @@ my @want;
 
 @got = CLASS->__options();
 is \@got,
-    [ qw{ syntax=s@ syntax-type! } ],
+    [ qw{ syntax=s@ syntax-type! syntax-wc! } ],
     'Options';
 
 

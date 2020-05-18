@@ -31,7 +31,7 @@ BEGIN {
 }
 
 sub __options {
-    return( qw{ syntax=s@ syntax-type! } );
+    return( qw{ syntax=s@ syntax-type! syntax-wc! } );
 }
 
 sub __process {
@@ -39,9 +39,15 @@ sub __process {
     $opt->{syntax}
 	and @{ $opt->{syntax} }
 	or $opt->{'syntax-type'}
+	or $opt->{'syntax-wc'}
 	or return;
 
     my @arg = App::AckX::Preflight::Syntax->__get_syntax_opt( \@ARGV, $opt );
+
+    if ( $opt->{'syntax-type'} || $opt->{'syntax-wc'} ) {
+	grep { m/ \A --match \z /smx } @ARGV
+	    or splice @ARGV, 0, 0, qw{ --match (?:) };
+    }
 
     if ( IS_SINGLE_FILE ) {
 	App::AckX::Preflight::Syntax->__hot_patch();
@@ -127,10 +133,20 @@ actually supported, and what syntax types are available for each.
 If this Boolean option is asserted, the four-letter syntax type of each
 line is prepended to that line.
 
-If you are trying to get a dump of the syntax types of a file, remember
-that because this is C<ack>, you must specify a pattern. Something like
-C<'.'> will be useful here.
+B<Note> that if you also want to search for a pattern you must specify
+the pattern with C<--match>. If this plugin does not see a C<--match> it
+supplies one that matches anything.
 
+=head2 --syntax-wc
+
+If this Boolean option is asserted, the number of characters, words, and
+lines of each syntax type will be appended to the output.
+
+B<Note> that a word is defined to be anything that matches C</\S+/>.
+
+B<Note> that if you also want to search for a pattern you must specify
+the pattern with C<--match>. If this plugin does not see a C<--match> it
+supplies one that matches anything.
 
 =head1 SEE ALSO
 

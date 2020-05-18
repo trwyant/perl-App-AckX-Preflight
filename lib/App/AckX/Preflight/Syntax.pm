@@ -62,14 +62,14 @@ sub __get_syntax_opt {
 	'syntax-add=s'	=> $mod_syntax,
 	'syntax-del=s'	=> $mod_syntax,
 	'syntax-set=s'	=> $mod_syntax,
-	qw{ syntax=s@ syntax-type! },
+	qw{ syntax=s@ syntax-type! syntax-wc! },
     );
     if ( $strict && @{ $arg } ) {
 	local $" = ', ';
 	__die( "Unsupported arguments @{ $arg }" );
     }
     $class->__normalize_options( $opt );
-    %SYNTAX_OPT  = map { $_ => $opt->{$_} } qw{ syntax-type };
+    %SYNTAX_OPT  = map { $_ => $opt->{$_} } qw{ syntax-type syntax-wc };
     %WANT_SYNTAX = map { $_ => 1 } @{ $opt->{syntax} || [] };
     foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
 	my ( $filter, $mod, @val ) = @{ $_ };
@@ -83,8 +83,10 @@ sub __get_syntax_opt {
     $opt->{syntax}
 	and @{ $opt->{syntax} }
 	and push @arg, '-syntax=' . join( ':', @{ $opt->{syntax} } );
-    $opt->{'syntax-type'}
-	and push @arg, '-syntax-type';
+    foreach my $name ( qw{ syntax-type syntax-wc } ) {
+	$opt->{$name}
+	    and push @arg, "-$name";
+    }
     foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
 	my ( undef, $mod, @val ) = @{ $_ };
 	local $" = ':';
@@ -186,7 +188,28 @@ sub FILL {
 	    or next;
 	$attr->{syntax_type}
 	    and $_ = join ':', substr( $type, 0, 4 ), $_;
+	if ( $attr->{syntax_wc} ) {
+	    my $info = $attr->{syntax_wc}{$type} ||= {};
+	    $info->{char} += length;
+	    # It would be more natural to just call split() in scalar
+	    # context, but that walks on @_ in Perls before 5.11. It's
+	    # use an intermediate array of localize @_.
+	    # my @words = split qr< \s+ >smx;
+	    # $info->{word} += @words;
+	    $info->{word} += scalar( () = m/ ( \S+ ) /smxg );
+	    $info->{line} += 1;
+	}
 	return $_;
+    }
+    if ( $attr->{syntax_wc} ) {
+	if ( my @keys = sort keys %{ $attr->{syntax_wc} } ) {
+	    my $type = shift @keys;
+	    my $info = delete $attr->{syntax_wc}{$type};
+	    my $t = substr $type, 0, 4;
+	    $. += 1;	# Because ack uses this to generate line numbers
+	    return "$t:\t$info->{line}\t$info->{word}\t$info->{char}\n";
+	}
+	delete $attr->{syntax_wc};
     }
     return;
 }
@@ -199,6 +222,8 @@ sub PUSHED {
     my $attr = $self->__my_attr();
     $attr->{syntax_type} = $syntax_opt->{'syntax-type'};
     $attr->{want} = $self->__want_syntax();
+    $syntax_opt->{'syntax-wc'}
+	and $attr->{syntax_wc} = {};
     $self->__init();
     return $self;
 }
@@ -310,7 +335,7 @@ sub __want_syntax {
     my ( $class ) = @_;
     keys %WANT_SYNTAX
 	and return \%WANT_SYNTAX;
-    $SYNTAX_OPT{'syntax-type'}
+    ( $SYNTAX_OPT{'syntax-type'} || $SYNTAX_OPT{'syntax-wc'} )
 	and return { map { $_ => 1 } $class->__handles_syntax() };
     return {};
 }
@@ -362,11 +387,14 @@ use constant SYNTAX_FILTER_LAYER =>
 		# Open the file.
 		my $fh = $open->( $self );
 
-		# If we want everything and we're not reporting syntax types
-		# we don't need the filter.
-		$syntax->__want_everything()
-		    and not $syntax->__syntax_opt()->{'syntax-type'}
-		    and return $fh;
+		# If we want everything and we're not reporting syntax
+		# types or word count we don't need the filter.
+		if ( $syntax->__want_everything() ) {
+		    my $opt = $syntax->__syntax_opt();
+		    $opt->{'syntax-type'}
+			or $opt->{'syntax-wc'}
+			or return $fh;
+		}
 
 		# Check to see if we're already on the PerlIO stack. If so,
 		# just return the file handle. The original open() is
@@ -498,6 +526,11 @@ here also.
 
 If asserted, this Boolean option requests that the syntax filters prefix
 each line returned with the syntax type computed for that line.
+
+=item -syntax-wc
+
+If asserted, this Boolean option requests that L<wc (1)>-style
+information on each syntax type be appended to the output.
 
 =back
 

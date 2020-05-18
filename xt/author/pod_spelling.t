@@ -32,5 +32,6 @@ preflight
 unabbreviated
 Vimscript
 VMS
+wc
 Wyant
 yaml
