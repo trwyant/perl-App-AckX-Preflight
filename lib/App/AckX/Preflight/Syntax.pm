@@ -62,14 +62,16 @@ sub __get_syntax_opt {
 	'syntax-add=s'	=> $mod_syntax,
 	'syntax-del=s'	=> $mod_syntax,
 	'syntax-set=s'	=> $mod_syntax,
-	qw{ syntax=s@ syntax-type! syntax-wc! },
+	qw{ syntax=s@ syntax-type! syntax-wc! syntax-wc-only! },
     );
     if ( $strict && @{ $arg } ) {
 	local $" = ', ';
 	__die( "Unsupported arguments @{ $arg }" );
     }
+    $opt->{'syntax-wc'} ||= $opt->{'syntax-wc-only'};
     $class->__normalize_options( $opt );
-    %SYNTAX_OPT  = map { $_ => $opt->{$_} } qw{ syntax-type syntax-wc };
+    %SYNTAX_OPT  = map { $_ => $opt->{$_} } qw{
+	syntax-type syntax-wc syntax-wc-only };
     %WANT_SYNTAX = map { $_ => 1 } @{ $opt->{syntax} || [] };
     foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
 	my ( $filter, $mod, @val ) = @{ $_ };
@@ -83,7 +85,7 @@ sub __get_syntax_opt {
     $opt->{syntax}
 	and @{ $opt->{syntax} }
 	and push @arg, '-syntax=' . join( ':', @{ $opt->{syntax} } );
-    foreach my $name ( qw{ syntax-type syntax-wc } ) {
+    foreach my $name ( qw{ syntax-type syntax-wc syntax-wc-only } ) {
 	$opt->{$name}
 	    and push @arg, "-$name";
     }
@@ -198,6 +200,8 @@ sub FILL {
 	    # $info->{word} += @words;
 	    $info->{word} += scalar( () = m/ ( \S+ ) /smxg );
 	    $info->{line} += 1;
+	    $attr->{syntax_wc_only}
+		and next;
 	}
 	return $_;
     }
@@ -224,6 +228,7 @@ sub PUSHED {
     $attr->{want} = $self->__want_syntax();
     $syntax_opt->{'syntax-wc'}
 	and $attr->{syntax_wc} = {};
+    $attr->{syntax_wc_only} = $syntax_opt->{'syntax-wc-only'};
     $self->__init();
     return $self;
 }

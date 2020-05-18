@@ -31,7 +31,8 @@ BEGIN {
 }
 
 sub __options {
-    return( qw{ syntax=s@ syntax-match! syntax-type! syntax-wc! } );
+    return( qw{ syntax=s@ syntax-match! syntax-type! syntax-wc!
+	syntax-wc-only! } );
 }
 
 sub __peek_opt {
@@ -44,7 +45,10 @@ sub __process {
 	and @{ $opt->{syntax} }
 	or $opt->{'syntax-type'}
 	or $opt->{'syntax-wc'}
+	or $opt->{'syntax-wc-only'}
 	or return;
+
+    $opt->{'syntax-wc'} ||= $opt->{'syntax-wc-only'};
 
     my @arg = App::AckX::Preflight::Syntax->__get_syntax_opt( \@ARGV, $opt );
 
@@ -161,7 +165,8 @@ different match expression.
 =head2 --syntax-wc
 
 If this Boolean option is asserted, the number of characters, words, and
-lines of each syntax type will be appended to the output.
+lines of each syntax type will be appended to the output. This option
+has no effect on files having unknown syntax.
 
 B<Note> that a word is defined to be anything that matches C</\S+/>. You
 may (or may not) find that the results of this option differ from
@@ -169,11 +174,19 @@ L<wc (1)> for this reason. In addition, users of operating systems that
 use C<< <cr><lf> >> as the line termination may find character counts to
 be low by one character per terminated line.
 
-B<Note> that C<ack> expects a match expression on the command line. If
-you want the whole file you can specify C<(?)> or something similar. You
-can also configure L<--syntax-match|/--syntax-match>, but if you do you
-will need to remember to specify C<--match> explicitly if you want a
+B<Note too> that C<ack> expects a match expression on the command line.
+If you want the whole file you can specify C<(?)> or something similar.
+You can also configure L<--syntax-match|/--syntax-match>, but if you do
+you will need to remember to specify C<--match> explicitly if you want a
 different match expression.
+
+=head2 --syntax-wc-only
+
+This Boolean option is like L<--syntax-wc|/--syntax-wc>, but it also
+suppresses output of the file begin analyzed, making the output more
+like L<wc (1)>.
+
+B<Note> that this option has no effect on files of unknown syntax.
 
 =head1 SEE ALSO
 
