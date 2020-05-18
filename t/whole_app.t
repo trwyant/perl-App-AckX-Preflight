@@ -23,7 +23,7 @@ foreach my $app ( 'script/ackxp', ACKXP_STANDALONE ) {
     xqt( $app, qw{ --noenv -syntax code -w Wyant lib/ }, <<'EOD' );
 lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018-2020 by Thomas R. Wyant, III';
 EOD
-    xqt( $app, qw{ --noenv -syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
+    xqt( $app, qw{ --noenv --syntax-match -syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
 meta:#!/usr/bin/env perl
 code:
 code:use strict;

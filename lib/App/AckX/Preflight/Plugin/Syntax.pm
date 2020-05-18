@@ -31,7 +31,7 @@ BEGIN {
 }
 
 sub __options {
-    return( qw{ syntax=s@ syntax-type! syntax-wc! } );
+    return( qw{ syntax=s@ syntax-match! syntax-type! syntax-wc! } );
 }
 
 sub __peek_opt {
@@ -48,9 +48,10 @@ sub __process {
 
     my @arg = App::AckX::Preflight::Syntax->__get_syntax_opt( \@ARGV, $opt );
 
-    if ( $opt->{'syntax-type'} || $opt->{'syntax-wc'} ) {
+    if ( $opt->{'syntax-match'} && (
+	    $opt->{'syntax-type'} || $opt->{'syntax-wc'} ) ) {
 	$opt->{match}
-	    or splice @ARGV, 0, 0, qw{ --match (?:) };
+	    or splice @ARGV, 0, 0, qw{ --match (?) };
     }
 
     if ( IS_SINGLE_FILE ) {
@@ -132,25 +133,47 @@ implemented, but the implementor is urged to think long and hard before
 doing so. See the documentation for these for what file types are
 actually supported, and what syntax types are available for each.
 
+=head2 --syntax-match
+
+If this Boolean option is asserted, C<--match (?)> will be inserted into
+the C<ack> command line if either L<--syntax-type|/--syntax-type> or
+L<--syntax-wc|/--syntax-wc> was seen but C<--match> was not.
+
+This is really more suitable for the configuration file than the command
+line, and was added because when I use L<--syntax-type|/--syntax-type> I
+generally want the whole file but forget to give C<ack> the necessary
+regular expression.
+
+If you assert this you will need to explicitly specify C<--match> if you
+want a different match expression.
+
 =head2 --syntax-type
 
 If this Boolean option is asserted, the four-letter syntax type of each
 line is prepended to that line.
 
-B<Note> that if you also want to search for a pattern you must specify
-the pattern with C<--match>. If this plugin does not see a C<--match> it
-supplies one that matches anything.
+B<Note> that C<ack> expects a match expression on the command line. If
+you want the whole file you can specify C<(?)> or something similar. You
+can also configure L<--syntax-match|/--syntax-match>, but if you do you
+will need to remember to specify C<--match> explicitly if you want a
+different match expression.
 
 =head2 --syntax-wc
 
 If this Boolean option is asserted, the number of characters, words, and
 lines of each syntax type will be appended to the output.
 
-B<Note> that a word is defined to be anything that matches C</\S+/>.
+B<Note> that a word is defined to be anything that matches C</\S+/>. You
+may (or may not) find that the results of this option differ from
+L<wc (1)> for this reason. In addition, users of operating systems that
+use C<< <cr><lf> >> as the line termination may find character counts to
+be low by one character per terminated line.
 
-B<Note> that if you also want to search for a pattern you must specify
-the pattern with C<--match>. If this plugin does not see a C<--match> it
-supplies one that matches anything.
+B<Note> that C<ack> expects a match expression on the command line. If
+you want the whole file you can specify C<(?)> or something similar. You
+can also configure L<--syntax-match|/--syntax-match>, but if you do you
+will need to remember to specify C<--match> explicitly if you want a
+different match expression.
 
 =head1 SEE ALSO
 
