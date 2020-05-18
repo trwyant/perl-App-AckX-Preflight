@@ -1,3 +1,16 @@
+0.000_027	2020-05-18	T. R. Wyant
+    Add --syntax-wc-only to suppress file output.
+
+    Add --syntax-match. If --match-type or --match-wc is present, this
+    causes the Syntax plug-in to generate --match '(?)' if no --match
+    option was specified on the command line.
+
+    Add option --syntax-wc to the syntax plug-in.
+
+    Add all_modules_tried_ok to t/basic.t
+
+    Add ProhibitEmptyAlternatives to auth perlcriticrc
+
 0.000_026	2020-02-03	T. R. Wyant
 
     Fix tools/squash for older Perls. The problem was that I was trying

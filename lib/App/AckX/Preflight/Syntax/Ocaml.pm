@@ -22,7 +22,7 @@ BEGIN {
 
     @ISA = qw{ App::AckX::Preflight::Syntax::_nesting };
 
-    $VERSION = '0.000_026';
+    $VERSION = '0.000_027';
 
     __PACKAGE__->__handles_type_mod( qw{ set ocaml } );
 }

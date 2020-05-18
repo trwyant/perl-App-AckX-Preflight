@@ -7,7 +7,7 @@ use warnings;
 
 use Carp;
 
-our $VERSION = '0.000_026';
+our $VERSION = '0.000_027';
 
 use App::AckX::Preflight;
 
