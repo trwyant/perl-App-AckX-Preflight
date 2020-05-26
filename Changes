@@ -1,3 +1,9 @@
+0.000_028	2020-05-26	T. R. Wyant
+    Add --syntax-empty-code-is-comment. Normally empty lines are
+    considered part of the syntax in which they are embedded. If this
+    Boolean option is asserted, empty code lines are considered
+    comments.
+
 0.000_027	2020-05-18	T. R. Wyant
     Add --syntax-wc-only to suppress file output.
 
