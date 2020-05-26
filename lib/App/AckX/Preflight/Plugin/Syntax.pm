@@ -137,6 +137,12 @@ implemented, but the implementor is urged to think long and hard before
 doing so. See the documentation for these for what file types are
 actually supported, and what syntax types are available for each.
 
+=head2 --syntax-empty-code-is-comment
+
+Normally, empty lines are considered part of whatever syntax contains
+them. If this Boolean option is asserted, empty code lines are
+considered to be comments.
+
 =head2 --syntax-match
 
 If this Boolean option is asserted, C<--match (?)> will be inserted into

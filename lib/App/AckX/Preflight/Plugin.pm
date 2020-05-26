@@ -121,12 +121,13 @@ them yourself, do not override this method.
 B<However>, not overriding this method has consequences for when the
 L<__process()|/__process> method of your plug-in is called.
 L<App::AckX::Preflight|App::AckX::Preflight> examines the command line,
-and plug-ins that specify this option are called in the order their
-options appear. If options for a specific plug-in occur more than once,
-the last-occurring option determines the plug-in's order. If more than
-one plug-in specifies the same option, they are called ASCIIbetically,
-and they had better have the same syntax. Plug-ins that return nothing,
-or whose options do not appear, are called last, in ASCIIbetical order.
+and plug-ins that specify options via this method are called in the
+order their options appear. If options for a specific plug-in occur more
+than once, the last-occurring option determines the plug-in's order. If
+more than one plug-in specifies the same option, they are called
+ASCIIbetically, and they had better have the same syntax. Plug-ins that
+return nothing, or whose options do not appear, are called last, in
+ASCIIbetical order.
 
 =head2 __peek_opt
 

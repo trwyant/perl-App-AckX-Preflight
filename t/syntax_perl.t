@@ -125,6 +125,28 @@ is slurp( $perl_resource ), PERL_CODE_DOC,
 is slurp( $text_resource ), TEXT_CONTENT,
     'Code and documentation, text resource';
 
+note 'Test --syntax-empty-code-is-comment';
+
+SYNTAX_FILTER->import( '-syntax', SYNTAX_CODE,
+    '--syntax-empty-code-is-comment' );
+
+is slurp( PERL_FILE ),
+    <<'EOD', 'Code with --syntax-empty-code-is-comment';
+   3: use strict;
+   4: use warnings;
+   6: printf "Hello %s!\n", @ARGV ? $ARGV[0] : 'world';
+EOD
+
+SYNTAX_FILTER->import( '-syntax', SYNTAX_COMMENT,
+    '--syntax-empty-code-is-comment' );
+
+is slurp( PERL_FILE ),
+    <<'EOD', 'Comments with --syntax-empty-code-is-comment';
+   2:
+   5:
+   7:
+EOD
+
 done_testing;
 
 1;

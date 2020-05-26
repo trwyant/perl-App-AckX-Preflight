@@ -62,7 +62,8 @@ sub __get_syntax_opt {
 	'syntax-add=s'	=> $mod_syntax,
 	'syntax-del=s'	=> $mod_syntax,
 	'syntax-set=s'	=> $mod_syntax,
-	qw{ syntax=s@ syntax-type! syntax-wc! syntax-wc-only! },
+	qw{ syntax=s@ syntax-empty-code-is-comment!
+	syntax-type! syntax-wc! syntax-wc-only! },
     );
     if ( $strict && @{ $arg } ) {
 	local $" = ', ';
@@ -71,7 +72,9 @@ sub __get_syntax_opt {
     $opt->{'syntax-wc'} ||= $opt->{'syntax-wc-only'};
     $class->__normalize_options( $opt );
     %SYNTAX_OPT  = map { $_ => $opt->{$_} } qw{
-	syntax-type syntax-wc syntax-wc-only };
+	syntax-empty-code-is-comment
+	syntax-type syntax-wc syntax-wc-only
+	};
     %WANT_SYNTAX = map { $_ => 1 } @{ $opt->{syntax} || [] };
     foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
 	my ( $filter, $mod, @val ) = @{ $_ };
@@ -85,7 +88,10 @@ sub __get_syntax_opt {
     $opt->{syntax}
 	and @{ $opt->{syntax} }
 	and push @arg, '-syntax=' . join( ':', @{ $opt->{syntax} } );
-    foreach my $name ( qw{ syntax-type syntax-wc syntax-wc-only } ) {
+    foreach my $name ( qw{
+	syntax-empty-code-is-comment
+	syntax-type syntax-wc syntax-wc-only
+    } ) {
 	$opt->{$name}
 	    and push @arg, "-$name";
     }
@@ -186,6 +192,10 @@ sub FILL {
 
     while ( <$fh> ) {
 	my $type = $self->__classify();
+	SYNTAX_CODE eq $type
+	    and $attr->{syntax_empty_code_is_comment}
+	    and m/ \A \s* \z /smx
+	    and $type = SYNTAX_COMMENT;
 	$attr->{want}{$type}
 	    or next;
 	$attr->{syntax_type}
@@ -224,6 +234,8 @@ sub PUSHED {
     my $syntax_opt = $class->__syntax_opt();
     my $self = bless {}, ref $class || $class;
     my $attr = $self->__my_attr();
+    $attr->{syntax_empty_code_is_comment} =
+	$syntax_opt->{'syntax-empty-code-is-comment'};
     $attr->{syntax_type} = $syntax_opt->{'syntax-type'};
     $attr->{want} = $self->__want_syntax();
     $syntax_opt->{'syntax-wc'}
