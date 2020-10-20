@@ -1,5 +1,8 @@
 language: perl
+
 perl:
   - "5.30"
-  - "5.10"
-  - "5.08"
+  - "5.12"
+
+before_install:
+  - cpanm Module::Build # Optional, because you can always use EU::MM
