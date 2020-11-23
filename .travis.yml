@@ -2,7 +2,8 @@ language: perl
 
 os:
   - linux
-  - windows
+# - windows
+# Windows does not yet support Perl as of 2020-11-23
 
 perl: # Oldest and newest Perl supported by Travis CI as of 2020-10-20
   - "5.30"
