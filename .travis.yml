@@ -1,5 +1,9 @@
 language: perl
 
+os:
+  - linux
+  - windows
+
 perl: # Oldest and newest Perl supported by Travis CI as of 2020-10-20
   - "5.30"
   - "5.14"
