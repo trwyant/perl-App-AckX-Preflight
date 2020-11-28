@@ -2,16 +2,19 @@ language: perl
 
 os:
   - linux
-# - osx
+  - osx
 # No macOS Perl images as of 2020-11-28
 # - windows
 # Windows does not yet support Perl as of 2020-11-23
 
-perl: # Oldest and newest Perl supported by Travis CI as of 2020-10-20
+perl:
+  - "5.32"
   - "5.30"
   - "5.14"
   - "5.10"
 
+# It appears that without travis-perl/helpers only perls 5.14
+# through 5.30 work.
 before_install:
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
   - source ~/travis-perl-helpers/init
