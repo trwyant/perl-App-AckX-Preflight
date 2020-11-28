@@ -10,7 +10,7 @@ os:
 perl: # Oldest and newest Perl supported by Travis CI as of 2020-10-20
   - "5.30"
   - "5.14"
-  - "5.8"
+  - "5.10"
 
 before_install:
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
