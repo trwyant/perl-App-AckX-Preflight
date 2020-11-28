@@ -2,7 +2,8 @@ language: perl
 
 os:
   - linux
-  - osx
+# - osx
+# No macOS Perl images as of 2020-11-28
 # - windows
 # Windows does not yet support Perl as of 2020-11-23
 
