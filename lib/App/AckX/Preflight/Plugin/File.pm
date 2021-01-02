@@ -21,7 +21,7 @@ BEGIN {
     );
     @ISA = qw{ App::AckX::Preflight::Plugin };
 
-    $VERSION = '0.000_028';
+    $VERSION = '0.000_029';
 }
 
 sub __options {
