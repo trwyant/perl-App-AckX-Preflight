@@ -21,7 +21,7 @@ foreach my $app ( 'script/ackxp', ACKXP_STANDALONE ) {
     note "Testing $app";
 
     xqt( $app, qw{ --noenv -syntax code -w Wyant lib/ }, <<'EOD' );
-lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018-2020 by Thomas R. Wyant, III';
+lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018-2021 by Thomas R. Wyant, III';
 EOD
     xqt( $app, qw{ --noenv --syntax-match -syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
 meta:#!/usr/bin/env perl
@@ -49,7 +49,7 @@ meta:	2	3	38
 EOD
 
     xqt( $app, qw{ --noenv -syntax code -file t/data/file lib/ }, <<'EOD' );
-lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018-2020 by Thomas R. Wyant, III';
+lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018-2021 by Thomas R. Wyant, III';
 EOD
 }
 
