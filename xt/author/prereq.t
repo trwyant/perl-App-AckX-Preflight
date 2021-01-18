@@ -7,12 +7,10 @@ use warnings;
 
 use Test::More 0.88;	# Because of done_testing();
 
-BEGIN {
-    eval {
-	require Test::Prereq::Meta;
-	1;
-    } or plan skip_all => 'Test::Prereq::Meta not available';
-}
+eval {
+    require Test::Prereq::Meta;
+    1;
+} or plan skip_all => 'Test::Prereq::Meta not available';
 
 Test::Prereq::Meta->new(
     accept	=> [ qw{
