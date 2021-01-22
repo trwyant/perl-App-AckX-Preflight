@@ -23,7 +23,7 @@ BEGIN {
 
     @ISA = qw{ App::AckX::Preflight::Syntax::_nesting };
 
-    $VERSION = '0.000_029';
+    $VERSION = '0.000_030';
 
     __PACKAGE__->__handles_type_mod( qw{ set clojure elisp lisp scheme } );
 }

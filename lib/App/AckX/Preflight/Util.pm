@@ -38,7 +38,7 @@ our @CARP_NOT;
 
 BEGIN {
 
-    $VERSION = '0.000_029';
+    $VERSION = '0.000_030';
 
     @EXPORT_OK = qw{
 	__die

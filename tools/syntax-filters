@@ -9,7 +9,7 @@ use App::AckX::Preflight::Syntax;
 use Getopt::Long 2.33 qw{ :config auto_version };
 use Pod::Usage;
 
-our $VERSION = '0.000_029';
+our $VERSION = '0.000_030';
 
 my %opt = (
     env	=> 1,
