@@ -14,9 +14,6 @@ eval {
 
 Test::Prereq::Meta->new(
     accept	=> [ qw{
-	App::AckX::Preflight::Syntax::_cc_like
-	App::AckX::Preflight::Syntax::_nesting
-	App::AckX::Preflight::Syntax::_single_line_comments
 	Win32
 	} ],
 )->all_prereq_ok();
