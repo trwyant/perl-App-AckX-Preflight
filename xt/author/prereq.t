@@ -17,9 +17,6 @@ Test::Prereq::Meta->new(
 	App::AckX::Preflight::Syntax::_cc_like
 	App::AckX::Preflight::Syntax::_nesting
 	App::AckX::Preflight::Syntax::_single_line_comments
-	My::Module::Preflight
-	My::Module::TestPlugin
-	My::Module::TestSyntax
 	Win32
 	} ],
 )->all_prereq_ok();
