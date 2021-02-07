@@ -9,7 +9,7 @@ use Carp;
 use Exporter qw{ import };
 use Scalar::Util qw{ blessed openhandle };
 
-our $VERSION = '0.000_030';
+our $VERSION = '0.000_031';
 
 our @EXPORT = qw{
     slurp
