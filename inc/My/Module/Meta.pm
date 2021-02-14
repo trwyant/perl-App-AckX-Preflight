@@ -57,20 +57,6 @@ sub license {
     return 'perl';
 }
 
-sub module_name {
-    return 'App::AckX::Preflight';
-}
-
-sub no_index {
-    return +{
-      directory => [
-                     'inc',
-                     't',
-                     'xt',
-                   ],
-    };
-}
-
 sub meta_merge {
     my ( undef, @extra ) = @_;
     return {
@@ -91,6 +77,20 @@ sub meta_merge {
 	    },
 	},
 	@extra,
+    };
+}
+
+sub module_name {
+    return 'App::AckX::Preflight';
+}
+
+sub no_index {
+    return +{
+      directory => [
+                     'inc',
+                     't',
+                     'xt',
+                   ],
     };
 }
 
@@ -225,8 +225,15 @@ by CPAN.
 
 =head2 meta_merge
 
-This subroutine returns stuff we know will be provided by the
-C<meta_merge> mechanism.
+ use YAML;
+ print Dump( $meta->meta_merge() );
+
+This method returns a reference to a hash describing the meta-data which
+has to be provided by making use of the builder's C<meta_merge>
+functionality. This includes the C<dynamic_config> and C<resources>
+data.
+
+Any arguments will be appended to the generated array.
 
 =head2 provides
 
