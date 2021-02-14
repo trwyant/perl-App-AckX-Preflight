@@ -17,6 +17,14 @@ sub new {
     return $self;
 }
 
+sub abstract {
+    return 'Extend App::Ack';
+}
+
+sub author {
+    return 'Thomas R. Wyant, III F<wyant at cpan dot org>';
+}
+
 sub build_requires {
     return +{
 	'App::Ack::Filter::Extension'	=> 0,
@@ -28,9 +36,39 @@ sub build_requires {
     };
 }
 
+sub configure_requires {
+    return +{
+	'lib'	=> 0,
+	'strict'	=> 0,
+	'warnings'	=> 0,
+    };
+}
+
+sub dist_name {
+    return 'App-AckX-Preflight';
+}
+
 sub distribution {
     my ( $self ) = @_;
     return $self->{distribution};
+}
+
+sub license {
+    return 'perl_5';
+}
+
+sub module_name {
+    return 'App::AckX::Preflight';
+}
+
+sub no_index {
+    return +{
+      directory => [
+                     'inc',
+                     't',
+                     'xt',
+                   ],
+    };
 }
 
 sub meta_merge {
@@ -128,6 +166,14 @@ This class supports the following public methods:
 
 This method instantiates the class.
 
+=head2 abstract
+
+This subroutine returns the distribution's abstract.
+
+=head2 author
+
+This subroutine returns the name of the distribution author
+
 =head2 build_requires
 
  use YAML;
@@ -137,6 +183,20 @@ This method computes and returns a reference to a hash describing the
 modules required to build the C<App::AckX::Preflight> package, suitable for
 use in a F<Build.PL> C<build_requires> key, or a F<Makefile.PL>
 C<< {META_MERGE}->{build_requires} >> or C<BUILD_REQUIRES> key.
+
+=head2 configure_requires
+
+ use YAML;
+ print Dump( $meta->configure_requires() );
+
+This method returns a reference to a hash describing the modules
+required to configure the package, suitable for use in a F<Build.PL>
+C<configure_requires> key, or a F<Makefile.PL> C<<
+{META_MERGE}->{configure_requires} >> or C<CONFIGURE_REQUIRES> key.
+
+=head2 dist_name
+
+This subroutine returns the distribution name.
 
 =head2 distribution
 
@@ -148,6 +208,25 @@ C<< {META_MERGE}->{build_requires} >> or C<BUILD_REQUIRES> key.
 
 This method returns the value of the environment variable
 C<MAKING_MODULE_DISTRIBUTION> at the time the object was instantiated.
+
+=head2 license
+
+This subroutine returns the distribution's license.
+
+=head2 module_name
+
+This subroutine returns the name of the module the distribution is based
+on.
+
+=head2 no_index
+
+This subroutine returns the names of things which are not to be indexed
+by CPAN.
+
+=head2 meta_merge
+
+This subroutine returns stuff we know will be provided by the
+C<meta_merge> mechanism.
 
 =head2 provides
 
