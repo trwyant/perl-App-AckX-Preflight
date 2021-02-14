@@ -5,7 +5,6 @@ eg/README
 eg/syntax
 inc/File/Which.pm
 inc/My/Module/Build.pm
-inc/My/Module/MakeMaker.pm
 inc/My/Module/Meta.pm
 inc/My/Module/Preflight.pm
 inc/My/Module/TestPlugin.pm
