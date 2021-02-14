@@ -1,3 +1,6 @@
+0.000_032	2021-02-13	T. R. Wyant
+    Update xt/author/prereq.t to cover configuration.
+
 0.000_031	2021-02-07	T. R. Wyant
     Update xt/author/prereq.t to detect unused prereq
 
