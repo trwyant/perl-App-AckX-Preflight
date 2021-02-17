@@ -25,6 +25,7 @@ my %args = (
     requires	=> $meta->requires(
 	perl	=> $meta->requires_perl(),
     ),
+    script_files	=> $meta->script_files(),
 );
 
 if ( $mbv >= 0.28 ) {

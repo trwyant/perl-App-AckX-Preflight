@@ -133,6 +133,16 @@ sub requires_perl {
 }
 
 
+sub script_files {
+    return [
+	'script/ackxp',
+    ];
+}
+
+sub version_from {
+    return 'lib/App/AckX/Preflight.pm';
+}
+
 1;
 
 __END__
@@ -213,6 +223,18 @@ C<MAKING_MODULE_DISTRIBUTION> at the time the object was instantiated.
 
 This subroutine returns the distribution's license.
 
+=head2 meta_merge
+
+ use YAML;
+ print Dump( $meta->meta_merge() );
+
+This method returns a reference to a hash describing the meta-data which
+has to be provided by making use of the builder's C<meta_merge>
+functionality. This includes the C<dynamic_config> and C<resources>
+data.
+
+Any arguments will be appended to the generated array.
+
 =head2 module_name
 
 This subroutine returns the name of the module the distribution is based
@@ -263,6 +285,16 @@ may be added.
  print 'This package requires Perl ', $meta->requires_perl(), "\n";
 
 This method returns the version of Perl required by the package.
+
+=head2 script_files
+
+This method returns a reference to an array containing the names of
+script files provided by this distribution. This array may be empty.
+
+=head2 version_from
+
+This method returns the name of the distribution file from which the
+distribution's version is to be derived.
 
 =head1 ATTRIBUTES
 
