@@ -21,7 +21,7 @@ my %args = (
     PREREQ_PM	=> $meta->requires(),
     PL_FILES	=> {},	# Prevent old MakeMaker from running Build.PL
     realclean	=> {
-	FILES => 'cover_db xt/author/optionals',
+	FILES => join( ' ', @{ $meta->add_to_cleanup() } ),
     },
     VERSION_FROM	=> $meta->version_from(),
 );

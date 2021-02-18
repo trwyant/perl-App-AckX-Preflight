@@ -21,6 +21,10 @@ sub abstract {
     return 'Extend App::Ack';
 }
 
+sub add_to_cleanup {
+    return [ qw{ cover_db xt/author/optionals } ];
+}
+
 sub author {
     return 'Thomas R. Wyant, III F<wyant at cpan dot org>';
 }
@@ -179,6 +183,11 @@ This method instantiates the class.
 =head2 abstract
 
 This subroutine returns the distribution's abstract.
+
+=head2 add_to_cleanup
+
+This method returns a reference to an array of files to be added to the
+cleanup.
 
 =head2 author
 
