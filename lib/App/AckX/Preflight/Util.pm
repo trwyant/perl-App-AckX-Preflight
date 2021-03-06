@@ -378,7 +378,6 @@ documentation, and is set to C<'documentation'>.
 This is the recommended syntax filter specification for anything else,
 and is set to C<'other'>.
 
-
 =head1 EXPORT TAGS
 
 The following export tags can be used.
@@ -407,6 +406,7 @@ L<App::AckX::Preflight|App::AckX::Preflight>.
 =head1 SUPPORT
 
 Support is by the author. Please file bug reports at
+L<https://rt.cpan.org/Public/Dist/Display.html?Name=App-AckX-Preflight>,
 L<https://github.com/trwyant/perl-App-AckX-Preflight/issues>, or in
 electronic mail to the author.
 

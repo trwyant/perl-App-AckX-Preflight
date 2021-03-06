@@ -47,7 +47,6 @@ sub __init {
     return;
 }
 
-
 1;
 
 __END__
@@ -102,6 +101,7 @@ L<App::AckX::Preflight|App::AckX::Preflight>
 =head1 SUPPORT
 
 Support is by the author. Please file bug reports at
+L<https://rt.cpan.org/Public/Dist/Display.html?Name=App-AckX-Preflight>,
 L<https://github.com/trwyant/perl-App-AckX-Preflight/issues>, or in
 electronic mail to the author.
 

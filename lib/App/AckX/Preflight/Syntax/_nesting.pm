@@ -118,7 +118,6 @@ sub __block_doc_re {
     return;
 }
 
-
 1;
 
 __END__
@@ -201,7 +200,6 @@ This class implements a method that returns nothing.
 
 This class has the following attributes:
 
-
 =head1 SEE ALSO
 
 <<< replace or remove boilerplate >>>
@@ -209,6 +207,7 @@ This class has the following attributes:
 =head1 SUPPORT
 
 Support is by the author. Please file bug reports at
+L<https://rt.cpan.org/Public/Dist/Display.html?Name=App-AckX-Preflight>,
 L<https://github.com/trwyant/perl-App-AckX-Preflight/issues>, or in
 electronic mail to the author.
 
