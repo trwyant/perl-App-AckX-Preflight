@@ -12,7 +12,7 @@ use Getopt::Long 2.33 qw{ :config auto_version };
 use Module::Pluggable::Object 5.2;
 use Pod::Usage;
 
-our $VERSION = '0.000_034';
+our $VERSION = '0.000_035';
 
 my @argv = @ARGV;
 

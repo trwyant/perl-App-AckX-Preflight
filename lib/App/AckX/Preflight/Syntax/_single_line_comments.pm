@@ -23,7 +23,7 @@ BEGIN {
 
     @ISA = qw{ App::AckX::Preflight::Syntax };
 
-    $VERSION = '0.000_034';
+    $VERSION = '0.000_035';
 }
 
 sub __classify {
