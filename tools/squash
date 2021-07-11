@@ -15,7 +15,7 @@ use Fcntl qw{ :mode };
 use Getopt::Long 2.33 qw{ :config auto_version };
 use Pod::Usage;
 
-our $VERSION = '0.000_036';
+our $VERSION = '0.000_037';
 
 my %opt = (
     o	=> '-',

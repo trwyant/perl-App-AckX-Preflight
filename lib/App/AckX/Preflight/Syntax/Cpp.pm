@@ -22,7 +22,7 @@ BEGIN {
 
     @ISA = qw{ App::AckX::Preflight::Syntax::_cc_like };
 
-    $VERSION = '0.000_036';
+    $VERSION = '0.000_037';
 
     __PACKAGE__->__handles_type_mod( qw{
 	set actionscript cpp dart go hh hpp js kotlin objc objcpp sass
