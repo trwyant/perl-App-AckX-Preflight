@@ -436,9 +436,7 @@ sub _trace {
     return;
 }
 
-# Cargo cult to prevent indexing
-package		## no critic (ProhibitMultiplePackages)
-App::AckX::Preflight::_Config;
+package App::AckX::Preflight::_Config;	## no critic (ProhibitMultiplePackages)
 
 use App::AckX::Preflight::Util qw{ :croak @CARP_NOT };
 
@@ -455,9 +453,7 @@ sub name {
     return $self->{name};
 }
 
-# Cargo cult to prevent indexing
-package		## no critic (ProhibitMultiplePackages)
-App::AckX::Preflight::_Config::File;
+package App::AckX::Preflight::_Config::File;	## no critic (ProhibitMultiplePackages)
 
 use App::AckX::Preflight::Util qw{ :croak __file_id @CARP_NOT };
 
@@ -494,9 +490,7 @@ sub read : method {	## no critic (ProhibitBuiltinHomonyms)
     return <$fh>;
 }
 
-# Cargo cult to prevent indexing
-package		## no critic (ProhibitMultiplePackages)
-App::AckX::Preflight::_Config::Env;
+package App::AckX::Preflight::_Config::Env;	## no critic (ProhibitMultiplePackages)
 
 use App::AckX::Preflight::Util qw{ :croak @CARP_NOT };
 use Text::ParseWords ();
