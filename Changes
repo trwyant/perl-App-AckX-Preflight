@@ -1,3 +1,10 @@
+0.000_038	2022-02-04	T. R. Wyant
+    Update copyright to 2022.
+
+    Fixed missed cargo-cult no_index.  That is, did it with no_index
+    metadata, not with a line break between the 'package' keyword and
+    the name of the package.
+
 0.000_037	2021-07-11	T. R. Wyant
     Tweak 'no_index' and 'provides' metadata. Again.
 

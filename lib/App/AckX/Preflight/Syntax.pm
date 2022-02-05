@@ -37,7 +37,7 @@ BEGIN {
 
     %VALID_EXPORT = map { $_ => 1 } @EXPORT_OK;
 
-    $VERSION = '0.000_037';
+    $VERSION = '0.000_038';
 }
 
 use constant IN_SERVICE		=> 1;

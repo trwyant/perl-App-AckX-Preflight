@@ -10,7 +10,7 @@ use App::AckX::Preflight;
 our $VERSION;
 
 BEGIN {
-    $VERSION = '0.000_037';
+    $VERSION = '0.000_038';
 }
 
 App::AckX::Preflight->run();

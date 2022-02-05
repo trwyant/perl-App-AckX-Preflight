@@ -22,7 +22,7 @@ BEGIN {
 
     @ISA = qw{ App::AckX::Preflight::Syntax::_cc_like };
 
-    $VERSION = '0.000_037';
+    $VERSION = '0.000_038';
 
     __PACKAGE__->__handles_type_mod( qw{ set cc css less } );
 }
