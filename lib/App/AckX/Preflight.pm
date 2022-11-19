@@ -170,11 +170,16 @@ EOD
     $opt{verbose}
 	and print scalar _shell_quote( '$', $0, @argv ), "\n";
 
-    foreach my $p_rec ( $self->__marshal_plugins ) {
-	my $plugin = $p_rec->{package};
-	my $opt = __getopt_for_plugin( $plugin );
-	$plugin->__process( $self, $opt );
-    }
+    my @plugins = $self->__marshal_plugins();
+
+    my %plugin_opt;
+    $plugin_opt{$_->{package}} = $_->{opt} =
+	__getopt_for_plugin( $_->{package} )
+	for @plugins;
+
+    $_->{package}->__tweak_opt( \%plugin_opt ) for @plugins;
+
+    $_->{package}->__process( $self, $_->{opt} ) for @plugins;
 
     local $self->{verbose} = $opt{verbose};
 

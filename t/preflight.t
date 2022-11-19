@@ -7,6 +7,7 @@ use warnings;
 
 use App::AckX::Preflight;
 use App::AckX::Preflight::Util qw{ :ref };
+use Config;
 use Cwd qw{ abs_path };
 use ExtUtils::Manifest qw{ maniread };
 use Test2::V0;
@@ -23,6 +24,7 @@ is [ My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::Perldoc
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
     'Plugins';
@@ -170,6 +172,26 @@ is $got,
 	--noenv
 	} ],
     '--noenv --syntax=code:data:doc';
+
+$got = xqt( qw{ --noenv --perldoc } );
+is $got,
+    [ qw{
+	perl
+	-Mblib
+	-MApp::AckX::Preflight::Syntax=-syntax=documentation
+	-S
+	ack
+	--noenv
+	},
+	@INC,
+	grep { defined( $_ ) && $_ ne '' && -d } map { $Config{$_} }
+	qw{
+	    archlibexp
+	    privlibexp
+	    sitelibexp
+	    vendorlibexp
+	}
+    ];
 
 done_testing;
 

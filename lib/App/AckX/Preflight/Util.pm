@@ -83,6 +83,7 @@ BEGIN {
 	App::AckX::Preflight::Plugin
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::Perldoc
 	App::AckX::Preflight::Plugin::Syntax
 	App::AckX::Preflight::Syntax
 	App::AckX::Preflight::Syntax::Ada

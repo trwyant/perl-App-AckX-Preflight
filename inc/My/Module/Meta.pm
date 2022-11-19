@@ -153,6 +153,7 @@ sub requires {
     return +{
 	'App::Ack'			=> 0,
 	'Carp'				=> 0,
+	'Config'			=> 0,
 	'Cwd'				=> 0,
 	'Exporter'			=> 0,
 	'ExtUtils::Manifest'		=> 0,

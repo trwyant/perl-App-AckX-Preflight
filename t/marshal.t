@@ -18,6 +18,7 @@ is [ sort My::Module::Preflight->__plugins() ],
     [ qw{
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::Perldoc
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
     'Plugins';
@@ -32,6 +33,7 @@ is [ sort My::Module::Preflight->__plugins() ],
     is [ sort $aapx->__plugins() ],
 	[ qw{
 	    App::AckX::Preflight::Plugin::Expand
+	    App::AckX::Preflight::Plugin::Perldoc
 	    App::AckX::Preflight::Plugin::Syntax
 	    } ],
 	'Plugins with File disabled';
@@ -41,6 +43,7 @@ is marshal( qw{ A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::Perldoc
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
     'Default order';
@@ -83,6 +86,7 @@ is marshal( qw{ --file x --manifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Expand
+	App::AckX::Preflight::Plugin::Perldoc
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
     '--file x --manifest uses that order';
@@ -91,6 +95,7 @@ is marshal( qw{ --manifest --file x --no-manifest A B C } ),
     [ qw{
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Expand
+	App::AckX::Preflight::Plugin::Perldoc
 	App::AckX::Preflight::Plugin::Syntax
 	} ],
     '--manifest --file x --no-manifest pulls File to front';
@@ -100,6 +105,7 @@ is marshal( qw{ --syntax=code A B C } ),
 	App::AckX::Preflight::Plugin::Syntax
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
+	App::AckX::Preflight::Plugin::Perldoc
 	} ],
     '--syntax=code pulls Syntax to front';
 
