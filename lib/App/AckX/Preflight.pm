@@ -460,11 +460,12 @@ sub name {
 
 package App::AckX::Preflight::_Config::File;	## no critic (ProhibitMultiplePackages)
 
-use App::AckX::Preflight::Util qw{ :croak __file_id @CARP_NOT };
+use App::AckX::Preflight::Util ();
 
 our @ISA;
 
 BEGIN {
+    App::AckX::Preflight::Util->import( qw{ :croak __file_id @CARP_NOT } );
     @ISA = qw{ App::AckX::Preflight::_Config };
 }
 
