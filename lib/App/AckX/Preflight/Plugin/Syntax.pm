@@ -104,14 +104,16 @@ This is probably self-explanatory.
 
 =item comment
 
-This is also probably self-explanatory. In file types with C-style
-comments, only full-line comments will appear here.
+This is comments, both single-line and block comments that occupy whole
+lines. Inline documentation should be C<'documentation'> if that can be
+managed. In file types with C-style comments, only full-line comments
+will appear here.
 
 =item data
 
-This is intended to represent inlined data. For Perl it would represent
-C<__DATA__> or C<__END__>. Here documents would not normally count as
-data.
+This is data embedded in the program. In the case of Perl, it is
+intended for the non-POD stuff after C<__DATA__> or C<__END__>. It is
+not intended that this include here documents.
 
 =item documentation
 
@@ -119,11 +121,16 @@ This is structured inline documentation. For Perl it would be POD. For
 Java it would be Javadoc, which would B<not> also be considered a
 comment, even though functionally that is exactly what it is.
 
+=item metadata
+
+This is data about the program. It should include the shebang line for
+such formats as support it.
+
 =item other
 
 This is a catch-all category; you will have to consult the documentation
 for the individual syntax filters to see what (if anything) gets put
-into this category.
+into this category. Syntax filters should use this sparingly, if at all.
 
 =back
 

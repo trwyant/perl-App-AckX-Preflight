@@ -570,41 +570,43 @@ Otherwise it returns a false value.
 =head2 __handles_syntax
 
 This static method returns a list of the syntax types recognized by the
-filter. These can be anything, but for sanity's sake the following list
-(or such members of it that apply) is recommended:
+filter. The returned values must be selected from the following list.
 
 =over
 
 =item code
 
-This should be self-explanatory.
+This is probably self-explanatory.
 
 =item comment
 
 This is comments, both single-line and block comments that occupy whole
 lines. Inline documentation should be C<'documentation'> if that can be
-managed.
+managed. In file types with C-style comments, only full-line comments
+will appear here.
 
 =item data
 
-This should represent data embedded in the program. In the case of Perl,
-it is intended for the non-POD stuff after C<__DATA__> or C<__END__>. It
-is not intended that this include here documents.
+This is data embedded in the program. In the case of Perl, it is
+intended for the non-POD stuff after C<__DATA__> or C<__END__>. It is
+not intended that this include here documents.
 
 =item documentation
 
-This represents inline documentation. In the case of Perl it should
-include POD. In the case of Java it should include Javadoc for sure, and
-maybe all inline comments.
+This is structured inline documentation. For Perl it would be POD. For
+Java it would be Javadoc, which would B<not> also be considered a
+comment, even though functionally that is exactly what it is.
 
 =item metadata
 
-This represents data about the program. It should include the shebang
-line for such formats as support it.
+This is data about the program. It should include the shebang line for
+such formats as support it.
 
 =item other
 
-This is a catch-all category. It should be used sparingly if at all.
+This is a catch-all category; you will have to consult the documentation
+for the individual syntax filters to see what (if anything) gets put
+into this category. Syntax filters should use this sparingly, if at all.
 
 =back
 
