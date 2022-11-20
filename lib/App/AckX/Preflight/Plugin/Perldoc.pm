@@ -87,6 +87,14 @@ This L<App::AckX::Preflight|App::AckX::Preflight> plug-in provides the
 ability to search the installed Perl modules in a manner similar to
 L<App:Perldoc::Search|App:Perldoc::Search>.
 
+In order to get this functionality, the user must specify the
+C<--perldoc> command line option.
+
+If C<--perldoc> is specified, command line option
+C<--syntax=documentation> is provided by default unless some C<--syntax>
+option is specified explicitly. The user who does not want syntax
+filtering with this plug-in can specify C<--syntax=none>.
+
 =head1 SEE ALSO
 
 L<App::AckX::Preflight|App::AckX::Preflight>.

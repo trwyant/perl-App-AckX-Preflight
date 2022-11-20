@@ -31,8 +31,13 @@ BEGIN {
 }
 
 sub __options {
-    return( qw{ syntax=s@ syntax-match! syntax-type! syntax-wc!
-	syntax-wc-only! } );
+    return( qw{
+	syntax=s@
+	syntax-match!
+	syntax-type!
+	syntax-wc!
+	syntax-wc-only!
+    } );
 }
 
 sub __peek_opt {

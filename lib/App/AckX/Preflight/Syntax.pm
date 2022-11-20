@@ -260,16 +260,28 @@ sub TELL {
     sub __normalize_options {
 	my ( $invocant, $opt ) = @_;
 
-	$syntax_abbrev ||= Text::Abbrev::abbrev( __syntax_types() );
+	$syntax_abbrev ||= Text::Abbrev::abbrev( __syntax_types(), 'none' );
 
 	my $class = ref $invocant || $invocant;
 
 	if ( $opt->{syntax} ) {
-	    @{ $opt->{syntax} } = sort { $a cmp $b } List::Util::uniqstr(
-		map { $syntax_abbrev->{$_} || 
-		    __die( "Unsupported syntax type '$_'" ) }
-		map { split $ARG_SEP_RE }
-		@{ $opt->{syntax} } );
+	    my @syntax;
+	    foreach ( map { split $ARG_SEP_RE } @{ $opt->{syntax} } ) {
+		defined $syntax_abbrev->{$_}
+		    or __die( "Unsupported syntax type '$_'" );
+		$_ = $syntax_abbrev->{$_};
+		if ( $_ eq 'none' ) {
+		    @syntax = ();
+		} else {
+		    push @syntax, $_;
+		}
+	    }
+	    if ( @syntax ) {
+		@{ $opt->{syntax} } = sort { $a cmp $b }
+		    List::Util::uniqstr( @syntax );
+	    } else {
+		delete $opt->{syntax};
+	    }
 	}
 
 	foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
@@ -494,9 +506,12 @@ or
 
  -syntax=code -syntax=doc
 
-An exception will be raised if any arguments remain unconsumed, or if
-any of the values for -syntax does not appear in the list returned by
-C<__handles_syntax()>
+The valid syntax types are hose returned by
+L<__handles_syntax()|/__handles_syntax>, plus C<'none'>. Syntax types
+can be abbreviated, as long as the abbreviation is unique.
+
+Value C<'none'> cancels any C<-syntax> values specified up to the time
+at which it is encountered.
 
 =item -syntax-add
 
@@ -739,7 +754,7 @@ conditions are true:
 
 =item L<IS_EXHAUSTIVE|/IS_EXHAUSTIVE> is true;
 
-=item all syntax type returned by L<__handles_syntax|/__handles_syntax>
+=item all syntax type returned by L<__handles_syntax()|/__handles_syntax>
 appear in the hash returned by L<__want_syntax()|/__want_syntax>.
 
 =back
