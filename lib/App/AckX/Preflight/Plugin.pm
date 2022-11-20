@@ -22,6 +22,10 @@ BEGIN {
 
 use constant IN_SERVICE	=> 1;
 
+sub __default_arg {
+    return;
+}
+
 sub __normalize_options {
     return;
 }
@@ -36,10 +40,6 @@ sub __peek_opt {
 
 sub __process {
     __die_hard( '__process() must be overridden' );
-}
-
-sub __tweak_opt {
-    return;
 }
 
 1;
@@ -93,6 +93,19 @@ interface.
 =head1 METHODS
 
 This class supports the following package-private methods:
+
+=head2 __default_arg
+
+This static method takes as its argument a reference to a hash of all
+options relevant to the plugin.
+
+It returns default arguments. These can only usefully be options, but
+need not be options for this plugin. They will be parsed, but an option
+will only be applied if it was not specified explicitly in the command
+line.
+
+B<Note> that unless the plugin actually intends to do something this
+B<should> return nothing.
 
 =head2 IN_SERVICE
 
@@ -160,22 +173,6 @@ This method B<must> be overridden.
 
 This method is expected to do its job by modifying C<@ARGV>. It returns
 nothing.
-
-=head2 __tweak_opt
-
- $plugin_class->__tweak_opt( \%opt );
-
-This static method is passed a reference to a hash. The keys of the hash
-are the class names of enabled plug-ins. The value for each plug-in is a
-reference to a hash of the options for each plug-in that were parsed
-from the command line.
-
-This method can modify the hash as it sees fit, with the
-B<strong caveat> that it is solely responsible for the validity of the
-resultant hash. Among other things, this means that if this method
-modifies the hash for plugin C<$plugin>, it B<must> call
-
-    $plugin->__normalize_options( $opt->{$plugin} );
 
 =head1 SEE ALSO
 

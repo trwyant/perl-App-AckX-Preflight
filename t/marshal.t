@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight;
+use App::AckX::Preflight::Util qw{ __interpret_plugins };
 use Test2::V0;
 
 use lib qw{ inc };
@@ -117,7 +118,7 @@ sub marshal {
     local @ARGV = @_;
     my $invocant = ref @ARGV ? shift @ARGV : PACKAGE;
     return [
-	map { $_->{package} } $invocant->__marshal_plugins(),
+	map { $_->{class} } __interpret_plugins( $invocant->__plugins() )
     ];
 };
 

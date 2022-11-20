@@ -5,7 +5,7 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Util qw{ HASH_REF __getopt_for_plugin };
+use App::AckX::Preflight::Util qw{ HASH_REF __interpret_plugins };
 # use Carp;
 use Exporter qw{ import };
 
@@ -18,8 +18,8 @@ our $VERSION = '0.000_039';
 sub prs {
     local @ARGV = @_;
     my $caller = caller;
-    my $opt = __getopt_for_plugin( $caller->CLASS() );
-    return ( $opt, @ARGV );
+    my ( $info ) = __interpret_plugins( $caller->CLASS() );
+    return ( $info->{opt}, @ARGV );
 }
 
 sub xqt {

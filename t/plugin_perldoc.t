@@ -6,7 +6,6 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight;
-use App::AckX::Preflight::Util qw{ HASH_REF __getopt_for_plugin };
 use Config;
 use Test2::V0 -target => 'App::AckX::Preflight::Plugin::Perldoc';
 

@@ -46,7 +46,7 @@ BEGIN {
 	__err_exclusive
 	__file_id
 	__getopt
-	__getopt_for_plugin
+	__interpret_plugins
 	__open_for_read
 	__syntax_types
 	__warn
@@ -172,17 +172,74 @@ sub _get_option_parser {
     return $psr;
 }
 
-sub __getopt_for_plugin {
-    my ( $plugin ) = @_;
-    my $opt = {};
-    if ( my @spec = $plugin->__options() ) {
-	__getopt( $opt, @spec );
+sub __interpret_plugins {
+    my @plugin_list = @_;
+
+    my %plugin_info;
+
+    foreach my $plugin ( @plugin_list ) {
+	$plugin_info{$plugin} = my $info = {
+	    class	=> $plugin,
+	    order	=> @ARGV + 1,
+	};
+	if ( my @spec = $plugin->__peek_opt() ) {
+	    my %opt;
+	    __getopt( [ @ARGV ], \%opt, @spec );
+	    $info->{opt} = \%opt;
+	}
     }
-    if ( my @spec = $plugin->__peek_opt() ) {
-	__getopt( [ @ARGV ], $opt, @spec );
+
+    foreach my $plugin ( @plugin_list ) {
+	if ( my @spec = $plugin->__options() ) {
+	    my %opt;
+	    my @s;
+	    my $info = $plugin_info{$plugin};
+	    foreach my $os ( @spec ) {
+		push @s, $os, index( $os, '%' ) >= 0 ?
+		    sub {	# Hash option 
+			$opt{$_[0]}{$_[1]} = $_[2];
+			$info->{order} = @ARGV;
+		    } : index( $os, '@' ) >= 0 ?
+		    sub {	# Array option
+			push @{ $opt{$_[0]} }, $_[1];
+			$info->{order} = @ARGV;
+		    } :
+		    sub {	# Scalar option
+			$opt{$_[0]} = $_[1];
+			$info->{order} = @ARGV;
+		    };
+	    }
+	    __getopt( \%opt, @s );
+	    foreach my $key ( keys %opt ) {
+		$info->{opt}{$key} = $opt{$key};
+	    }
+	}
     }
-    $plugin->__normalize_options( $opt );
-    return $opt;
+
+    if ( my @arg = map { $_->__default_arg( $plugin_info{$_}{opt}) } @plugin_list ) {
+	local @ARGV = @arg;
+	foreach my $plugin ( @plugin_list ) {
+	    if ( my @spec = $plugin->__options() ) {
+		my %opt;
+		__getopt( \%opt, @spec );
+		my $info = $plugin_info{$plugin};
+		foreach my $key ( keys %opt ) {
+		    exists $info->{opt}{$key}
+			or $info->{opt}{$key} = $opt{$key};
+		}
+	    }
+	}
+    }
+
+    foreach my $plugin ( @plugin_list ) {
+	$plugin->__normalize_options( $plugin_info{$plugin}{opt} );
+    }
+
+    return(
+	sort
+	    { $a->{order} <=> $b->{order} || $a->{class} cmp $b->{class} }
+	    values %plugin_info
+    );
 }
 
 sub _me {
@@ -221,7 +278,11 @@ App::AckX::Preflight::Util - Utility functions.
 =head1 DESCRIPTION
 
 This Perl module provides utility functions for
-L<App::AckX::Preflight|App::AckX::Preflight>.
+L<App::AckX::Preflight|App::AckX::Preflight>. Its contents are
+B<private> to the C<App-AckX-Preflight> distribution, and can be changed
+or revoked at any time and without notice. This documentation is for the
+convenience of the author only, and does not constitute an interface
+contract with the user of this package.
 
 =head1 SUBROUTINES
 
@@ -298,6 +359,33 @@ L<__options()|App::AckX::Preflight::Plugin/__options> and
 L<__peek_opt()|App::AckX::Preflight::Plugin/__peek_opt> methods to
 determine which options to parse, and returns a reference to the options
 hash.
+
+=head2 __interpret_plugins
+
+ my @plugins = __interpret_plugins( $self->__plugins() );
+
+This subroutine takes as its argument a list of plugin class names and
+returns an array of hashes. Each hash describes a plugin, with the
+following keys:
+
+=over
+
+=item class
+
+This is the class name of the plugin.
+
+=item opt
+
+These are the command-line options for the plugin.
+
+=item order
+
+This is the processing order for the plugin, determined from the order
+the options were encountered in the command line.
+
+=back
+
+The plugins are returned in ascending order of the C<{order}> key.
 
 =head2 __open_for_read
 

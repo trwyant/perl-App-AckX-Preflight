@@ -14,7 +14,7 @@ can_ok 'App::AckX::Preflight::Util', [ qw{
     SYNTAX_CODE SYNTAX_COMMENT SYNTAX_DATA SYNTAX_DOCUMENTATION
 	SYNTAX_OTHER
     __die __err_exclusive __file_id
-    __getopt __getopt_for_plugin __open_for_read __warn
+    __getopt __interpret_plugins __open_for_read __warn
     } ];
 
 load_module_ok 'App::AckX::Preflight';

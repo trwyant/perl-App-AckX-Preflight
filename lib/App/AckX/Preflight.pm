@@ -170,16 +170,15 @@ EOD
     $opt{verbose}
 	and print scalar _shell_quote( '$', $0, @argv ), "\n";
 
-    my @plugins = $self->__marshal_plugins();
+    use App::AckX::Preflight::Util qw{ __interpret_plugins };
 
-    my %plugin_opt;
-    $plugin_opt{$_->{package}} = $_->{opt} =
-	__getopt_for_plugin( $_->{package} )
-	for @plugins;
+    $self->{inject} = [];
 
-    $_->{package}->__tweak_opt( \%plugin_opt ) for @plugins;
+    my @plugins = __interpret_plugins( $self->__plugins() );
 
-    $_->{package}->__process( $self, $_->{opt} ) for @plugins;
+    $_->{class}->__process( $self, $_->{opt} ) for @plugins;
+
+    ########## End of new code.
 
     local $self->{verbose} = $opt{verbose};
 
@@ -298,73 +297,6 @@ sub _file_from_parts {
     @f > 1
 	and __die( "Both @f found; delete one" );
     return App::AckX::Preflight::_Config::File->new( name => $f[0] );
-}
-
-# Its own code so we can test it.
-sub __marshal_plugins {
-    my ( $self ) = @_;
-
-    # Under the presumption that we are getting ready to actually run
-    # the plugins, we clear the __inject() data. Obviously we can't do
-    # this if we're being called as a static method for testing.
-    if ( ref $self ) {
-	$self->{inject}	= [];
-    }
-
-    # Go through all the plugins and index them by the options they
-    # support.
-    my %opt_to_plugin;
-    my @plugin_without_opt;
-    foreach my $plugin ( $self->__plugins() ) {
-	my $p_rec = {
-	    package	=> $plugin,
-	};
-	my $recorded;
-	if ( my @opt_spec = $plugin->__options() ) {
-	    $p_rec->{options} = \@opt_spec;
-	    foreach ( @opt_spec ) {
-		my $os = $_;			# Don't want alias
-		$os =~ s/ \A -+ //smx;		# Optional leading dash
-		$os =~ s/ ( [:=+!] ) .* //smx;	# Argument spec.
-		my $negated = defined $1 && '!' eq $1;
-		foreach my $o ( split qr{ [|] }smx, $os ) {
-		    push @{ $opt_to_plugin{$o} ||= [] }, $p_rec;
-		    if ( $negated ) {
-			push @{ $opt_to_plugin{"no$o"} ||= [] }, $p_rec;
-			push @{ $opt_to_plugin{"no-$o"} ||= [] }, $p_rec;
-		    }
-		    $recorded++;
-		}
-	    }
-	}
-	$recorded
-	    or push @plugin_without_opt, $p_rec;
-    }
-
-    # Go through all the arguments, find the options, and record, in
-    # order, the plug-in, if any, that handles each. Only the first use
-    # of a plug-in is recorded.
-    my @found_p_rec;
-    my %num_found;
-    foreach my $arg ( reverse @ARGV ) {
-	$arg =~ m/ \A -+ ( [^=:]+ ) /smx
-	    or next;
-	foreach my $p_rec ( @{ $opt_to_plugin{$1} || [] } ) {
-	    $num_found{$p_rec->{package}}++
-		and next;
-	    push @found_p_rec, $p_rec;
-	}
-    }
-
-    %num_found = ();
-
-    return (
-	grep { ! $num_found{$_->{package}}++ }
-	reverse( @found_p_rec ),
-       	sort { $a->{package} cmp $b->{package} }
-	    @plugin_without_opt,
-	    map { @{ $_ } } values %opt_to_plugin,
-    );
 }
 
 {

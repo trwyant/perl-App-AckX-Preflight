@@ -25,25 +25,16 @@ BEGIN {
     $VERSION = '0.000_039';
 }
 
-sub __options {
-    return( qw{ perldoc! } );
+# IF we have been requested, request default syntax of 'doc'.
+sub __default_arg {
+    my ( undef, $opt ) = @_;
+    $opt->{perldoc}
+	and return ( '--syntax', SYNTAX_DOCUMENTATION );
+    return;
 }
 
-# IF we have been requested, request default syntax of 'doc'.
-
-{
-    my $syntax = 'App::AckX::Preflight::Plugin::Syntax';
-
-    sub __tweak_opt {
-	my ( $package, $opt ) = @_;
-	$opt->{$package}{perldoc}
-	    or return;
-	unless ( $opt->{$syntax}{syntax} ) {
-	    $opt->{$syntax}{syntax} = [ SYNTAX_DOCUMENTATION ];
-	    $syntax->__normalize_options( $opt->{$syntax} );
-	}
-	return;
-    }
+sub __options {
+    return( qw{ perldoc! } );
 }
 
 sub __process {
