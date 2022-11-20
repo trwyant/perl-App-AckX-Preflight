@@ -1,3 +1,18 @@
+0.000_039	2022-11-19	T. R. Wyant
+    Add --syntax type 'none', which cancels syntax filtering.
+
+    Fix problem generating stand-alone file.
+
+    Add plugin Perldoc (adds @INC and friends to @ARGV)
+    
+    Add somewhat-dangerous plugin method __peek_opt, which lets plugins look
+    at and possibly modify other plugins' options BEFORE their __process()
+    method is called.
+
+    Converge syntax type documentation between
+    App::AckX::Preflight::Syntax and
+    App::AckX::Preflight::Plugin::Syntax.
+
 0.000_038	2022-02-04	T. R. Wyant
     Update copyright to 2022.
 

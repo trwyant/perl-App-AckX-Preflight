@@ -24,7 +24,7 @@ BEGIN {
 
     @ISA = qw{ App::AckX::Preflight::Syntax };
 
-    $VERSION = '0.000_038';
+    $VERSION = '0.000_039';
 }
 
 sub __handles_syntax {
