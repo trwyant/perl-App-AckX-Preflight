@@ -157,6 +157,7 @@ sub requires {
 	'Cwd'				=> 0,
 	'Exporter'			=> 0,
 	'ExtUtils::Manifest'		=> 0,
+	'File::Find'			=> 0,
 	'File::Spec'			=> 0,
 	'Getopt::Long'			=> 2.39,	# getoptionsfromarray
 	'List::Util'			=> 1.45,	# uniqstr

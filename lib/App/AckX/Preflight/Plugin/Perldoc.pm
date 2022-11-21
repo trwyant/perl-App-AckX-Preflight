@@ -6,8 +6,9 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight::Plugin;
-use App::AckX::Preflight::Util qw{ SYNTAX_DOCUMENTATION };
+use App::AckX::Preflight::Util qw{ SYNTAX_DOCUMENTATION __warn };
 use Config ();
+use File::Find ();
 
 our @ISA;
 
@@ -26,12 +27,13 @@ BEGIN {
 }
 
 sub __options {
-    return( qw{ perldoc! } );
+    return( qw{ perldelta! perldoc! } );
 }
 
 sub __process {
-    # Append the Perl directories to the argument list
-    push @ARGV,
+    my ( undef, undef, $opt ) = @_;
+
+    my @search = (
 	@INC,
 	grep { defined( $_ ) && $_ ne '' && -d } map { $Config::Config{$_} }
 	qw{
@@ -39,15 +41,34 @@ sub __process {
 	    privlibexp
 	    sitelibexp
 	    vendorlibexp
-	}
-    ;
+	},
+    );
+    if ( $opt->{perldelta} ) {
+	$opt->{perldoc}
+	    and __warn '--perldoc is ignored if --perldelta is asserted';
+	my @perldelta;
+	File::Find::find(
+	    sub {
+		-d
+		    and return;
+		m/ \A perl [0-9]+ delta [.] pod \z /smx
+		    or return;
+		push @perldelta, $File::Find::name;
+	    },
+	    @search,
+	);
+	push @ARGV, sort @perldelta;
+    } else {
+	# Append the Perl directories to the argument list
+	push @ARGV, @search;
+    }
 
     return 1;
 }
 
 sub __wants_to_run {
     my ( undef, $opt ) = @_;
-    return $opt->{perldoc};
+    return $opt->{perldoc} || $opt->{perldelta};
 }
 
 1;
@@ -68,8 +89,32 @@ This L<App::AckX::Preflight|App::AckX::Preflight> plug-in provides the
 ability to search the installed Perl modules in a manner similar to
 L<App:Perldoc::Search|App:Perldoc::Search>.
 
-In order to get this functionality, the user must specify the
-C<--perldoc> command line option.
+The following options are available:
+
+=over
+
+=item --perldelta
+
+This causes the F<perldelta.pod> files to be searched. If both this and
+C<--perldoc> are asserted
+
+=item --perldoc
+
+This causes the directories containing Perl documentation to be
+searched.
+
+If you want to mimic the behavior of F<perldoc-search>, also use the
+F<ack> C<-l> option, which causes only the names of matching files to be
+listed.
+
+If C<--perldelta> is also asserted, this option is ignored with a
+warning.
+
+=back
+
+This plugin's functionality can be augmented by specifying
+C<--syntax=documentation> to cause only matches in module documentation
+to be listed.
 
 =head1 SEE ALSO
 
