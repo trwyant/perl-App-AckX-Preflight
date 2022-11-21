@@ -102,7 +102,9 @@ sub run {
     ref $self
 	or $self = $self->new();
 
-    my %opt;
+    my %opt = (
+	default	=> {},
+    );
 
     $self->__process_config_files(
 	my @config_files = $self->__find_config_files() );
@@ -112,7 +114,7 @@ sub run {
     my @argv = @ARGV;
 
     __getopt( \%opt,
-	qw{ verbose! },
+	qw{ default=s% verbose! },
 	'disable=s'	=> sub {
 	    my ( undef, $plugin ) = @_;
 	    $plugin =~ m/ :: /smx
@@ -155,9 +157,9 @@ EOD
 		}
 		exit 1;
 	    }
-	    my $match = qr{ :: \Q$val\E \z }smx;
+	    my $match = lc $val;
 	    foreach ( $self->__plugins() ) {
-		$_ =~ $match
+		$_->__name() eq $match
 		    or next;
 		( my $file = "$_.pm" ) =~ s| :: |/|smxg;
 		Pod::Usage::pod2usage( { -verbose => 2, -input => $INC{$file} } );
@@ -174,11 +176,13 @@ EOD
 
     $self->{inject} = [];
 
-    my @plugins = __interpret_plugins( $self->__plugins() );
+    my @plugins = __interpret_plugins( $opt{default}, $self->__plugins() );
 
-    $_->{class}->__process( $self, $_->{opt} ) for @plugins;
-
-    ########## End of new code.
+    foreach my $p ( @plugins ) {
+	$p->{class}->__wants_to_run( $p->{opt} )
+	    or next;
+	$p->{class}->__process( $self, $p->{opt} );
+    }
 
     local $self->{verbose} = $opt{verbose};
 

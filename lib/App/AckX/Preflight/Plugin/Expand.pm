@@ -32,9 +32,7 @@ sub __options {
 sub __process {
     my ( undef, undef, $opt ) = @_;
 
-    # Unless we actually have a --expand option, we have nothing to do.
-    my $expand = delete $opt->{expand}
-	or return;
+    my $expand = $opt->{expand};
 
     my $re = qr< \A --? ( @{[
 	join '|', map { "\Q$_\E" } sort keys %{ $expand } ]} ) \z >smx;
@@ -52,7 +50,11 @@ sub __process {
     @ARGV = @rslt;	## no critic (RequireLocalizedPunctuationVars)
 
     return;
+}
 
+sub __wants_to_run {
+    my ( undef, $opt ) = @_;
+    return !! $opt->{expand};
 }
 
 1;

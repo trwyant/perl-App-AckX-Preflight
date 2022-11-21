@@ -75,6 +75,22 @@ C<App::AckX::Preflight>. This option is passed on to F<ack> itself.
 
 The default is C<--env>, but this can be negated with C<--noenv>.
 
+=head2 --default
+
+ --default perldoc=--syntax=doc
+
+This option specifies default options (sic!) for plugins. The argument
+is the name of the plugin (typically the last portion of the class name,
+converted to lower case), an equals sign, and the default arguments to
+be applied if that plugin is to be used.
+
+If the value for a plugin is used, it will be parsed by
+L<Text::ParseWords::shellwords()|Text::ParseWords>, and then by
+L<Getopt::Long>. Any options found will be applied to the appropriate
+plugin provided that option was not specified explicitly.
+
+This option is really only useful in a configuration file.
+
 =head2 --help
 
 This option causes the POD of the top-level script (as determined by

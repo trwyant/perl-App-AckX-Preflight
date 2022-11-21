@@ -177,6 +177,25 @@ $got = xqt( qw{ --noenv --perldoc } );
 is $got,
     [ qw{
 	perl
+	-S
+	ack
+	--noenv
+	},
+	@INC,
+	grep { defined( $_ ) && $_ ne '' && -d } map { $Config{$_} }
+	qw{
+	    archlibexp
+	    privlibexp
+	    sitelibexp
+	    vendorlibexp
+	}
+    ],
+    '--noenv --perldoc';
+
+$got = xqt( qw{ --noenv --perldoc --default=perldoc=--syntax=doc } );
+is $got,
+    [ qw{
+	perl
 	-Mblib
 	-MApp::AckX::Preflight::Syntax=-syntax=documentation
 	-S
@@ -191,7 +210,8 @@ is $got,
 	    sitelibexp
 	    vendorlibexp
 	}
-    ];
+    ],
+    '--noenv --perldoc --default=perldoc=--syntax=doc';
 
 done_testing;
 

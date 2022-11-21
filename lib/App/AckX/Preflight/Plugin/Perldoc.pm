@@ -25,25 +25,11 @@ BEGIN {
     $VERSION = '0.000_039';
 }
 
-# IF we have been requested, request default syntax of 'doc'.
-sub __default_arg {
-    my ( undef, $opt ) = @_;
-    $opt->{perldoc}
-	and return ( '--syntax', SYNTAX_DOCUMENTATION );
-    return;
-}
-
 sub __options {
     return( qw{ perldoc! } );
 }
 
 sub __process {
-    my ( undef, undef, $opt ) = @_;
-
-    # Unless we actually have a --perldoc option, we have nothing to do.
-    $opt->{perldoc}
-	or return;
-
     # Append the Perl directories to the argument list
     push @ARGV,
 	@INC,
@@ -59,6 +45,10 @@ sub __process {
     return 1;
 }
 
+sub __wants_to_run {
+    my ( undef, $opt ) = @_;
+    return $opt->{perldoc};
+}
 
 1;
 
@@ -80,11 +70,6 @@ L<App:Perldoc::Search|App:Perldoc::Search>.
 
 In order to get this functionality, the user must specify the
 C<--perldoc> command line option.
-
-If C<--perldoc> is specified, command line option
-C<--syntax=documentation> is provided by default unless some C<--syntax>
-option is specified explicitly. The user who does not want syntax
-filtering with this plug-in can specify C<--syntax=none>.
 
 =head1 SEE ALSO
 

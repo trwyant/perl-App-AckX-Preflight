@@ -22,12 +22,19 @@ BEGIN {
 
 use constant IN_SERVICE	=> 1;
 
-sub __default_arg {
+sub __normalize_options {
     return;
 }
 
-sub __normalize_options {
-    return;
+{
+    my %name;
+    sub __name {
+	my ( $class ) = @_;
+	unless ( exists $name{$class} ) {
+	    ( $name{$class} = lc $class ) =~ s/ .* :: //smx;
+	}
+	return $name{$class};
+    }
 }
 
 sub __options {
@@ -40,6 +47,10 @@ sub __peek_opt {
 
 sub __process {
     __die_hard( '__process() must be overridden' );
+}
+
+sub __wants_to_run {
+    __die_hard( '__wants_to_run() must be overridden' );
 }
 
 1;
@@ -94,19 +105,6 @@ interface.
 
 This class supports the following package-private methods:
 
-=head2 __default_arg
-
-This static method takes as its argument a reference to a hash of all
-options relevant to the plugin.
-
-It returns default arguments. These can only usefully be options, but
-need not be options for this plugin. They will be parsed, but an option
-will only be applied if it was not specified explicitly in the command
-line.
-
-B<Note> that unless the plugin actually intends to do something this
-B<should> return nothing.
-
 =head2 IN_SERVICE
 
 This Boolean method can be a manifest constant. It is true indicating
@@ -116,6 +114,12 @@ system, since not all CPAN clients remove stuff.
 
 The inherited value is true. You would normally only override this when
 a plug-in is no longer to be used.
+
+=head2 __name
+
+This static method returns the name of the plugin. Unless overridden,
+this is just the class name, converted to lower case and with everything
+up to and including the last C<::> stripped.
 
 =head2 __normalize_options
 
@@ -173,6 +177,24 @@ This method B<must> be overridden.
 
 This method is expected to do its job by modifying C<@ARGV>. It returns
 nothing.
+
+=head2 __wants_to_run
+
+ $plugin->__wants_to_run( $opt )
+   and $plugin->__process( $aaxp, $opt )
+
+If this static method returns a true value, the plugin's C<__process()>
+method will be run. Other functionality may also depend on this.
+
+The argument is a reference to a hash of the command-line options parsed
+from the command line which are relevant to the invocant -- that is, the
+ones returned by the invocant's L<__options()|/__options> and
+L<__peek_opt()|/__peek_opt> methods.
+
+This method B<must> be overridden.
+
+This method is expected to do its job by consulting C<$opt> and
+C<@ARGV>.
 
 =head1 SEE ALSO
 

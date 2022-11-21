@@ -46,12 +46,6 @@ sub __peek_opt {
 
 sub __process {
     my ( undef, $aaxp, $opt ) = @_;
-    $opt->{syntax}
-	and @{ $opt->{syntax} }
-	or $opt->{'syntax-type'}
-	or $opt->{'syntax-wc'}
-	or $opt->{'syntax-wc-only'}
-	or return;
 
     $opt->{'syntax-wc'} ||= $opt->{'syntax-wc-only'};
 
@@ -73,6 +67,12 @@ sub __process {
 
     return;
 
+}
+
+sub __wants_to_run {
+    my ( undef, $opt ) = @_;
+    return $opt->{syntax} || $opt->{'syntax-type'} ||
+	$opt->{'syntax-wc'} || $opt->{'syntax-wc-only'};
 }
 
 1;

@@ -9,6 +9,7 @@ use App::Ack ();
 use Carp ();
 use Exporter qw{ import };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
+use Text::ParseWords ();
 
 use constant ARRAY_REF	=> ref [];
 use constant CODE_REF	=> ref sub {};
@@ -173,7 +174,8 @@ sub _get_option_parser {
 }
 
 sub __interpret_plugins {
-    my @plugin_list = @_;
+    my ( @plugin_list ) = @_;
+    my $default = ( HASH_REF eq ref $plugin_list[0] ) ? shift @plugin_list : {};
 
     my %plugin_info;
 
@@ -216,16 +218,25 @@ sub __interpret_plugins {
 	}
     }
 
-    if ( my @arg = map { $_->__default_arg( $plugin_info{$_}{opt}) } @plugin_list ) {
-	local @ARGV = @arg;
-	foreach my $plugin ( @plugin_list ) {
-	    if ( my @spec = $plugin->__options() ) {
-		my %opt;
-		__getopt( \%opt, @spec );
-		my $info = $plugin_info{$plugin};
-		foreach my $key ( keys %opt ) {
-		    exists $info->{opt}{$key}
-			or $info->{opt}{$key} = $opt{$key};
+    {
+	my @arg;
+	foreach ( @plugin_list ) {
+	    my $name = $_->__name();
+	    $default->{$name}
+		and $_->__wants_to_run( $plugin_info{$_}{opt} )
+		and push @arg, Text::ParseWords::shellwords( $default->{$name} );
+	}
+	if ( @arg ) {
+	    local @ARGV = @arg;
+	    foreach my $plugin ( @plugin_list ) {
+		if ( my @spec = $plugin->__options() ) {
+		    my %opt;
+		    __getopt( \%opt, @spec );
+		    my $info = $plugin_info{$plugin};
+		    foreach my $key ( keys %opt ) {
+			exists $info->{opt}{$key}
+			    or $info->{opt}{$key} = $opt{$key};
+		    }
 		}
 	    }
 	}
@@ -386,6 +397,13 @@ the options were encountered in the command line.
 =back
 
 The plugins are returned in ascending order of the C<{order}> key.
+
+Optionally, the first argument can be a reference to a hash of default
+arguments, keyed by plugin name (as returned by C<__name()>). For each
+specified plugin, if its C<__wants_to_run()> method returns a true
+value, the default arguments are parsed with
+C<Text::ParseWords::shellwords()> and then by each enabled plug-in. Any
+options found are used as default options for the relevant plug-ins.
 
 =head2 __open_for_read
 

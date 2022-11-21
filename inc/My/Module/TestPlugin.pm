@@ -29,7 +29,8 @@ sub xqt {
 	shift @ARGV :
 	App::AckX::Preflight->new();
     my $opt = HASH_REF eq ref $ARGV[0] ? shift @ARGV : {};
-    $caller->CLASS()->__process( $aaxp, $opt );
+    $caller->CLASS()->__wants_to_run( $opt )
+	and $caller->CLASS()->__process( $aaxp, $opt );
     return ( @ARGV );
 }
 

@@ -35,10 +35,6 @@ sub __peek_opt {
 sub __process {
     my ( undef, undef, $opt ) = @_;
 
-    # Unless we actually have a --file option, we have nothing to do.
-    defined $opt->{file}
-	or return;
-
     # We can't have --match if we have --file, since --file is
     # implemented using --match.
     defined $opt->{match}
@@ -96,6 +92,11 @@ sub __process {
     }
 
     return;
+}
+
+sub __wants_to_run {
+    my ( undef, $opt ) = @_;
+    return defined $opt->{file};
 }
 
 1;
