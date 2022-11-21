@@ -1,13 +1,23 @@
+0.000_040	2022-11-21	T. R. Wyant
+    Add --perldelta, which causes Perl delta docs to be searched.
+
+    Add global --default, which lets plugins specify default options to
+    themselves or other plugins. This is probably only useful in a
+    configuration file, but lets me get rid of __tweak_opt().
+
+    Further refactoring of plugin dispatch, mostly in support of the
+    above.
+
 0.000_039	2022-11-19	T. R. Wyant
     Add --syntax type 'none', which cancels syntax filtering.
 
     Fix problem generating stand-alone file.
 
     Add plugin Perldoc (adds @INC and friends to @ARGV)
-    
-    Add somewhat-dangerous plugin method __peek_opt, which lets plugins look
-    at and possibly modify other plugins' options BEFORE their __process()
-    method is called.
+
+    Add somewhat-dangerous plugin method __tweek_opt, which lets plugins
+    look at and possibly modify other plugins' options BEFORE their
+    __process() method is called.
 
     Converge syntax type documentation between
     App::AckX::Preflight::Syntax and

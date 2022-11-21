@@ -22,7 +22,7 @@ BEGIN {
 
     @ISA = qw{ App::AckX::Preflight::Syntax::_single_line_comments };
 
-    $VERSION = '0.000_039';
+    $VERSION = '0.000_040';
 
     __PACKAGE__->__handles_type_mod( qw{ set ada } );
 }
