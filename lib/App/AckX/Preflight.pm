@@ -114,7 +114,7 @@ sub run {
     my @argv = @ARGV;
 
     __getopt( \%opt,
-	qw{ default=s% verbose! },
+	qw{ default=s% dry_run|dry-run! verbose! },
 	'disable=s'	=> sub {
 	    my ( undef, $plugin ) = @_;
 	    $plugin =~ m/ :: /smx
@@ -169,8 +169,11 @@ EOD
 	},
     );
 
+    defined $opt{verbose}
+	or $opt{verbose} = $opt{dry_run};
+
     $opt{verbose}
-	and print scalar _shell_quote( '$', $0, @argv ), "\n";
+	and warn scalar _shell_quote( '$', $0, @argv ), "\n";
 
     use App::AckX::Preflight::Util qw{ __interpret_plugins };
 
@@ -185,9 +188,12 @@ EOD
     }
 
     local $self->{verbose} = $opt{verbose};
+    local $self->{dry_run} = $opt{dry_run};
 
     if ( IS_SINGLE_FILE ) {
 	$self->_trace( ack => @ARGV );
+	$self->{dry_run}
+	    and exit;
 	return;
     } else {
 
@@ -199,16 +205,23 @@ EOD
 	    splice @inject, 0, 0, '-Mblib';
 	}
 
-	return $self->__execute(
+	my @arg = (
 	    perl		=> @inject,
-	    qw{ -S ack }	=> @ARGV );
+	    qw{ -S ack },
+	    @ARGV,
+	);
+
+	$self->_trace( @arg );
+
+	$self->{dry_run}
+	    and return;
+
+	return $self->__execute( @arg );
     }
 }
 
 sub __execute {
-    my ( $self, @arg ) = @_;
-
-    $self->_trace( @arg );
+    my ( undef, @arg ) = @_;
 
     exec { $arg[0] } @arg
 	or __die( "Failed to exec $arg[0]: $!" );
@@ -373,7 +386,7 @@ sub _trace {
     ref $self
 	and $self->{verbose}
 	or return;
-    print STDERR scalar _shell_quote( '$', @arg ), "\n";
+    warn scalar _shell_quote( '$', @arg ), "\n";
     return;
 }
 

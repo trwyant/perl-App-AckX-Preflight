@@ -91,6 +91,17 @@ plugin provided that option was not specified explicitly.
 
 This option is really only useful in a configuration file.
 
+=head2 --dry-run
+
+If this Boolean option is asserted,
+L<App::AckX::Preflight|App::AckX::Preflight> exits at the point where it
+would otherwise execute F<ack>.
+
+If this option is asserted, the L<--verbose|/--verbose> option defaults
+to C<--verbose>.
+
+The default is C<--no-dry-run>.
+
 =head2 --help
 
 This option causes the POD of the top-level script (as determined by
@@ -138,6 +149,8 @@ This is a synonym for C<--help>, and takes the same optional arguments.
 This causes C<App::AckX::Preflight> to write certain information to
 standard error. The exact nature of this information is undocumented,
 and subject to change without notice.
+
+The default is the value of L<--dry-run|/--dry-run>.
 
 =head2 --version
 
