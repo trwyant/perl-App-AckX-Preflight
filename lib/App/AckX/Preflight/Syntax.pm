@@ -86,18 +86,18 @@ sub __get_syntax_opt {
     my @arg;
     $opt->{syntax}
 	and @{ $opt->{syntax} }
-	and push @arg, '-syntax=' . join( ':', @{ $opt->{syntax} } );
+	and push @arg, '--syntax=' . join( ':', @{ $opt->{syntax} } );
     foreach my $name ( qw{
 	syntax-empty-code-is-comment
 	syntax-type syntax-wc syntax-wc-only
     } ) {
 	$opt->{$name}
-	    and push @arg, "-$name";
+	    and push @arg, "--$name";
     }
     foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
 	my ( undef, $mod, @val ) = @{ $_ };
 	local $" = ':';
-	push @arg, "-syntax-$mod=@val";
+	push @arg, "--syntax-$mod=@val";
     }
 
     return @arg;
@@ -492,7 +492,7 @@ The options parsed are:
 
 =over
 
-=item -syntax
+=item --syntax
 
 This option specifies the syntax types being requested. You can specify
 more than one punctuated by commas, colons, or semicolons (i.e. anything
@@ -500,22 +500,22 @@ that matches C</[:;,]/>), and you can specify this option more than
 once.  Multiple types in a single value will be parsed out, so that the
 same options hash will be returned whether the input was
 
- -syntax=code,doc
+ --syntax=code,doc
 
 or
 
- -syntax=code -syntax=doc
+ --syntax=code --syntax=doc
 
 The valid syntax types are hose returned by
 L<__handles_syntax()|/__handles_syntax>, plus C<'none'>. Syntax types
 can be abbreviated, as long as the abbreviation is unique.
 
-Value C<'none'> cancels any C<-syntax> values specified up to the time
+Value C<'none'> cancels any C<--syntax> values specified up to the time
 at which it is encountered.
 
-=item -syntax-add
+=item --syntax-add
 
- -syntax-add=Perl:perlpod
+ --syntax-add=Perl:perlpod
 
 This option adds one or more file types to the filter. It can be
 specified more than once.
@@ -533,32 +533,32 @@ The filter name, if present, B<must> be the name of a syntax filter, but
 the leading C<App::AckX::Preflight::Filter::> can be omitted. The file
 types will be ineffective unless they are known to C<ack>.
 
-=item -syntax-del
+=item --syntax-del
 
- -syntax-del=Perl:perlpod
+ --syntax-del=Perl:perlpod
 
 This option removes one or more file types from the filter. It can be
 specified more than once.
 
-All the verbiage about the argument of C<-syntax-add>, above, applies
+All the verbiage about the argument of C<--syntax-add>, above, applies
 here also.
 
-=item -syntax-set
+=item --syntax-set
 
- -syntax-set=Perl:perl:perlpod
+ --syntax-set=Perl:perl:perlpod
 
 This option associates one or more file types to the filter, replacing
 any previously-handled file types. It can be specified more than once.
 
-All the verbiage about the argument of C<-syntax-add>, above, applies
+All the verbiage about the argument of C<--syntax-add>, above, applies
 here also.
 
-=item -syntax-type
+=item --syntax-type
 
 If asserted, this Boolean option requests that the syntax filters prefix
 each line returned with the syntax type computed for that line.
 
-=item -syntax-wc
+=item --syntax-wc
 
 If asserted, this Boolean option requests that L<wc (1)>-style
 information on each syntax type be appended to the output.
@@ -774,7 +774,7 @@ is:
 
 =item syntax-type
 
-See C<-syntax-type> above.
+See C<--syntax-type> above.
 
 =back
 

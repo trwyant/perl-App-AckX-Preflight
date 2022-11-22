@@ -116,7 +116,7 @@ is $got,
     [ qw{
 	perl
 	-Mblib
-	-MApp::AckX::Preflight::Syntax=-syntax=code
+	-MApp::AckX::Preflight::Syntax=--syntax=code
 	-S
 	ack
 	--noenv
@@ -128,7 +128,7 @@ is $got,
     [ qw{
 	perl
 	-Mblib
-	-MApp::AckX::Preflight::Syntax=-syntax=data
+	-MApp::AckX::Preflight::Syntax=--syntax=data
 	-S
 	ack
 	--noenv
@@ -140,7 +140,7 @@ is $got,
     [ qw{
 	perl
 	-Mblib
-	-MApp::AckX::Preflight::Syntax=-syntax=documentation
+	-MApp::AckX::Preflight::Syntax=--syntax=documentation
 	-S
 	ack
 	--noenv
@@ -153,7 +153,7 @@ is $got,
 	[ qw{
 	    perl
 	    -Mblib
-	    -MApp::AckX::Preflight::Syntax=-syntax=code:documentation
+	    -MApp::AckX::Preflight::Syntax=--syntax=code:documentation
 	    -S
 	    ack
 	    --noenv
@@ -166,7 +166,7 @@ is $got,
     [ qw{
 	perl
 	-Mblib
-	-MApp::AckX::Preflight::Syntax=-syntax=code:data:documentation
+	-MApp::AckX::Preflight::Syntax=--syntax=code:data:documentation
 	-S
 	ack
 	--noenv
@@ -197,7 +197,7 @@ is $got,
     [ qw{
 	perl
 	-Mblib
-	-MApp::AckX::Preflight::Syntax=-syntax=documentation
+	-MApp::AckX::Preflight::Syntax=--syntax=documentation
 	-S
 	ack
 	--noenv
