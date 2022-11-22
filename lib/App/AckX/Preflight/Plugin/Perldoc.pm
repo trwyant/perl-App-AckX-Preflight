@@ -46,18 +46,16 @@ sub __process {
     if ( $opt->{perldelta} ) {
 	$opt->{perldoc}
 	    and __warn '--perldoc is ignored if --perldelta is asserted';
-	my @perldelta;
 	File::Find::find(
 	    sub {
 		-d
 		    and return;
 		m/ \A perl [0-9]+ delta [.] pod \z /smx
 		    or return;
-		push @perldelta, $File::Find::name;
+		push @ARGV, $File::Find::name;
 	    },
 	    @search,
 	);
-	push @ARGV, sort @perldelta;
     } else {
 	# Append the Perl directories to the argument list
 	push @ARGV, @search;
@@ -115,6 +113,9 @@ warning.
 This plugin's functionality can be augmented by specifying
 C<--syntax=documentation> to cause only matches in module documentation
 to be listed.
+
+If you want the files in lexicographical order you can use the F<ack>
+C<--sort-files> option.
 
 =head1 SEE ALSO
 

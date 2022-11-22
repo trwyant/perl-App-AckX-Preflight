@@ -59,7 +59,6 @@ find(
     },
     @dirs,
 );
-@want = sort @want;
 unshift @want, '--syntax=documentation';
 is \@got, \@want, q<Process '--perldoc --syntax=documentation>;
 
