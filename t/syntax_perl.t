@@ -61,7 +61,7 @@ my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ parrot perl perltest } ],
     sprintf '%s handles parrot, perl, perltest', SYNTAX_FILTER;
 
-SYNTAX_FILTER->import( qw{ -syntax-add perlpod } );
+SYNTAX_FILTER->import( qw{ --syntax-add perlpod } );
 
 is [ SYNTAX_FILTER->__handles_type() ],
     [ qw{ parrot perl perltest perlpod } ],

@@ -33,10 +33,10 @@ BEGIN {
 sub __options {
     return( qw{
 	syntax=s@
-	syntax-match!
-	syntax-type!
-	syntax-wc!
-	syntax-wc-only!
+	syntax_match|syntax-match!
+	syntax_type|syntax-type!
+	syntax_wc|syntax-wc!
+	syntax_wc_only|syntax-wc-only!
     } );
 }
 
@@ -47,12 +47,12 @@ sub __peek_opt {
 sub __process {
     my ( undef, $aaxp, $opt ) = @_;
 
-    $opt->{'syntax-wc'} ||= $opt->{'syntax-wc-only'};
+    $opt->{syntax_wc} ||= $opt->{syntax_wc_only};
 
     my @arg = App::AckX::Preflight::Syntax->__get_syntax_opt( \@ARGV, $opt );
 
-    if ( $opt->{'syntax-match'} && (
-	    $opt->{'syntax-type'} || $opt->{'syntax-wc'} ) ) {
+    if ( $opt->{syntax_match} && (
+	    $opt->{syntax_type} || $opt->{syntax_wc} ) ) {
 	$opt->{match}
 	    or splice @ARGV, 0, 0, qw{ --match (?) };
     }
@@ -71,8 +71,8 @@ sub __process {
 
 sub __wants_to_run {
     my ( undef, $opt ) = @_;
-    return $opt->{syntax} || $opt->{'syntax-type'} ||
-	$opt->{'syntax-wc'} || $opt->{'syntax-wc-only'};
+    return $opt->{syntax} || $opt->{syntax_type} ||
+	$opt->{syntax_wc} || $opt->{syntax_wc_only};
 }
 
 1;

@@ -54,28 +54,34 @@ sub __get_syntax_opt {
     $opt ||= {};
     my $mod_syntax = sub {
 	my ( $name, $val ) = @_;
-	push @{ $opt->{'syntax-mod'} ||= [] }, "-$name=$val";
+	( my $alias = $name ) =~ tr/_/-/;
+	push @{ $opt->{syntax_mod} ||= [] }, "--$alias=$val";
 	return;
     };
     App::AckX::Preflight::Util::__getopt( $arg, $opt,
-	'syntax-add=s'	=> $mod_syntax,
-	'syntax-del=s'	=> $mod_syntax,
-	'syntax-set=s'	=> $mod_syntax,
-	qw{ syntax=s@ syntax-empty-code-is-comment!
-	syntax-type! syntax-wc! syntax-wc-only! },
+	'syntax_add|syntax-add=s'	=> $mod_syntax,
+	'syntax_del|syntax-del=s'	=> $mod_syntax,
+	'syntax_set|syntax-set=s'	=> $mod_syntax,
+	qw{
+	    syntax=s@
+	    syntax-empty-code-is-comment!
+	    syntax_type|syntax-type!
+	    syntax_wc|syntax-wc!
+	    syntax_wc_only|syntax-wc-only!
+	},
     );
     if ( $strict && @{ $arg } ) {
 	local $" = ', ';
 	__die( "Unsupported arguments @{ $arg }" );
     }
-    $opt->{'syntax-wc'} ||= $opt->{'syntax-wc-only'};
+    $opt->{syntax_wc} ||= $opt->{syntax_wc_only};
     $class->__normalize_options( $opt );
     %SYNTAX_OPT  = map { $_ => $opt->{$_} } qw{
 	syntax-empty-code-is-comment
-	syntax-type syntax-wc syntax-wc-only
+	syntax_type syntax_wc syntax_wc_only
 	};
     %WANT_SYNTAX = map { $_ => 1 } @{ $opt->{syntax} || [] };
-    foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
+    foreach ( @{ $opt->{syntax_mod} || [] } ) {
 	my ( $filter, $mod, @val ) = @{ $_ };
 	$filter->__handles_type_mod( $mod, @val );
     }
@@ -89,12 +95,14 @@ sub __get_syntax_opt {
 	and push @arg, '--syntax=' . join( ':', @{ $opt->{syntax} } );
     foreach my $name ( qw{
 	syntax-empty-code-is-comment
-	syntax-type syntax-wc syntax-wc-only
+	syntax_type syntax_wc syntax_wc_only
     } ) {
 	$opt->{$name}
-	    and push @arg, "--$name";
+	    or next;
+	( my $alias = $name ) =~ tr/_/-/;
+	push @arg, "--$alias";
     }
-    foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
+    foreach ( @{ $opt->{syntax_mod} || [] } ) {
 	my ( undef, $mod, @val ) = @{ $_ };
 	local $" = ':';
 	push @arg, "--syntax-$mod=@val";
@@ -235,11 +243,11 @@ sub PUSHED {
     my $attr = $self->__my_attr();
     $attr->{syntax_empty_code_is_comment} =
 	$syntax_opt->{'syntax-empty-code-is-comment'};
-    $attr->{syntax_type} = $syntax_opt->{'syntax-type'};
+    $attr->{syntax_type} = $syntax_opt->{syntax_type};
     $attr->{want} = $self->__want_syntax();
-    $syntax_opt->{'syntax-wc'}
+    $syntax_opt->{syntax_wc}
 	and $attr->{syntax_wc} = {};
-    $attr->{syntax_wc_only} = $syntax_opt->{'syntax-wc-only'};
+    $attr->{syntax_wc_only} = $syntax_opt->{syntax_wc_only};
     $self->__init();
     return $self;
 }
@@ -284,7 +292,7 @@ sub TELL {
 	    }
 	}
 
-	foreach ( @{ $opt->{'syntax-mod'} || [] } ) {
+	foreach ( @{ $opt->{syntax_mod} || [] } ) {
 	    my ( $filter, $mod, @val ) =
 		$invocant->_normalize_syntax_mod( $_ );
 	    unless ( $class eq $filter ) {
@@ -308,12 +316,12 @@ sub TELL {
 	$plugins ||= { map { $_ => 1 } $invocant->__plugins() };
 
 	my ( $name, $val ) = split qr{ = }smx, $spec, 2;
-	$name =~ s/ \A - //smx;
-	( my $mod = $name ) =~ s/ .* - //smx;
+	$name =~ s/ \A --? //smx;
+	( my $mod = $name ) =~ s/ .* [-_] //smx;
 	my $filter = ref $invocant || $invocant;
 	if ( __PACKAGE__ eq $filter ) {
 	    $val =~ s/ \A ( \w+ (?: :: \w+ )* ) $ARG_SEP_RE? //smx
-		or __die( "Invalid syntax filter name in -$name=$val" );
+		or __die( "Invalid syntax filter name in --$name=$val" );
 	    my $filter = $1;
 	    $filter =~ m/ :: /smx
 		or $filter = join '::', __PACKAGE__, $filter;
@@ -363,7 +371,7 @@ sub __want_syntax {
     my ( $class ) = @_;
     keys %WANT_SYNTAX
 	and return \%WANT_SYNTAX;
-    ( $SYNTAX_OPT{'syntax-type'} || $SYNTAX_OPT{'syntax-wc'} )
+    ( $SYNTAX_OPT{syntax_type} || $SYNTAX_OPT{syntax_wc} )
 	and return { map { $_ => 1 } $class->__handles_syntax() };
     return {};
 }
@@ -419,8 +427,8 @@ use constant SYNTAX_FILTER_LAYER =>
 		# types or word count we don't need the filter.
 		if ( $syntax->__want_everything() ) {
 		    my $opt = $syntax->__syntax_opt();
-		    $opt->{'syntax-type'}
-			or $opt->{'syntax-wc'}
+		    $opt->{syntax_type}
+			or $opt->{syntax_wc}
 			or return $fh;
 		}
 
