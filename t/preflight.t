@@ -181,8 +181,9 @@ is $got,
 	ack
 	--noenv
 	},
+	grep { -d }
 	@INC,
-	grep { defined( $_ ) && $_ ne '' && -d } map { $Config{$_} }
+	grep { defined( $_ ) && $_ ne '' } map { $Config{$_} }
 	qw{
 	    archlibexp
 	    privlibexp
@@ -202,8 +203,9 @@ is $got,
 	ack
 	--noenv
 	},
+	grep { -d }
 	@INC,
-	grep { defined( $_ ) && $_ ne '' && -d } map { $Config{$_} }
+	grep { defined( $_ ) && $_ ne '' } map { $Config{$_} }
 	qw{
 	    archlibexp
 	    privlibexp

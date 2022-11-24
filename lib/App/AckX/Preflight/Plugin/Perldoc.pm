@@ -34,8 +34,9 @@ sub __process {
     my ( undef, undef, $opt ) = @_;
 
     my @search = (
+	grep { -d }
 	@INC,
-	grep { defined( $_ ) && $_ ne '' && -d } map { $Config::Config{$_} }
+	grep { defined( $_ ) && $_ ne '' } map { $Config::Config{$_} }
 	qw{
 	    archlibexp
 	    privlibexp

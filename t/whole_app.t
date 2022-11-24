@@ -9,6 +9,9 @@ use Test2::V0;
 
 use constant ACKXP_STANDALONE	=> 'ackxp-standalone';
 
+-x $^X
+    or plan skip_all => "Somethig strange is going on. \$^X ($^X) is not executable.";
+
 if ( need_to_regenerate_ackxp_standalone() ) {
     note 'Regenerating ', ACKXP_STANDALONE;
     system { 'perl' } qw{ perl -Mblib tools/squash -o }, ACKXP_STANDALONE;
