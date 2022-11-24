@@ -78,8 +78,12 @@ sub xqt {
     $arg[0] =~ m/ standalone /smx
 	or unshift @arg, '-Mblib';
     unshift @arg, $^X;
-    my $stdout = `@arg`;
-    $?  and die "\$ @arg: ", $? >> 8;
+    open my $fh, '-|', @arg
+	or die "\$ @arg: $!";
+    my $stdout = do {
+	local $/ = undef;
+	<$fh>;
+    };
     @_ = ( $stdout, $want, $title );
     goto \&is;
 }
