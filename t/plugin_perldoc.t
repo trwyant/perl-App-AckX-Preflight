@@ -16,8 +16,9 @@ use My::Module::TestPlugin;	# Imports prs() and xqt()
 my @got;
 my @want;
 my @dirs = (
+    grep { -d }
     @INC,
-    grep { defined( $_ ) && $_ ne '' && -d } map { $Config{$_} }
+    grep { defined( $_ ) && $_ ne '' } map { $Config{$_} }
     qw{
 	archlibexp
 	privlibexp

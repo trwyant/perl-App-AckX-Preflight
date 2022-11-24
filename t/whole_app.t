@@ -17,15 +17,16 @@ if ( need_to_regenerate_ackxp_standalone() ) {
     system { 'perl' } qw{ perl -Mblib tools/squash -o }, ACKXP_STANDALONE;
 }
 
-foreach my $app ( 'script/ackxp', ACKXP_STANDALONE ) {
+foreach my $app ( 'blib/script/ackxp', ACKXP_STANDALONE ) {
     -x $app
 	or next;
 
-    note "Testing $app";
+    diag "Testing $app";
 
-    xqt( $app, qw{ --noenv -syntax code -w Wyant lib/ }, <<'EOD' );
+    xqt( $app, qw{ --noenv --syntax code -w Wyant lib/ }, <<'EOD' );
 lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 EOD
+
     xqt( $app, qw{ --noenv --syntax-match -syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
 meta:#!/usr/bin/env perl
 code:
@@ -51,7 +52,7 @@ docu:	5	8	67
 meta:	2	3	38
 EOD
 
-    xqt( $app, qw{ --noenv -syntax code -file t/data/file lib/ }, <<'EOD' );
+    xqt( $app, qw{ --noenv --syntax code -file t/data/file lib/ }, <<'EOD' );
 lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 EOD
 }
@@ -78,7 +79,7 @@ sub xqt {
 	or unshift @arg, '-Mblib';
     unshift @arg, $^X;
     my $stdout = `@arg`;
-    $?  and die "\$ @arg: $?";
+    $?  and die "\$ @arg: ", $? >> 8;
     @_ = ( $stdout, $want, $title );
     goto \&is;
 }
