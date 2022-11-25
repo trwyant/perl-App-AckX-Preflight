@@ -23,4 +23,5 @@ CVS/
 ^tools/
 ^TODO$
 ^xt/author/optionals/
+^xt/author/verbatim.t
 ^App-AckX-Preflight
