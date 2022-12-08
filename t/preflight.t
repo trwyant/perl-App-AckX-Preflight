@@ -14,6 +14,7 @@ use Test2::V0;
 
 use lib qw{ inc };
 use My::Module::Preflight;
+use My::Module::TestPlugin qw{ :dirs };
 
 delete @ENV{ qw{ ACKXPRC ACKXP_OPTIONS } };
 my @manifest = sort keys %{ maniread() };
@@ -181,15 +182,7 @@ is $got,
 	ack
 	--noenv
 	},
-	grep { -d }
-	@INC,
-	grep { defined( $_ ) && $_ ne '' } map { $Config{$_} }
-	qw{
-	    archlibexp
-	    privlibexp
-	    sitelibexp
-	    vendorlibexp
-	}
+	inc(),
     ],
     '--noenv --perldoc';
 
@@ -203,15 +196,7 @@ is $got,
 	ack
 	--noenv
 	},
-	grep { -d }
-	@INC,
-	grep { defined( $_ ) && $_ ne '' } map { $Config{$_} }
-	qw{
-	    archlibexp
-	    privlibexp
-	    sitelibexp
-	    vendorlibexp
-	}
+	inc(),
     ],
     '--noenv --perldoc --default=perldoc=--syntax=doc';
 

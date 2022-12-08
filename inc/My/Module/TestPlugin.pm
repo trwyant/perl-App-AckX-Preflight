@@ -7,13 +7,40 @@ use warnings;
 
 use App::AckX::Preflight::Util qw{ HASH_REF __interpret_plugins };
 # use Carp;
+use Config;
 use Exporter qw{ import };
+use File::Spec;
 
-our @EXPORT_OK = qw{ prs xqt };
+our @EXPORT_OK = qw{ inc perlpod prs xqt };
 
-our @EXPORT = @EXPORT_OK;
+our @EXPORT = qw{ prs xqt };
+
+our %EXPORT_TAGS = (
+    all		=> \@EXPORT_OK,
+    dirs	=> [ qw{ inc perlpod } ],
+    test	=> [ qw{ prs xqt } ],
+);
 
 our $VERSION = '0.000_040';
+
+sub inc {
+    return( grep { -d } @INC );
+}
+
+sub perlpod {
+    return(
+	grep { -d }
+	map { File::Spec->catdir( $_, 'pods' ) }
+	grep { defined( $_ ) && $_ ne '' }
+	map { $Config{$_} }
+	qw{
+	    archlibexp
+	    privlibexp
+	    sitelibexp
+	    vendorlibexp
+	}
+    )
+}
 
 sub prs {
     local @ARGV = @_;
@@ -57,7 +84,24 @@ can and will be modified or retracted without notice.
 
 =head1 SUBROUTINES
 
-The following subroutines are exported by default:
+The following subroutines are exportable:
+
+=head2 inc
+
+ say for inc();
+
+This subroutine returns all components of C<@INC> that are existing
+directories.
+
+Exported by tags C<:all> and C<:dirs>.
+
+=head2 perlpod
+
+ say for perlpod();
+
+This subroutine returns all directories that contain core Perl POD.
+
+Exported by tags C<:all> and C<:dirs>.
 
 =head2 prs
 
@@ -69,6 +113,8 @@ The plugin class name is obtained from manifest constant C<CLASS>,
 defined in the caller. Arguments if any are loaded into a localized
 @ARGV. The return is the options hash and anything that was left in
 C<@ARGV> after the parse.
+
+Exported by default, and by tags C<:all> and C<:test>.
 
 =head2 xqt
 
@@ -92,6 +138,8 @@ used.
 
 Any remaining arguments are loaded into a localized C<@ARGV> before the
 plugin is called.
+
+Exported by default, and by tags C<:all> and C<:test>.
 
 =head1 SUPPORT
 

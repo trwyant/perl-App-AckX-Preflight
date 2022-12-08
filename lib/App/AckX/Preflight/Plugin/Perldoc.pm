@@ -27,26 +27,41 @@ BEGIN {
 }
 
 sub __options {
-    return( qw{ perldelta! perldoc! } );
+    return( qw{ perldelta! perldoc! perlpod! } );
+}
+
+{
+    my @perlpod;
+    sub _perlpod {
+	$DB::single = 1;
+	unless ( @perlpod ) {
+	    foreach my $key ( map { $Config::Config{$_} } qw{
+		archlibexp
+		privlibexp
+		sitelibexp
+		vendorlibexp
+	    } ) {
+		defined $key
+		    and $key ne ''
+		    or next;
+		my $dir = File::Spec->catfile( $key, 'pods' );
+		-d $dir
+		    or next;
+		push @perlpod, $dir;
+	    }
+	}
+	return @perlpod;
+    }
 }
 
 sub __process {
     my ( undef, undef, $opt ) = @_;
 
-    my @search = (
-	grep { -d }
-	@INC,
-	grep { defined( $_ ) && $_ ne '' } map { $Config::Config{$_} }
-	qw{
-	    archlibexp
-	    privlibexp
-	    sitelibexp
-	    vendorlibexp
-	},
-    );
     if ( $opt->{perldelta} ) {
 	$opt->{perldoc}
 	    and __warn '--perldoc is ignored if --perldelta is asserted';
+	$opt->{perlpod}
+	    and __warn '--perlpod is ignored if --perldelta is asserted';
 	File::Find::find(
 	    sub {
 		-d
@@ -55,11 +70,24 @@ sub __process {
 		    or return;
 		push @ARGV, $File::Find::name;
 	    },
-	    @search,
+	    _perlpod(),
+	);
+    } elsif ( $opt->{perlpod} ) {
+	$opt->{perldoc}
+	    and __warn '--perldoc is ignored if --perlpod is asserted';
+	File::Find::find(
+	    sub {
+		-d
+		    and return;
+		m/ [.] pod \z /smx
+		    or return;
+		push @ARGV, $File::Find::name;
+	    },
+	    _perlpod(),
 	);
     } else {
 	# Append the Perl directories to the argument list
-	push @ARGV, @search;
+	push @ARGV, grep { -d } @INC;
     }
 
     return 1;
@@ -67,7 +95,7 @@ sub __process {
 
 sub __wants_to_run {
     my ( undef, $opt ) = @_;
-    return $opt->{perldoc} || $opt->{perldelta};
+    return $opt->{perldoc} || $opt->{perldelta} || $opt->{perlpod};
 }
 
 1;
@@ -94,8 +122,9 @@ The following options are available:
 
 =item --perldelta
 
-This causes the F<perldelta.pod> files to be searched. If both this and
-C<--perldoc> are asserted
+This causes the F<perldelta.pod> files to be searched. This takes
+precedence over both C<--perldoc> and C<--perlpod>, and a warning is
+issued if either is asserted.
 
 =item --perldoc
 
@@ -106,8 +135,14 @@ If you want to mimic the behavior of F<perldoc-search>, also use the
 F<ack> C<-l> option, which causes only the names of matching files to be
 listed.
 
-If C<--perldelta> is also asserted, this option is ignored with a
-warning.
+If C<--perldelta> or C<--perlpod> is also asserted, this option is
+ignored with a warning.
+
+=item --perlpod
+
+This causes the documentation for the Perl interpreter to be searched,
+but not the documentation for installed modules. This takes precedence
+over C<--perldoc>, and a warning is issued if C<--perldoc> is asserted.
 
 =back
 

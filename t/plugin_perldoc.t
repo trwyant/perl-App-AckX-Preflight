@@ -6,31 +6,18 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight;
-use Config;
 use File::Find;
 use Test2::V0 -target => 'App::AckX::Preflight::Plugin::Perldoc';
 
 use lib qw{ inc };
-use My::Module::TestPlugin;	# Imports prs() and xqt()
+use My::Module::TestPlugin qw{ :all };	# Imports prs() and xqt()
 
 my @got;
 my @want;
-my @dirs = (
-    grep { -d }
-    @INC,
-    grep { defined( $_ ) && $_ ne '' } map { $Config{$_} }
-    qw{
-	archlibexp
-	privlibexp
-	sitelibexp
-	vendorlibexp
-    }
-);
-
 
 @got = CLASS->__options();
 is \@got,
-    [ qw{ perldelta! perldoc! } ],
+    [ qw{ perldelta! perldoc! perlpod! } ],
     'Options';
 
 
@@ -45,7 +32,7 @@ is \@got,
 is \@got, \@want, q<Parse '--perldoc --syntax doc'>;
 
 @got = xqt( @want );
-is \@got, [ qw{ --syntax doc }, @dirs ], q<Process '--perldoc --syntax doc'>;
+is \@got, [ qw{ --syntax doc }, inc() ], q<Process '--perldoc --syntax doc'>;
 
 @got = prs( qw{ --perldelta --syntax=documentation } );
 @want = ( { perldelta => 1 }, qw{ --syntax=documentation } );
@@ -58,7 +45,7 @@ find(
 	m/ \A perl [0-9]+ delta [.] pod \z /smx
 	    and push @want, $File::Find::name;
     },
-    @dirs,
+    perlpod()
 );
 unshift @want, '--syntax=documentation';
 is \@got, \@want, q<Process '--perldoc --syntax=documentation>;
