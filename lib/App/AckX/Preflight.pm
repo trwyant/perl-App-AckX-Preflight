@@ -6,48 +6,35 @@ use strict;
 use warnings;
 
 use App::Ack ();
-use App::AckX::Preflight::Util ();
+use App::AckX::Preflight::Util qw{ :all };
 use Cwd ();
 use File::Spec;
 use List::Util 1.45 ();	# For uniqstr, which this module does not use
 use Pod::Usage ();
 use Text::ParseWords ();
 
-our $VERSION;
-our $COPYRIGHT;
+our $VERSION = '0.000_041';
+our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 
 use constant DEVELOPMENT => grep { m{ \b blib \b }smx } @INC;
 
 use constant IS_VMS	=> 'VMS' eq $^O;
 use constant IS_WINDOWS	=> { map { $_ => 1 } qw{ dos MSWin32 } }->{$^O};
 
-BEGIN {
-
-    App::AckX::Preflight::Util->import( ':all' );
-
-    $VERSION = '0.000_041';
-    $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
-
-    IS_WINDOWS
-	and require Win32;
-}
+use if IS_WINDOWS, 'Win32';
 
 use constant PLUGIN_SEARCH_PATH	=> join '::', __PACKAGE__, 'Plugin';
 use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 
 {
-    my %default;
-
-    BEGIN {
-	%default = (
-	    global	=> IS_VMS ? undef :	# TODO what, exactly?
-		IS_WINDOWS ? Win32::CSIDL_COMMON_APPDATA() :
-		'/etc',
-	    home	=> IS_VMS ? $ENV{'SYS$LOGIN'} :
-		IS_WINDOWS ? Win32::CSIDL_APPDATA() :
-		$ENV{HOME},
-	);
-    }
+    my %default = (
+	global	=> IS_VMS ? undef :	# TODO what, exactly?
+	    IS_WINDOWS ? Win32::CSIDL_COMMON_APPDATA() :
+	    '/etc',
+	home	=> IS_VMS ? $ENV{'SYS$LOGIN'} :
+	    IS_WINDOWS ? Win32::CSIDL_APPDATA() :
+	    $ENV{HOME},
+    );
 
     sub new {
 	my ( $class, %arg ) = @_;
@@ -190,34 +177,26 @@ EOD
     local $self->{verbose} = $opt{verbose};
     local $self->{dry_run} = $opt{dry_run};
 
-    if ( IS_SINGLE_FILE ) {
-	$self->_trace( ack => @ARGV );
-	$self->{dry_run}
-	    and exit;
-	return;
-    } else {
+    my @inject = @{ $self->{inject} };
 
-	my @inject = @{ $self->{inject} };
-
-	if ( DEVELOPMENT &&
-	    List::Util::any { m/ \A -MApp::AckX::Preflight\b /smx } @inject
-	) {
-	    splice @inject, 0, 0, '-Mblib';
-	}
-
-	my @arg = (
-	    perl		=> @inject,
-	    qw{ -S ack },
-	    @ARGV,
-	);
-
-	$self->_trace( @arg );
-
-	$self->{dry_run}
-	    and return;
-
-	return $self->__execute( @arg );
+    if ( DEVELOPMENT &&
+	List::Util::any { m/ \A -MApp::AckX::Preflight\b /smx } @inject
+    ) {
+	splice @inject, 0, 0, '-Mblib';
     }
+
+    my @arg = (
+	perl		=> @inject,
+	qw{ -S ack },
+	@ARGV,
+    );
+
+    $self->_trace( @arg );
+
+    $self->{dry_run}
+	and return;
+
+    return $self->__execute( @arg );
 }
 
 sub __execute {
@@ -332,8 +311,7 @@ sub _file_from_parts {
 		or next;
 	    delete $disable{$plugin}
 		and next;
-	    IS_SINGLE_FILE
-		or ( $loaded{$plugin} ||= eval "require $plugin; 1" )
+	    ( $loaded{$plugin} ||= eval "require $plugin; 1" )
 		or next;
 	    $plugin->IN_SERVICE()
 		or next;
@@ -409,14 +387,9 @@ sub name {
 
 package App::AckX::Preflight::_Config::File;	## no critic (ProhibitMultiplePackages)
 
-use App::AckX::Preflight::Util ();
+use parent qw{ -norequire App::AckX::Preflight::_Config };
 
-our @ISA;
-
-BEGIN {
-    App::AckX::Preflight::Util->import( qw{ :croak __file_id @CARP_NOT } );
-    @ISA = qw{ App::AckX::Preflight::_Config };
-}
+use App::AckX::Preflight::Util qw{ :croak __file_id @CARP_NOT };
 
 sub close : method {	## no critic (ProhibitBuiltinHomonyms)
     my ( $self ) = @_;
@@ -447,14 +420,10 @@ sub read : method {	## no critic (ProhibitBuiltinHomonyms)
 
 package App::AckX::Preflight::_Config::Env;	## no critic (ProhibitMultiplePackages)
 
+use parent qw{ -norequire App::AckX::Preflight::_Config };
+
 use App::AckX::Preflight::Util qw{ :croak @CARP_NOT };
 use Text::ParseWords ();
-
-our @ISA;
-
-BEGIN {
-    @ISA = qw{ App::AckX::Preflight::_Config };
-}
 
 sub close : method {	## no critic (ProhibitBuiltinHomonyms)
     my ( $self ) = @_;

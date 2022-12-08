@@ -5,135 +5,115 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Syntax ();
-use App::AckX::Preflight::Util ();
+use parent qw{ App::AckX::Preflight::Syntax };
 
-our @ISA;
+use App::AckX::Preflight::Util qw{ :croak :ref :syntax @CARP_NOT };
 
-our $VERSION;
-
-BEGIN {
-    App::AckX::Preflight::Util->import(
-	qw{
-	    :croak
-	    :ref
-	    :syntax
-	    @CARP_NOT
-	}
-    );
-
-    @ISA = qw{ App::AckX::Preflight::Syntax };
-
-    $VERSION = '0.000_041';
-}
+our $VERSION = '0.000_041';
 
 sub __handles_syntax {
     __die_hard( '__handles_syntax() must be overridden' );
 }
 
 {
-    my $classifier;
+    my $classifier = {	# Anticipating 'state'.
+	SYNTAX_CODE()		=> sub {
+#	    my ( $self, $attr ) = @_;
+	    my ( undef, $attr ) = @_;
 
-    BEGIN {
-	$classifier = {	# Anticipating 'state'.
-	    SYNTAX_CODE()		=> sub {
-	#	my ( $self, $attr ) = @_;
-		my ( undef, $attr ) = @_;
-
-		my @match;
-		if ( 1 == $. && $attr->{shebang} && m/ \A \# ! /smx ) {
-		    return SYNTAX_METADATA;
-		} elsif ( $attr->{in_line_doc_start} and
-		    @match = $_ =~ $attr->{in_line_doc_start} ) {
-		    my $block_end = _get_block_end( $attr,
-			in_line_doc_end => @match );
-		    $_ =~ $block_end
-			and return SYNTAX_DOCUMENTATION;
-		    $attr->{_in_line_doc_end} = $block_end;
+	    my @match;
+	    if ( 1 == $. && $attr->{shebang} && m/ \A \# ! /smx ) {
+		return SYNTAX_METADATA;
+	    } elsif ( $attr->{in_line_doc_start} and
+		@match = $_ =~ $attr->{in_line_doc_start} ) {
+		my $block_end = _get_block_end( $attr,
+		    in_line_doc_end => @match );
+		$_ =~ $block_end
+		    and return SYNTAX_DOCUMENTATION;
+		$attr->{_in_line_doc_end} = $block_end;
+		$attr->{in} = SYNTAX_DOCUMENTATION;
+	    } elsif ( $attr->{block_start} and
+		@match = $_ =~ $attr->{block_start} ) {
+		my $block_end = _get_block_end( $attr, block_end => @match );
+		$_ =~ $block_end
+		    and return SYNTAX_COMMENT;
+		$attr->{_block_end} = $block_end;
+		$attr->{in} = SYNTAX_COMMENT;
+	    } elsif ( $attr->{block_meta_start} and
+		@match = $_ =~ $attr->{block_meta_start} ) {
+		my $block_meta_end = _get_block_end( $attr,
+		    block_meta_end => @match );
+		$_ =~ $block_meta_end
+		    and return SYNTAX_METADATA;
+		$attr->{_block_meta_end} = $block_meta_end;
+		$attr->{in} = SYNTAX_METADATA;
+	    } elsif ( $attr->{single_line_doc_re} and
+		$_ =~ $attr->{single_line_doc_re} ) {
+		if ( $attr->{comments_continue_doc} ) {
 		    $attr->{in} = SYNTAX_DOCUMENTATION;
-		} elsif ( $attr->{block_start} and
-		    @match = $_ =~ $attr->{block_start} ) {
-		    my $block_end = _get_block_end( $attr, block_end => @match );
-		    $_ =~ $block_end
-			and return SYNTAX_COMMENT;
-		    $attr->{_block_end} = $block_end;
-		    $attr->{in} = SYNTAX_COMMENT;
-		} elsif ( $attr->{block_meta_start} and
-		    @match = $_ =~ $attr->{block_meta_start} ) {
-		    my $block_meta_end = _get_block_end( $attr,
-			block_meta_end => @match );
-		    $_ =~ $block_meta_end
-			and return SYNTAX_METADATA;
-		    $attr->{_block_meta_end} = $block_meta_end;
-		    $attr->{in} = SYNTAX_METADATA;
-		} elsif ( $attr->{single_line_doc_re} and
-		    $_ =~ $attr->{single_line_doc_re} ) {
-		    if ( $attr->{comments_continue_doc} ) {
-			$attr->{in} = SYNTAX_DOCUMENTATION;
-			$attr->{_in_single_line_doc} = 1;
-		    }
-		    return SYNTAX_DOCUMENTATION;
-		} elsif ( $attr->{single_line_re} and
-		    $_ =~ $attr->{single_line_re} ) {
-		    return SYNTAX_COMMENT;
+		    $attr->{_in_single_line_doc} = 1;
 		}
-		return $attr->{in};
-	    },
-	    SYNTAX_COMMENT()		=> sub {
-	#	my ( $self, $attr ) = @_;
-		my ( undef, $attr ) = @_;
+		return SYNTAX_DOCUMENTATION;
+	    } elsif ( $attr->{single_line_re} and
+		$_ =~ $attr->{single_line_re} ) {
+		return SYNTAX_COMMENT;
+	    }
+	    return $attr->{in};
+	},
+	SYNTAX_COMMENT()		=> sub {
+#	    my ( $self, $attr ) = @_;
+	    my ( undef, $attr ) = @_;
 
-		if ( $_ =~ $attr->{_block_end} ) {
-		    my $was = $attr->{in};
+	    if ( $_ =~ $attr->{_block_end} ) {
+		my $was = $attr->{in};
+		$attr->{in} = SYNTAX_CODE;
+		delete $attr->{_block_end};
+		# We have to hand-dispatch the line because although
+		# the next line is code, the end of the block
+		# comment is doc.
+		return $was;
+	    }
+
+	    return $attr->{in};
+	},
+	SYNTAX_DOCUMENTATION()	=> sub {
+#	    my ( $self, $attr ) = @_;
+	    my ( undef, $attr ) = @_;
+
+	    if ( $attr->{_in_single_line_doc} ) {
+		unless ( $_ =~ $attr->{single_line_re} ) {
 		    $attr->{in} = SYNTAX_CODE;
-		    delete $attr->{_block_end};
-		    # We have to hand-dispatch the line because although
-		    # the next line is code, the end of the block
-		    # comment is doc.
-		    return $was;
+		    delete $attr->{_in_single_line_doc};
 		}
+	    } elsif ( $_ =~ $attr->{_in_line_doc_end} ) {
+		my $was = $attr->{in};
+		$attr->{in} = SYNTAX_CODE;
+		delete $attr->{_in_line_doc_end};
+		# We have to hand-dispatch the line because although
+		# the next line is code, the end of the block
+		# comment is doc.
+		return $was;
+	    }
 
-		return $attr->{in};
-	    },
-	    SYNTAX_DOCUMENTATION()	=> sub {
-	#	my ( $self, $attr ) = @_;
-		my ( undef, $attr ) = @_;
+	    return $attr->{in};
+	},
+	SYNTAX_METADATA()		=> sub {
+#	    my ( $self, $attr ) = @_;
+	    my ( undef, $attr ) = @_;
 
-		if ( $attr->{_in_single_line_doc} ) {
-		    unless ( $_ =~ $attr->{single_line_re} ) {
-			$attr->{in} = SYNTAX_CODE;
-			delete $attr->{_in_single_line_doc};
-		    }
-		} elsif ( $_ =~ $attr->{_in_line_doc_end} ) {
-		    my $was = $attr->{in};
-		    $attr->{in} = SYNTAX_CODE;
-		    delete $attr->{_in_line_doc_end};
-		    # We have to hand-dispatch the line because although
-		    # the next line is code, the end of the block
-		    # comment is doc.
-		    return $was;
-		}
+	    if ( $_ =~ $attr->{_block_meta_end} ) {
+		my $was = $attr->{in};
+		$attr->{in} = SYNTAX_CODE;
+		delete $attr->{_block_meta_end};
+		# We have to hand-dispatch the line because although
+		# the next line is code, the end of the block
+		# metadata is metadata.
+		return $was;
+	    }
 
-		return $attr->{in};
-	    },
-	    SYNTAX_METADATA()		=> sub {
-	#	my ( $self, $attr ) = @_;
-		my ( undef, $attr ) = @_;
-
-		if ( $_ =~ $attr->{_block_meta_end} ) {
-		    my $was = $attr->{in};
-		    $attr->{in} = SYNTAX_CODE;
-		    delete $attr->{_block_meta_end};
-		    # We have to hand-dispatch the line because although
-		    # the next line is code, the end of the block
-		    # metadata is metadata.
-		    return $was;
-		}
-
-		return $attr->{in};
-	    },
-	};
-    }
+	    return $attr->{in};
+	},
+    };
 
     sub __classify {
 	my ( $self ) = @_;

@@ -174,6 +174,8 @@ sub requires {
 	'Text::Abbrev'			=> 0,
 	'Text::ParseWords'		=> 0,
 	'constant'			=> 0,
+	'if'				=> 0,
+	'parent'			=> 0,
 	'strict'			=> 0,
 	'warnings'			=> 0,
 	@extra,

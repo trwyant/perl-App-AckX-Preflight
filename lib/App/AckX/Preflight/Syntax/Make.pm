@@ -5,27 +5,13 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Syntax ();
-use App::AckX::Preflight::Util ();
+use parent qw{ App::AckX::Preflight::Syntax };
 
-our @ISA;
+use App::AckX::Preflight::Util qw{ :syntax @CARP_NOT };
 
-our $VERSION;
+our $VERSION = '0.000_041';
 
-BEGIN {
-    App::AckX::Preflight::Util->import(
-	qw{
-	    :syntax
-	    @CARP_NOT
-	}
-    );
-
-    @ISA = qw{ App::AckX::Preflight::Syntax };
-
-    $VERSION = '0.000_041';
-
-    __PACKAGE__->__handles_type_mod( qw{ set make tcl } );
-}
+__PACKAGE__->__handles_type_mod( qw{ set make tcl } );
 
 sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT );

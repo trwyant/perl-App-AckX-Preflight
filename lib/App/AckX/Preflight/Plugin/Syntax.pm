@@ -5,30 +5,12 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Plugin;
-use App::AckX::Preflight::Syntax ();
-use App::AckX::Preflight::Util ();
+use parent qw{ App::AckX::Preflight::Plugin };
 
-our @ISA;
+use App::AckX::Preflight::Syntax qw{ __normalize_options };
+use App::AckX::Preflight::Util qw{ @CARP_NOT };
 
-our $VERSION;
-
-BEGIN {
-    App::AckX::Preflight::Util->import(
-	qw{
-	    IS_SINGLE_FILE
-	    @CARP_NOT
-	}
-    );
-
-    App::AckX::Preflight::Syntax->import( qw{
-	__normalize_options
-	} );
-
-    @ISA = qw{ App::AckX::Preflight::Plugin };
-
-    $VERSION = '0.000_041';
-}
+our $VERSION = '0.000_041';
 
 sub __options {
     return( qw{
@@ -57,13 +39,9 @@ sub __process {
 	    or splice @ARGV, 0, 0, qw{ --match (?) };
     }
 
-    if ( IS_SINGLE_FILE ) {
-	App::AckX::Preflight::Syntax->__hot_patch();
-    } else {
-	local $" = ',';
-	$aaxp->__inject(
-	    "-MApp::AckX::Preflight::Syntax=@arg" );
-    }
+    local $" = ',';
+    $aaxp->__inject(
+	"-MApp::AckX::Preflight::Syntax=@arg" );
 
     return;
 

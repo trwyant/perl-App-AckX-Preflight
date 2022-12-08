@@ -5,20 +5,9 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Util ();
+use App::AckX::Preflight::Util qw{ :croak @CARP_NOT };
 
-our $VERSION;
-
-BEGIN {
-    App::AckX::Preflight::Util->import(
-	qw{
-	    :croak
-	    @CARP_NOT
-	}
-    );
-
-    $VERSION = '0.000_041';
-}
+our $VERSION = '0.000_041';
 
 use constant IN_SERVICE	=> 1;
 

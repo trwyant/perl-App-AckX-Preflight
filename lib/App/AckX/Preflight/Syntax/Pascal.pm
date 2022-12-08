@@ -5,41 +5,23 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Syntax::_cc_like ();
-use App::AckX::Preflight::Util ();
+use parent qw{ App::AckX::Preflight::Syntax::_cc_like };
 
-our @ISA;
+use App::AckX::Preflight::Util qw{ :syntax @CARP_NOT };
 
-our $VERSION;
+our $VERSION = '0.000_041';
 
-BEGIN {
-    App::AckX::Preflight::Util->import(
-	qw{
-	    :syntax
-	    @CARP_NOT
-	}
-    );
-
-    @ISA = qw{ App::AckX::Preflight::Syntax::_cc_like };
-
-    $VERSION = '0.000_041';
-
-    __PACKAGE__->__handles_type_mod( qw{ set delphi pascal } );
-}
+__PACKAGE__->__handles_type_mod( qw{ set delphi pascal } );
 
 sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT );
 }
 
 {
-    my $block_end;
-
-    BEGIN {
-	$block_end = {	# TODO state variable when we get to 5.10
-	    '(*'	=> qr< [*] [)] >smx,
-	    '{'		=> qr< [}] >smx,
-	};
-    }
+    my $block_end = {	# TODO state variable when we get to 5.10
+	'(*'	=> qr< [*] [)] >smx,
+	'{'	=> qr< [}] >smx,
+    };
 
     sub __block_re {
 	return(
@@ -58,14 +40,10 @@ I find no evidence for any sort of inline documentation for Pascal. The
 following cold code is my presumption for what it would look like.
 
 {
-    my $block_end;
-
-    BEGIN {
-	my $block_end = {	# TODO state variable when we get to 5.10
-	    '(**'	=> qr< [*] [)] >smx,
-	    '{*'	=> qr< [}] >smx,
-	};
-    }
+    my $block_end = {	# TODO state variable when we get to 5.10
+	'(**'	=> qr< [*] [)] >smx,
+	'{*'	=> qr< [}] >smx,
+    };
 
     sub __in_line_doc_re {
 	return(

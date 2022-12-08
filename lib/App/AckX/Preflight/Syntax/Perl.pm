@@ -5,27 +5,13 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Syntax ();
-use App::AckX::Preflight::Util ();
+use parent qw{ App::AckX::Preflight::Syntax };
 
-our @ISA;
+use App::AckX::Preflight::Util qw{ :syntax @CARP_NOT };
 
-our $VERSION;
+our $VERSION = '0.000_041';
 
-BEGIN {
-    App::AckX::Preflight::Util->import(
-	qw{
-	    :syntax
-	    @CARP_NOT
-	}
-    );
-
-    @ISA = qw{ App::AckX::Preflight::Syntax };
-
-    $VERSION = '0.000_041';
-
-    __PACKAGE__->__handles_type_mod( qw{ set parrot perl perltest } );
-}
+__PACKAGE__->__handles_type_mod( qw{ set parrot perl perltest } );
 
 sub __handles_syntax {
     return(
@@ -38,40 +24,35 @@ sub __handles_syntax {
 }
 
 {
-    my $is_data;
-    my $classify;
+    my $is_data = { map {; "__${_}__\n" => 1 } qw{ DATA END } };
 
-    BEGIN {
-	$is_data = { map {; "__${_}__\n" => 1 } qw{ DATA END } };
-
-	$classify = {
-	    SYNTAX_CODE()		=> sub {
-    #	    my ( $self, $attr ) = @_;
-		my ( undef, $attr ) = @_;
-		if ( m/ \A \s* \# /smx ) {
-		    1 == $.
-			and m/ perl /smx
-			and return SYNTAX_METADATA;
-		    m/ \A \#line \s+ [0-9]+ /smx
-			and return SYNTAX_METADATA;
-		    return SYNTAX_COMMENT;
-		}
-		if ( $is_data->{$_} ) {
-		    $attr->{in} = SYNTAX_DATA;
-		    return SYNTAX_METADATA;
-		}
-		goto &_handle_possible_pod;
-	    },
-	    SYNTAX_DATA()		=> \&_handle_possible_pod,
-	    SYNTAX_DOCUMENTATION()	=> sub {
-    #	    my ( $self, $attr ) = @_;
-		my ( undef, $attr ) = @_;
-		m/ \A = cut \b /smx
-		    and $attr->{in} = delete $attr->{cut};
-		return SYNTAX_DOCUMENTATION;
-	    },
-	};
-    }
+    my $classify = {
+	SYNTAX_CODE()		=> sub {
+#	    my ( $self, $attr ) = @_;
+	    my ( undef, $attr ) = @_;
+	    if ( m/ \A \s* \# /smx ) {
+		1 == $.
+		    and m/ perl /smx
+		    and return SYNTAX_METADATA;
+		m/ \A \#line \s+ [0-9]+ /smx
+		    and return SYNTAX_METADATA;
+		return SYNTAX_COMMENT;
+	    }
+	    if ( $is_data->{$_} ) {
+		$attr->{in} = SYNTAX_DATA;
+		return SYNTAX_METADATA;
+	    }
+	    goto &_handle_possible_pod;
+	},
+	SYNTAX_DATA()		=> \&_handle_possible_pod,
+	SYNTAX_DOCUMENTATION()	=> sub {
+#	    my ( $self, $attr ) = @_;
+	    my ( undef, $attr ) = @_;
+	    m/ \A = cut \b /smx
+		and $attr->{in} = delete $attr->{cut};
+	    return SYNTAX_DOCUMENTATION;
+	},
+    };
 
     sub __classify {
 	my ( $self ) = @_;

@@ -5,63 +5,44 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Syntax ();
-use App::AckX::Preflight::Util ();
+use parent qw{ App::AckX::Preflight::Syntax };
 
-our @ISA;
+use App::AckX::Preflight::Util qw{ :croak :syntax @CARP_NOT };
 
-our $VERSION;
-
-BEGIN {
-    App::AckX::Preflight::Util->import(
-	qw{
-	    :croak
-	    :syntax
-	    @CARP_NOT
-	}
-    );
-
-    @ISA = qw{ App::AckX::Preflight::Syntax };
-
-    $VERSION = '0.000_041';
-}
+our $VERSION = '0.000_041';
 
 {
-    my $classifier;
-
-    BEGIN {
-	$classifier = {
-	    SYNTAX_CODE()	=> sub {
-    #	    my ( $self, $attr ) = @_;
-		my ( undef, $attr ) = @_;
-		if ( $attr->{has_shebang} && 1 == $. && m/ \A \# ! /smx ) {
-		    return SYNTAX_METADATA;
-		} elsif ( $attr->{single_line_doc_re} && $_ =~
-		    $attr->{single_line_doc_re } ) {
-		    return SYNTAX_DOCUMENTATION;
-		} elsif ( $attr->{single_line_re} && $_ =~
-		    $attr->{single_line_re} ) {
-		    return SYNTAX_COMMENT;
-		} elsif ( $attr->{block_start} &&
-		    m/ \A \s* ( $attr->{block_start} ) /smx ) {
-		    if ( defined $attr->{block_doc_re} ) {
-			my $start = $1;
-			$attr->{in} = $start =~ $attr->{block_doc_re} ?
-			    SYNTAX_DOCUMENTATION :
-			    SYNTAX_COMMENT;
-		    } else {
-			$attr->{in} = SYNTAX_COMMENT;
-		    }
-		    $attr->{comment_depth} = 0;
-		    goto &_handle_comment;
+    my $classifier = {
+	SYNTAX_CODE()	=> sub {
+#	    my ( $self, $attr ) = @_;
+	    my ( undef, $attr ) = @_;
+	    if ( $attr->{has_shebang} && 1 == $. && m/ \A \# ! /smx ) {
+		return SYNTAX_METADATA;
+	    } elsif ( $attr->{single_line_doc_re} && $_ =~
+		$attr->{single_line_doc_re } ) {
+		return SYNTAX_DOCUMENTATION;
+	    } elsif ( $attr->{single_line_re} && $_ =~
+		$attr->{single_line_re} ) {
+		return SYNTAX_COMMENT;
+	    } elsif ( $attr->{block_start} &&
+		m/ \A \s* ( $attr->{block_start} ) /smx ) {
+		if ( defined $attr->{block_doc_re} ) {
+		    my $start = $1;
+		    $attr->{in} = $start =~ $attr->{block_doc_re} ?
+			SYNTAX_DOCUMENTATION :
+			SYNTAX_COMMENT;
 		} else {
-		    return SYNTAX_CODE;
+		    $attr->{in} = SYNTAX_COMMENT;
 		}
-	    },
-	    SYNTAX_COMMENT()	=> \&_handle_comment,
-	    SYNTAX_DOCUMENTATION()	=> \&_handle_comment,
-	};
-    }
+		$attr->{comment_depth} = 0;
+		goto &_handle_comment;
+	    } else {
+		return SYNTAX_CODE;
+	    }
+	},
+	SYNTAX_COMMENT()	=> \&_handle_comment,
+	SYNTAX_DOCUMENTATION()	=> \&_handle_comment,
+    };
 
     sub __classify {
 	my ( $self ) = @_;

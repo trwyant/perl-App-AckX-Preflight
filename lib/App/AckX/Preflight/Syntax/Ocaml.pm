@@ -5,27 +5,13 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Syntax::_nesting ();
-use App::AckX::Preflight::Util ();
+use parent qw{ App::AckX::Preflight::Syntax::_nesting };
 
-our @ISA;
+use App::AckX::Preflight::Util qw{ :syntax @CARP_NOT };
 
-our $VERSION;
+our $VERSION = '0.000_041';
 
-BEGIN {
-    App::AckX::Preflight::Util->import(
-	qw{
-	    :syntax
-	    @CARP_NOT
-	}
-    );
-
-    @ISA = qw{ App::AckX::Preflight::Syntax::_nesting };
-
-    $VERSION = '0.000_041';
-
-    __PACKAGE__->__handles_type_mod( qw{ set ocaml } );
-}
+__PACKAGE__->__handles_type_mod( qw{ set ocaml } );
 
 sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_DOCUMENTATION,

@@ -5,40 +5,26 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Util ();
+use App::AckX::Preflight::Util
+    qw{
+	:croak
+	:syntax
+	__syntax_types
+	ACK_FILE_CLASS
+	@CARP_NOT
+    };
 use Exporter;
 use List::Util 1.45 ();	# for uniqstr
 use Text::Abbrev ();
 
-our @EXPORT_OK;
-our $VERSION;
+# This is PRIVATE to the App-AckX-Preflight package.
+our @EXPORT_OK = qw{ __normalize_options };
 
-my $ARG_SEP_RE;
+our $VERSION = '0.000_041';
 
-my %VALID_EXPORT;
+my $ARG_SEP_RE = qr{ \s* [:;,] \s* }smx;
 
-BEGIN {
-
-    App::AckX::Preflight::Util->import(
-	qw{
-	    :croak
-	    :syntax
-	    __syntax_types
-	    ACK_FILE_CLASS
-	    IS_SINGLE_FILE
-	    @CARP_NOT
-	}
-    );
-
-    $ARG_SEP_RE = qr{ \s* [:;,] \s* }smx;
-
-    # This is PRIVATE to the App-AckX-Preflight package.
-    @EXPORT_OK = qw{ __normalize_options };
-
-    %VALID_EXPORT = map { $_ => 1 } @EXPORT_OK;
-
-    $VERSION = '0.000_041';
-}
+my %VALID_EXPORT = map { $_ => 1 } @EXPORT_OK;
 
 use constant IN_SERVICE		=> 1;
 use constant IS_EXHAUSTIVE	=> 1;
@@ -340,8 +326,7 @@ sub TELL {
 	foreach my $plugin ( @CARP_NOT ) {
 	    $plugin =~ PLUGIN_MATCH
 		or next;
-	    IS_SINGLE_FILE
-		or ( $loaded{$plugin} ||= eval "require $plugin; 1" )
+	    ( $loaded{$plugin} ||= eval "require $plugin; 1" )
 		or next;
 	    $plugin->IN_SERVICE()
 		or next;
@@ -387,7 +372,7 @@ use constant SYNTAX_FILTER_LAYER =>
 	$open
 	    and return;
 
-	unless ( IS_SINGLE_FILE ) {
+	{
 	    local $@ = undef;
 	    eval sprintf 'require %s; 1', ACK_FILE_CLASS ## no critic (ProhibitStringyEval,RequireCheckingReturnValueOfEval)
 		or __die_hard( sprintf 'Can not load %s', ACK_FILE_CLASS );

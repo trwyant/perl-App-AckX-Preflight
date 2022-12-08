@@ -5,26 +5,11 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Syntax ();
-use App::AckX::Preflight::Util ();
+use parent qw{ App::AckX::Preflight::Syntax };
 
-our @ISA;
+use App::AckX::Preflight::Util qw{ :croak :syntax @CARP_NOT };
 
-our $VERSION;
-
-BEGIN {
-    App::AckX::Preflight::Util->import(
-	qw{
-	    :croak
-	    :syntax
-	    @CARP_NOT
-	}
-    );
-
-    @ISA = qw{ App::AckX::Preflight::Syntax };
-
-    $VERSION = '0.000_041';
-}
+our $VERSION = '0.000_041';
 
 sub __classify {
     my ( $self ) = @_;

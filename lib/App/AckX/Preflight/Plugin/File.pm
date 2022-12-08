@@ -5,24 +5,11 @@ use 5.008008;
 use strict;
 use warnings;
 
-use App::AckX::Preflight::Plugin;
-use App::AckX::Preflight::Util ();
+use parent qw{ App::AckX::Preflight::Plugin };
 
-our @ISA;
+use App::AckX::Preflight::Util qw{ :all };
 
-our $VERSION;
-
-BEGIN {
-
-    App::AckX::Preflight::Util->import(
-	qw{
-	    :all
-	}
-    );
-    @ISA = qw{ App::AckX::Preflight::Plugin };
-
-    $VERSION = '0.000_041';
-}
+our $VERSION = '0.000_041';
 
 sub __options {
     return( qw{ file=s file-extended! } );

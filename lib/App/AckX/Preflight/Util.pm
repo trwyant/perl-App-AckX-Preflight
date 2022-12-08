@@ -32,92 +32,79 @@ use constant ACK_FILE_CLASS	=> do {
     $version ge '2.999' ? 'App::Ack::File' : 'App::Ack::Resource';
 };
 
-our $VERSION;
-our @EXPORT_OK;
-our %EXPORT_TAGS;
-our @CARP_NOT;
+our $VERSION = '0.000_041';
 
-BEGIN {
+our @EXPORT_OK = qw{
+    __die
+    __die_hard
+    __err_exclusive
+    __file_id
+    __getopt
+    __interpret_plugins
+    __open_for_read
+    __syntax_types
+    __warn
 
-    $VERSION = '0.000_041';
+    ACK_FILE_CLASS
 
-    @EXPORT_OK = qw{
-	__die
-	__die_hard
-	__err_exclusive
-	__file_id
-	__getopt
-	__interpret_plugins
-	__open_for_read
-	__syntax_types
-	__warn
+    ARRAY_REF
+    CODE_REF
+    HASH_REF
+    REGEXP_REF
+    SCALAR_REF
 
-	ACK_FILE_CLASS
+    SYNTAX_CODE
+    SYNTAX_COMMENT
+    SYNTAX_DATA
+    SYNTAX_DOCUMENTATION
+    SYNTAX_METADATA
+    SYNTAX_OTHER
 
-	IS_SINGLE_FILE
+    @CARP_NOT
+};
 
-	ARRAY_REF
-	CODE_REF
-	HASH_REF
-	REGEXP_REF
-	SCALAR_REF
+our %EXPORT_TAGS = (
+    all		=> \@EXPORT_OK,
+    croak	=> [ qw{ __die __die_hard __warn } ],
+    ref		=> [ grep { m/ _REF \z /smx } @EXPORT_OK ],
+    syntax	=> [ grep { m/ \A SYNTAX_ /smx } @EXPORT_OK ],
+);
 
-	SYNTAX_CODE
-	SYNTAX_COMMENT
-	SYNTAX_DATA
-	SYNTAX_DOCUMENTATION
-	SYNTAX_METADATA
-	SYNTAX_OTHER
-
-	@CARP_NOT
-    };
-
-    %EXPORT_TAGS = (
-	all		=> \@EXPORT_OK,
-	croak	=> [ qw{ __die __die_hard __warn } ],
-	ref		=> [ grep { m/ _REF \z /smx } @EXPORT_OK ],
-	syntax	=> [ grep { m/ \A SYNTAX_ /smx } @EXPORT_OK ],
-    );
-
-    @CARP_NOT = qw{
-	App::AckX::Preflight
-	App::AckX::Preflight::Plugin
-	App::AckX::Preflight::Plugin::Expand
-	App::AckX::Preflight::Plugin::File
-	App::AckX::Preflight::Plugin::Perldoc
-	App::AckX::Preflight::Plugin::Syntax
-	App::AckX::Preflight::Syntax
-	App::AckX::Preflight::Syntax::Ada
-	App::AckX::Preflight::Syntax::Asm
-	App::AckX::Preflight::Syntax::Batch
-	App::AckX::Preflight::Syntax::Cc
-	App::AckX::Preflight::Syntax::Cpp
-	App::AckX::Preflight::Syntax::Csharp
-	App::AckX::Preflight::Syntax::Data
-	App::AckX::Preflight::Syntax::Fortran
-	App::AckX::Preflight::Syntax::Haskell
-	App::AckX::Preflight::Syntax::Java
-	App::AckX::Preflight::Syntax::Lisp
-	App::AckX::Preflight::Syntax::Lua
-	App::AckX::Preflight::Syntax::Make
-	App::AckX::Preflight::Syntax::Ocaml
-	App::AckX::Preflight::Syntax::Pascal
-	App::AckX::Preflight::Syntax::Perl
-	App::AckX::Preflight::Syntax::Python
-	App::AckX::Preflight::Syntax::SQL
-	App::AckX::Preflight::Syntax::Shell
-	App::AckX::Preflight::Syntax::Swift
-	App::AckX::Preflight::Syntax::Vim
-	App::AckX::Preflight::Syntax::YAML
-	App::AckX::Preflight::Syntax::_cc_like
-	App::AckX::Preflight::Syntax::_nesting
-	App::AckX::Preflight::Syntax::_single_line_comments
-	App::AckX::Preflight::Util
-    };
-
-    __PACKAGE__->can( 'IS_SINGLE_FILE' )
-	or constant->import( IS_SINGLE_FILE => 0 );
-}
+our @CARP_NOT = qw{
+    App::AckX::Preflight
+    App::AckX::Preflight::Plugin
+    App::AckX::Preflight::Plugin::Expand
+    App::AckX::Preflight::Plugin::File
+    App::AckX::Preflight::Plugin::Perldoc
+    App::AckX::Preflight::Plugin::Syntax
+    App::AckX::Preflight::Syntax
+    App::AckX::Preflight::Syntax::Ada
+    App::AckX::Preflight::Syntax::Asm
+    App::AckX::Preflight::Syntax::Batch
+    App::AckX::Preflight::Syntax::Cc
+    App::AckX::Preflight::Syntax::Cpp
+    App::AckX::Preflight::Syntax::Csharp
+    App::AckX::Preflight::Syntax::Data
+    App::AckX::Preflight::Syntax::Fortran
+    App::AckX::Preflight::Syntax::Haskell
+    App::AckX::Preflight::Syntax::Java
+    App::AckX::Preflight::Syntax::Lisp
+    App::AckX::Preflight::Syntax::Lua
+    App::AckX::Preflight::Syntax::Make
+    App::AckX::Preflight::Syntax::Ocaml
+    App::AckX::Preflight::Syntax::Pascal
+    App::AckX::Preflight::Syntax::Perl
+    App::AckX::Preflight::Syntax::Python
+    App::AckX::Preflight::Syntax::SQL
+    App::AckX::Preflight::Syntax::Shell
+    App::AckX::Preflight::Syntax::Swift
+    App::AckX::Preflight::Syntax::Vim
+    App::AckX::Preflight::Syntax::YAML
+    App::AckX::Preflight::Syntax::_cc_like
+    App::AckX::Preflight::Syntax::_nesting
+    App::AckX::Preflight::Syntax::_single_line_comments
+    App::AckX::Preflight::Util
+};
 
 sub __die {
     $Carp::Verbose
@@ -435,10 +422,6 @@ exported by default.
 This is the name of the Ack class that represents a file. It is
 C<'App::Ack::File'> if the version of L<App::Ack|App::Ack> is at least
 C<2.999>; otherwise it is C<'App::Ack::Resource'>.
-
-=head2 IS_SINGLE_FILE
-
-This Boolean value will be true if running the single-file version.
 
 =head2 ARRAY_REF
 
