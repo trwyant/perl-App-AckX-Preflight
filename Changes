@@ -1,3 +1,25 @@
+0.000_041	2022-12-07	T. R. Wyant
+    Add --perlpod to the Perldoc plugin.  This searches only the core
+    Perl documentation.
+
+    Remove duplicate hits.
+
+    Retract, at least for the moment, ackxp-standalone.
+
+    Steal ack testing logic for t/whole_app.t and test to ensure the
+    stolen logic tracks the original.
+
+    Allow either dashes or underscores in options.  Use underscores
+    internally so that I do not need to quote hash keys.
+
+    Add --dry-run, mainly for debugging.
+
+    Have Syntax plug-in pass double-dashed options to ack.
+
+    Add GitHub CI.
+
+    Don't sort --perldelta files. That's what --sort-files is for.
+
 0.000_040	2022-11-21	T. R. Wyant
     Add --perldelta, which causes Perl delta docs to be searched.
 
