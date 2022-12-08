@@ -8,6 +8,13 @@ use warnings;
 use File::Temp;
 use Test2::V0;
 
+{
+    AmigaOS	=> 1,
+    'RISC OS'	=> 1,
+    VMS		=> 1,
+}->{$^O}
+    and plan skip_all => "Fork command via -| does not work under $^O";
+
 use constant ACKXP_STANDALONE	=> 'ackxp-standalone';
 
 -x $^X
@@ -29,17 +36,17 @@ foreach my $app ( 'blib/script/ackxp', ACKXP_STANDALONE ) {
 # FIXME building the standalone app is broken unless it also includes
 # ack_standalone
 
-foreach my $app ( 'blib/script/ackxp' ) {
-    -x $app
+foreach my $app ( [ $^X, qw{ -Mblib blib/script/ackxp } ] ) {
+    -x $app->[0]
 	or next;
 
-    diag "Testing $app";
+    diag "Testing @{ $app }";
 
-    xqt( $app, qw{ --noenv --syntax code -w Wyant lib/ }, <<'EOD' );
+    xqt( @{ $app }, qw{ --noenv --syntax code -w Wyant lib/ }, <<'EOD' );
 lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 EOD
 
-    xqt( $app, qw{ --noenv --syntax-match -syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
+    xqt( @{ $app }, qw{ --noenv --syntax-match -syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
 meta:#!/usr/bin/env perl
 code:
 code:use strict;
@@ -64,7 +71,7 @@ docu:	5	8	67
 meta:	2	3	38
 EOD
 
-    xqt( $app, qw{ --noenv --syntax code -file t/data/file lib/ }, <<'EOD' );
+    xqt( @{ $app }, qw{ --noenv --syntax code -file t/data/file lib/ }, <<'EOD' );
 lib/App/AckX/Preflight.pm:29:    $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 EOD
 }
@@ -87,144 +94,43 @@ sub xqt {
     my @arg = @_;
     my $want = pop @arg;
     my $title = "@arg";
-    $arg[0] =~ m/ standalone /smx
-	or unshift @arg, '-Mblib';
-    unshift @arg, $^X;
-    my $stdout = _back_tick( @arg );
-    @_ = ( $stdout, $want, $title );
-    goto \&is;
+
+    open my $fh, '-|', @arg
+	or do {
+	@_ = (
+	    sprintf '%s: Pope open failed: $! is %s, $? is %s',
+		$title, $!, exit_code( $? ),
+	);
+	goto &fail;
+    };
+
+    local $/ = undef;	# Slurp
+    @_ = ( scalar( <$fh> ), $want, $title );
+    close $fh;
+    goto &is;
 }
 
-sub _back_tick {
-    my @cmd = @_;
-
-    my $options = {};
-
-    # When you care enough to steal the very best.
-
-## VERBATIM BEGIN https://metacpan.org/dist/ack/source/t/Util.pm?raw=1
-
-    my ( @stdout, @stderr );
-
-    if ( is_windows() ) {
-        ## no critic ( InputOutput::ProhibitTwoArgOpen )
-        ## no critic ( InputOutput::ProhibitBarewordFileHandles )
-        require Win32::ShellQuote;
-        # Capture stderr & stdout output into these files (only on Win32).
-        my $tempdir = File::Temp->newdir;
-        my $catchout_file = File::Spec->catfile( $tempdir->dirname, 'stdout.log' );
-        my $catcherr_file = File::Spec->catfile( $tempdir->dirname, 'stderr.log' );
-
-        open(SAVEOUT, '>&STDOUT') or die "Can't dup STDOUT: $!";
-        open(SAVEERR, '>&STDERR') or die "Can't dup STDERR: $!";
-        open(STDOUT, '>', $catchout_file) or die "Can't open $catchout_file: $!";
-        open(STDERR, '>', $catcherr_file) or die "Can't open $catcherr_file: $!";
-        my $cmd = Win32::ShellQuote::quote_system_string(@cmd);
-        if ( my $input = $options->{input} ) {
-            my $input_command = Win32::ShellQuote::quote_system_string(@{$input});
-            $cmd = "$input_command | $cmd";
-        }
-        system( $cmd );
-        close STDOUT;
-        close STDERR;
-        open(STDOUT, '>&SAVEOUT') or die "Can't restore STDOUT: $!";
-        open(STDERR, '>&SAVEERR') or die "Can't restore STDERR: $!";
-        close SAVEOUT;
-        close SAVEERR;
-        @stdout = read_file($catchout_file);
-        @stderr = read_file($catcherr_file);
-    }
-    else {
-        my ( $stdout_read, $stdout_write );
-        my ( $stderr_read, $stderr_write );
-
-        pipe $stdout_read, $stdout_write
-            or die "Unable to create pipe: $!";
-
-        pipe $stderr_read, $stderr_write
-            or die "Unable to create pipe: $!";
-
-        my $pid = fork();
-        if ( $pid == -1 ) {
-            die "Unable to fork: $!";
-        }
-
-        if ( $pid ) {
-            close $stdout_write;
-            close $stderr_write;
-
-            while ( $stdout_read || $stderr_read ) {
-                my $rin = '';
-
-                vec( $rin, fileno($stdout_read), 1 ) = 1 if $stdout_read;
-                vec( $rin, fileno($stderr_read), 1 ) = 1 if $stderr_read;
-
-                select( $rin, undef, undef, undef );
-
-                if ( $stdout_read && vec( $rin, fileno($stdout_read), 1 ) ) {
-                    my $line = <$stdout_read>;
-
-                    if ( defined( $line ) ) {
-                        push @stdout, $line;
-                    }
-                    else {
-                        close $stdout_read;
-                        undef $stdout_read;
-                    }
-                }
-
-                if ( $stderr_read && vec( $rin, fileno($stderr_read), 1 ) ) {
-                    my $line = <$stderr_read>;
-
-                    if ( defined( $line ) ) {
-                        push @stderr, $line;
-                    }
-                    else {
-                        close $stderr_read;
-                        undef $stderr_read;
-                    }
-                }
-            }
-
-            waitpid $pid, 0;
-        }
-        else {
-            close $stdout_read;
-            close $stderr_read;
-
-            if (my $input = $options->{input}) {
-                _check_command_for_taintedness( @{$input} );
-                open STDIN, '-|', @{$input} or die "Can't open STDIN: $!";
-            }
-
-            open STDOUT, '>&', $stdout_write or die "Can't open STDOUT: $!";
-            open STDERR, '>&', $stderr_write or die "Can't open STDERR: $!";
-
-            exec @cmd;
-        }
-    } # end else not Win32
-## VERBATIM END
-
-    return join '', @stdout;
+sub exit_code {
+    my ( $num ) = @_;
+    $num == -1
+	and return "Failed to execute command: $!";
+    $num & 0x7F
+	and return sprintf 'Child died with signal %s, %s coredump',
+	    sig_num( $num ), $num & 0x80 ? 'with' : 'without';
+    return sprintf 'Child exited with value %d', $num >> 8;
 }
 
-## VERBATIM BEGIN https://metacpan.org/dist/ack/source/t/Util.pm?raw=1
-sub is_windows {
-    return $^O eq 'MSWin32';
+sub sig_num {
+    my ( $num ) = @_;
+    $num &= 0x7F;
+    local $@ = undef;
+    eval { require Config; 1 }
+	or return sprintf '%d', $num;
+    my @sig;
+    @sig[ split / /, $Config::Config{sig_num} ] =
+	split / /, $Config::Config{sig_name};
+    return sprintf '%d ( SIG%s )', $num, $sig[$num];
 }
-## VERBATIM END
-
-## VERBATIM BEGIN https://metacpan.org/dist/ack/source/t/Util.pm?raw=1
-sub read_file {
-    my $filename = shift;
-
-    open( my $fh, '<', $filename ) or die "Can't read $filename: \n";
-    my @lines = <$fh>;
-    close $fh or die;
-
-    return wantarray ? @lines : join( '', @lines );
-}
-## VERBATIM END
 
 1;
 
