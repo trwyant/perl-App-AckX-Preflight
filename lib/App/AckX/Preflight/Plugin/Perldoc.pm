@@ -14,13 +14,12 @@ use File::Find ();
 our $VERSION = '0.000_041';
 
 sub __options {
-    return( qw{ perldelta! perldoc! perlpod! } );
+    return( qw{ perldelta! perldoc! perlfaq! perlpod! } );
 }
 
 {
     my @perlpod;
     sub _perlpod {
-	$DB::single = 1;
 	unless ( @perlpod ) {
 	    foreach my $key ( map { $Config::Config{$_} } qw{
 		archlibexp
@@ -44,21 +43,29 @@ sub __options {
 sub __process {
     my ( undef, undef, $opt ) = @_;
 
-    if ( $opt->{perldelta} ) {
+    if ( $opt->{perldelta} || $opt->{perlfaq} ) {
 	$opt->{perldoc}
-	    and __warn '--perldoc is ignored if --perldelta is asserted';
+	    and __warn '--perldoc is ignored if --perldelta or --perlfaq is asserted';
 	$opt->{perlpod}
-	    and __warn '--perlpod is ignored if --perldelta is asserted';
+	    and __warn '--perlpod is ignored if --perldelta  or --perlfaqis asserted';
 	File::Find::find(
 	    sub {
 		-d
 		    and return;
-		m/ \A perl [0-9]+ delta [.] pod \z /smx
+
+		$opt->{perldelta}
+		    and m/ \A perl [0-9]+ delta [.] pod \z /smx
+		    or $opt->{perlfaq}
+		    and m/ \A perlfaq [0-9]+ [.] pod \z /smx
 		    or return;
+
 		push @ARGV, $File::Find::name;
+
+		return;
 	    },
 	    _perlpod(),
 	);
+
     } elsif ( $opt->{perlpod} ) {
 	$opt->{perldoc}
 	    and __warn '--perldoc is ignored if --perlpod is asserted';
@@ -72,6 +79,7 @@ sub __process {
 	    },
 	    _perlpod(),
 	);
+
     } else {
 	# Append the Perl directories to the argument list
 	push @ARGV, grep { -d } @INC;
@@ -82,7 +90,8 @@ sub __process {
 
 sub __wants_to_run {
     my ( undef, $opt ) = @_;
-    return $opt->{perldoc} || $opt->{perldelta} || $opt->{perlpod};
+    return $opt->{perldoc} || $opt->{perldelta} || $opt->{perlfaq} ||
+	$opt->{perlpod};
 }
 
 1;
@@ -109,9 +118,12 @@ The following options are available:
 
 =item --perldelta
 
-This causes the F<perldelta.pod> files to be searched. This takes
+This causes the F<perl*delta.pod> files to be searched. This takes
 precedence over both C<--perldoc> and C<--perlpod>, and a warning is
 issued if either is asserted.
+
+If C<--perlfaq> is also asserted then both deltas and FAQs are
+searched.
 
 =item --perldoc
 
@@ -124,6 +136,15 @@ listed.
 
 If C<--perldelta> or C<--perlpod> is also asserted, this option is
 ignored with a warning.
+
+=item --perlfaq
+
+This causes the F<perlfaq*.pod> files to be searched. This takes
+precedence over both C<--perldoc> and C<--perlpod>, and a warning is
+issued if either is asserted.
+
+If C<--perldelta> is also asserted then both deltas and FAQs are
+searched.
 
 =item --perlpod
 
@@ -139,6 +160,10 @@ to be listed.
 
 If you want the files in lexicographical order you can use the F<ack>
 C<--sort-files> option.
+
+If you just want the files with matches (as provided by
+L<perldoc-search|perldoc-search>), you can use the F<ack> C<-l> option,
+or its more-verbose version C<--flies-with-matches>.
 
 =head1 SEE ALSO
 

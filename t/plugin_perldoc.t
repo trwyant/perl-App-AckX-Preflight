@@ -17,7 +17,7 @@ my @want;
 
 @got = CLASS->__options();
 is \@got,
-    [ qw{ perldelta! perldoc! perlpod! } ],
+    [ qw{ perldelta! perldoc! perlfaq! perlpod! } ],
     'Options';
 
 
@@ -34,12 +34,13 @@ is \@got, \@want, q<Parse '--perldoc --syntax doc'>;
 @got = xqt( @want );
 is \@got, [ qw{ --syntax doc }, inc() ], q<Process '--perldoc --syntax doc'>;
 
+
 @got = prs( qw{ --perldelta --syntax=documentation } );
 @want = ( { perldelta => 1 }, qw{ --syntax=documentation } );
 is \@got, \@want, q<Parse '--perldoc --syntax=documentation>;
 
 @got = xqt( @want );
-@want = ();
+@want = ( '--syntax=documentation' );
 find(
     sub {
 	m/ \A perl [0-9]+ delta [.] pod \z /smx
@@ -47,8 +48,24 @@ find(
     },
     perlpod()
 );
-unshift @want, '--syntax=documentation';
 is \@got, \@want, q<Process '--perldoc --syntax=documentation>;
+
+
+@got = prs( qw{ --perlfaq -l } );
+@want = ( { perlfaq => 1 }, '-l' );
+is \@got, \@want, q<Parse '--perlfaq -l>;
+
+@got = xqt( @want );
+@want = ( '-l' );
+find(
+    sub {
+	m/ \A perlfaq [0-9]+ [.] pod \z /smx
+	    and push @want, $File::Find::name;
+    },
+    perlpod()
+);
+is \@got, \@want, q<Process '--perlfaq -l>;
+
 
 done_testing;
 
