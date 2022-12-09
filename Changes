@@ -1,3 +1,10 @@
+0.000_042	2022-12-09	T. R. Wyant
+    Re-implement --perlpod to just specify directories to search.
+
+    Add --perlfaq (search Perl FAQs) to the Perldoc plug-in.
+
+    Drop support for single-file implementation.
+
 0.000_041	2022-12-07	T. R. Wyant
     Add --perlpod to the Perldoc plugin.  This searches only the core
     Perl documentation.

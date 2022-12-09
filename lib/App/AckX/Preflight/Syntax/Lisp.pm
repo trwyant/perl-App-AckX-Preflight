@@ -9,7 +9,7 @@ use parent qw{ App::AckX::Preflight::Syntax::_nesting };
 
 use App::AckX::Preflight::Util qw{ :croak :syntax @CARP_NOT };
 
-our $VERSION = '0.000_041';
+our $VERSION = '0.000_042';
 
 __PACKAGE__->__handles_type_mod( qw{ set clojure elisp lisp scheme } );
 

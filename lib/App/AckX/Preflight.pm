@@ -13,7 +13,7 @@ use List::Util 1.45 ();	# For uniqstr, which this module does not use
 use Pod::Usage ();
 use Text::ParseWords ();
 
-our $VERSION = '0.000_041';
+our $VERSION = '0.000_042';
 our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 
 use constant DEVELOPMENT => grep { m{ \b blib \b }smx } @INC;

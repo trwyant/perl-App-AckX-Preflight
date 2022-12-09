@@ -32,7 +32,7 @@ use constant ACK_FILE_CLASS	=> do {
     $version ge '2.999' ? 'App::Ack::File' : 'App::Ack::Resource';
 };
 
-our $VERSION = '0.000_041';
+our $VERSION = '0.000_042';
 
 our @EXPORT_OK = qw{
     __die

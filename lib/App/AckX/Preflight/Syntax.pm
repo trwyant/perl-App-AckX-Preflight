@@ -20,7 +20,7 @@ use Text::Abbrev ();
 # This is PRIVATE to the App-AckX-Preflight package.
 our @EXPORT_OK = qw{ __normalize_options };
 
-our $VERSION = '0.000_041';
+our $VERSION = '0.000_042';
 
 my $ARG_SEP_RE = qr{ \s* [:;,] \s* }smx;
 
