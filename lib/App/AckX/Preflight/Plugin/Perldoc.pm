@@ -69,16 +69,7 @@ sub __process {
     } elsif ( $opt->{perlpod} ) {
 	$opt->{perldoc}
 	    and __warn '--perldoc is ignored if --perlpod is asserted';
-	File::Find::find(
-	    sub {
-		-d
-		    and return;
-		m/ [.] pod \z /smx
-		    or return;
-		push @ARGV, $File::Find::name;
-	    },
-	    _perlpod(),
-	);
+	push @ARGV, _perlpod();
 
     } else {
 	# Append the Perl directories to the argument list

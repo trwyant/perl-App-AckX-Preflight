@@ -35,6 +35,15 @@ is \@got, \@want, q<Parse '--perldoc --syntax doc'>;
 is \@got, [ qw{ --syntax doc }, inc() ], q<Process '--perldoc --syntax doc'>;
 
 
+@got = prs( qw{ --perlpod -w NaN } );
+@want = ( { perlpod => 1 }, qw{ -w NaN } );
+is \@got, \@want, q<Parse --perlpod-w NaN>;
+
+@got = xqt( @want );
+@want = ( qw{ -w NaN }, perlpod() );
+is \@got, \@want,  q<Process --perlpod -w NaN>;
+
+
 @got = prs( qw{ --perldelta --syntax=documentation } );
 @want = ( { perldelta => 1 }, qw{ --syntax=documentation } );
 is \@got, \@want, q<Parse '--perldoc --syntax=documentation>;
