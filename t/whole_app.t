@@ -121,10 +121,11 @@ sub xqt {
 	command => \@arg );
 
     unless ( $ok ) {
-	@_ = "$title failed: error $errmsg";
+	local $Test::Builder::Level = $Test::Builder::Level + 1;
+	fail "$title failed: error $errmsg";
 	IPC::Cmd->can_capture_buffer()
-	    and $_[0] .= "; stderr $stderr";
-	goto &fail;
+	    and diag @{ $stderr };
+	return;
     }
 
     seek $out, 0, 0;
