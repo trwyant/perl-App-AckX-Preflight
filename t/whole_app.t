@@ -37,7 +37,7 @@ foreach my $app ( 'blib/script/ackxp', ACKXP_STANDALONE ) {
 # FIXME building the standalone app is broken unless it also includes
 # ack_standalone
 
-foreach my $app ( [ $^X, qw{ -Mblib blib/script/ackxp } ] ) {
+foreach my $app ( [ $^X, qw{ -Mblib blib/script/ackxp --verbose } ] ) {
     -x $app->[0]
 	or next;
 
@@ -100,32 +100,18 @@ sub xqt {
 
     local $! = 0;
 
-=begin comment
-
-    my $exst = system { $arg[0] } @arg;
-    $exst and do {
-	@_ = (
-	    sprintf '%s: system() failed:%s $? is %s',
-		$title,
-		( $! ? " \$! is $!," : '' ),
-		exit_code( $exst ),
-	);
-	goto &fail;
-    };
-
-=end comment
-
-=cut
-
     my ( $ok, $errmsg, undef, $stdout, $stderr ) = IPC::Cmd::run(
 	command => \@arg );
 
     unless ( $ok ) {
-	local $Test::Builder::Level = $Test::Builder::Level + 1;
-	fail "$title failed: error $errmsg";
-	IPC::Cmd->can_capture_buffer()
-	    and diag @{ $stderr };
-	return;
+	chomp $errmsg;
+	$title .= " failed: error $errmsg";
+	if ( IPC::Cmd->can_capture_buffer() ) {
+	    local $" = '';
+	    $title .= "\nstdout = @{ $stdout }\nstderr = @{ $stderr }";
+	}
+	@_ = ( $title );
+	goto &fail;
     }
 
     seek $out, 0, 0;
