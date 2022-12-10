@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use File::Temp;
+use IPC::Cmd ();
 use Test2::V0;
 
 {
@@ -97,14 +98,34 @@ sub xqt {
     splice @arg, 0, 0, @{ $app }, '--output', $out->filename();
     my $title = "@arg";
 
+    local $! = 0;
+
+=begin comment
+
     my $exst = system { $arg[0] } @arg;
     $exst and do {
 	@_ = (
-	    sprintf '%s: system() failed: $! is %s, $? is %s',
-		$title, $!, exit_code( $exst ),
+	    sprintf '%s: system() failed:%s $? is %s',
+		$title,
+		( $! ? " \$! is $!," : '' ),
+		exit_code( $exst ),
 	);
 	goto &fail;
     };
+
+=end comment
+
+=cut
+
+    my ( $ok, $errmsg, undef, $stdout, $stderr ) = IPC::Cmd::run(
+	command => \@arg );
+
+    unless ( $ok ) {
+	@_ = "$title failed: error $errmsg";
+	IPC::Cmd->can_capture_buffer()
+	    and $_[0] .= "; stderr $stderr";
+	goto &fail;
+    }
 
     seek $out, 0, 0;
 

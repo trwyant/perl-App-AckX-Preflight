@@ -209,6 +209,7 @@ EOD
 sub __execute {
     my ( undef, @arg ) = @_;
 
+    local $! = 0;
     exec { $arg[0] } @arg
 	or __die( "Failed to exec $arg[0]: $!" );
 }

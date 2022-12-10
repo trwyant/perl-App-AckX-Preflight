@@ -32,15 +32,15 @@ sub author {
 sub build_requires {
     return +{
 	'App::Ack::Filter::Extension'	=> 0,
-	'lib'		=> 0,		# To load inc/ stuff.
 	'File::Temp'	=> 0,		# For t/while_app.t.
 	'Scalar::Util'	=> 0,		# For blessed(), openhandle().
+	'IPC::Cmd'	=> 0,		# For t/whole_app.t
 	'Test2::V0'		=> 0,
 	'Test2::Plugin::BailOnFail'	=> 0,
 	'Test2::Tools::LoadModule'	=> 0.002, # for all_modules_tried_ok
+	'lib'		=> 0,		# To load inc/ stuff.
 	( $^O eq 'MSWin32' ?
 	    (
-		'File::Temp'		=> 0,
 		'Win32'			=> 0,
 		'Win32::ShellQuote'	=> 0,
 	    ) :
