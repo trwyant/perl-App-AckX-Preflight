@@ -44,7 +44,7 @@ foreach my $app ( [ $^X, qw{ -Mblib blib/script/ackxp --verbose } ] ) {
     diag "Testing @{ $app }";
 
     xqt( $app, qw{ --noenv --syntax code -w Wyant lib/ }, <<'EOD' );
-lib/App/AckX/Preflight.pm:17:our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
+lib/App/AckX/Preflight.pm:18:our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 EOD
 
     xqt( $app, qw{ --noenv --syntax-match -syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
@@ -73,7 +73,7 @@ meta:	2	3	38
 EOD
 
     xqt( $app, qw{ --noenv --syntax code -file t/data/file lib/ }, <<'EOD' );
-lib/App/AckX/Preflight.pm:17:our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
+lib/App/AckX/Preflight.pm:18:our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 EOD
 }
 

@@ -9,6 +9,7 @@ use App::Ack ();
 use App::AckX::Preflight::Util qw{ :all };
 use Cwd ();
 use File::Spec;
+use IPC::Cmd ();	# for can_run
 use List::Util 1.45 ();	# For uniqstr, which this module does not use
 use Pod::Usage ();
 use Text::ParseWords ();
@@ -185,9 +186,12 @@ EOD
 	splice @inject, 0, 0, '-Mblib';
     }
 
+    my $ack = IPC::Cmd::can_run( 'ack' )
+	or __die( q<Can not find 'ack' executable> );
+
     my @arg = (
-	perl		=> @inject,
-	qw{ -S ack },
+	$^X		=> @inject,
+	$ack,
 	@ARGV,
     );
 

@@ -34,7 +34,6 @@ sub build_requires {
 	'App::Ack::Filter::Extension'	=> 0,
 	'File::Temp'	=> 0,		# For t/while_app.t.
 	'Scalar::Util'	=> 0,		# For blessed(), openhandle().
-	'IPC::Cmd'	=> 0,		# For t/whole_app.t
 	'Test2::V0'		=> 0,
 	'Test2::Plugin::BailOnFail'	=> 0,
 	'Test2::Tools::LoadModule'	=> 0.002, # for all_modules_tried_ok
@@ -169,6 +168,7 @@ sub requires {
 	'File::Find'			=> 0,
 	'File::Spec'			=> 0,
 	'Getopt::Long'			=> 2.39,	# getoptionsfromarray
+	'IPC::Cmd'			=> 0,
 	'List::Util'			=> 1.45,	# uniqstr
 	'Pod::Usage'			=> 0,
 	'Text::Abbrev'			=> 0,
