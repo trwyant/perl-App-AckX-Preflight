@@ -101,7 +101,7 @@ sub run {
     my @argv = @ARGV;
 
     __getopt( \%opt,
-	qw{ default=s% dry_run|dry-run! verbose! },
+	qw{ default=s% dry_run|dry-run! output=s verbose! },
 	'disable=s'	=> sub {
 	    my ( undef, $plugin ) = @_;
 	    $plugin =~ m/ :: /smx
@@ -195,6 +195,13 @@ EOD
 
     $self->{dry_run}
 	and return;
+
+    if ( defined $opt{output} && $opt{output} ne '-' ) {
+	close STDOUT;
+	# TODO preserve encoding?
+	open STDOUT, '>', $opt{output}
+	    or __die( "Failed to open $opt{output}: $!" );
+    }
 
     return $self->__execute( @arg );
 }

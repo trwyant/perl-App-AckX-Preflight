@@ -144,6 +144,14 @@ The default is C<--no-ignore-ackxp-defaults>.
 
 This is a synonym for C<--help>, and takes the same optional arguments.
 
+=head2 --output
+
+ --output search.log
+
+This option specifies an output file for the search results. This is
+implemented without using shell redirection. If you explicitly specify
+C<'-'>, output is unaffected.
+
 =head2 --verbose
 
 This causes C<App::AckX::Preflight> to write certain information to

@@ -42,11 +42,11 @@ foreach my $app ( [ $^X, qw{ -Mblib blib/script/ackxp } ] ) {
 
     diag "Testing @{ $app }";
 
-    xqt( @{ $app }, qw{ --noenv --syntax code -w Wyant lib/ }, <<'EOD' );
+    xqt( $app, qw{ --noenv --syntax code -w Wyant lib/ }, <<'EOD' );
 lib/App/AckX/Preflight.pm:17:our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 EOD
 
-    xqt( @{ $app }, qw{ --noenv --syntax-match -syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
+    xqt( $app, qw{ --noenv --syntax-match -syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
 meta:#!/usr/bin/env perl
 code:
 code:use strict;
@@ -71,7 +71,7 @@ docu:	5	8	67
 meta:	2	3	38
 EOD
 
-    xqt( @{ $app }, qw{ --noenv --syntax code -file t/data/file lib/ }, <<'EOD' );
+    xqt( $app, qw{ --noenv --syntax code -file t/data/file lib/ }, <<'EOD' );
 lib/App/AckX/Preflight.pm:17:our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 EOD
 }
@@ -91,22 +91,27 @@ sub need_to_regenerate_ackxp_standalone {
 }
 
 sub xqt {
-    my @arg = @_;
+    my ( $app, @arg ) = @_;
     my $want = pop @arg;
+    my $out = File::Temp->new();
+    splice @arg, 0, 0, @{ $app }, '--output', $out->filename();
     my $title = "@arg";
 
-    open my $fh, '-|', @arg
-	or do {
+    my $exst = system { $arg[0] } @arg;
+    $exst and do {
 	@_ = (
-	    sprintf '%s: Pope open failed: $! is %s, $? is %s',
-		$title, $!, exit_code( $? ),
+	    sprintf '%s: system() failed: $! is %s, $? is %s',
+		$title, $!, exit_code( $exst ),
 	);
 	goto &fail;
     };
 
+    seek $out, 0, 0;
+
+    local $/ = undef;
+
     local $/ = undef;	# Slurp
-    @_ = ( scalar( <$fh> ), $want, $title );
-    close $fh;
+    @_ = ( scalar( <$out> ), $want, $title );
     goto &is;
 }
 
