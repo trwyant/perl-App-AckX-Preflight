@@ -115,9 +115,9 @@ sub __die {
 sub __die_hard {
     my @arg = @_;
     if ( @arg ) {
-	$arg[0] = "Programming error - $arg[0]";
+	$arg[0] = "Bug - $arg[0]";
     } else {
-	@arg = ( 'Programming error' );
+	@arg = ( 'Bug' );
     }
     local $Carp::CarpLevel = $Carp::CarpLevel + 1;
     Carp::confess( @arg );
@@ -298,7 +298,7 @@ true; otherwise it dispatches to C<App::Ack::die()>.
 
  __die_hard( 'Spewing my guts' );
 
-This subroutine prefixes C<'Programming error - '> to its arguments and
+This subroutine prefixes C<'Bug - '> to its arguments and
 then calls C<Carp::confess()>.
 
 =head2 __err_exclusive

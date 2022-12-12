@@ -388,7 +388,7 @@ sub new {
     my ( $class, %arg ) = @_;
     defined $arg{name}
 	and '' ne $arg{name}
-	or __die_hard( 'Programming error - no name specified' );
+	or __die_hard( 'No name specified' );
     return bless \%arg, ref $class || $class;
 }
 
