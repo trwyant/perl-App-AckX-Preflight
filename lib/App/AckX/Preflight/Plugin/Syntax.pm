@@ -10,7 +10,7 @@ use parent qw{ App::AckX::Preflight::Plugin };
 use App::AckX::Preflight::Syntax qw{ __normalize_options };
 use App::AckX::Preflight::Util qw{ @CARP_NOT };
 
-our $VERSION = '0.000_042';
+our $VERSION = '0.000_043';
 
 sub __options {
     return( qw{

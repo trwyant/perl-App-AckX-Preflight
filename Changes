@@ -1,3 +1,19 @@
+0.000_043	2022-12-12	T. R. Wyant
+
+    Redo ack dispatch. Default is now system() or IPC::Cmd::run().
+    exec() is still available based on attribute 'exec', set when the
+    application object is created.
+
+    Change 'Programming error' to 'Bug' in __die_hard().
+
+    Rename --perlpod to --perlcore.
+
+    Use absolute paths rather than command names where possible This
+    means $^X rather than 'perl', and IPC::Cmd::can_run( 'ack' ) rather
+    than '-S ack'.
+
+    Add --output, which redirects ack output to a file.
+
 0.000_042	2022-12-09	T. R. Wyant
     Re-implement --perlpod to just specify directories to search.
 

@@ -11,7 +11,7 @@ use Pod::Usage;
 use lib qw{ inc };
 use My::Module::TestSyntax;
 
-our $VERSION = '0.000_042';
+our $VERSION = '0.000_043';
 
 my %opt;
 
