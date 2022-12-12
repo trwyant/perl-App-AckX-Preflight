@@ -28,6 +28,7 @@ hoc
 Javadoc
 Lua
 merchantability
+perlcore
 preflight
 unabbreviated
 Vimscript

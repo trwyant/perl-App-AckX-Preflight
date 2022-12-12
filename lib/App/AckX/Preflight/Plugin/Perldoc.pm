@@ -14,7 +14,7 @@ use File::Find ();
 our $VERSION = '0.000_042';
 
 sub __options {
-    return( qw{ perldelta! perldoc! perlfaq! perlpod! } );
+    return( qw{ perlcore! perldelta! perldoc! perlfaq! } );
 }
 
 {
@@ -46,8 +46,8 @@ sub __process {
     if ( $opt->{perldelta} || $opt->{perlfaq} ) {
 	$opt->{perldoc}
 	    and __warn '--perldoc is ignored if --perldelta or --perlfaq is asserted';
-	$opt->{perlpod}
-	    and __warn '--perlpod is ignored if --perldelta  or --perlfaqis asserted';
+	$opt->{perlcore}
+	    and __warn '--perlcore is ignored if --perldelta  or --perlfaqis asserted';
 	File::Find::find(
 	    sub {
 		-d
@@ -66,9 +66,9 @@ sub __process {
 	    _perlpod(),
 	);
 
-    } elsif ( $opt->{perlpod} ) {
+    } elsif ( $opt->{perlcore} ) {
 	$opt->{perldoc}
-	    and __warn '--perldoc is ignored if --perlpod is asserted';
+	    and __warn '--perldoc is ignored if --perlcore is asserted';
 	push @ARGV, _perlpod();
 
     } else {
@@ -82,7 +82,7 @@ sub __process {
 sub __wants_to_run {
     my ( undef, $opt ) = @_;
     return $opt->{perldoc} || $opt->{perldelta} || $opt->{perlfaq} ||
-	$opt->{perlpod};
+	$opt->{perlcore};
 }
 
 1;
@@ -107,10 +107,16 @@ The following options are available:
 
 =over
 
+=item --perlcore
+
+This causes the documentation for the Perl interpreter to be searched,
+but not the documentation for installed modules. This takes precedence
+over C<--perldoc>, and a warning is issued if C<--perldoc> is asserted.
+
 =item --perldelta
 
 This causes the F<perl*delta.pod> files to be searched. This takes
-precedence over both C<--perldoc> and C<--perlpod>, and a warning is
+precedence over both C<--perldoc> and C<--perlcore>, and a warning is
 issued if either is asserted.
 
 If C<--perlfaq> is also asserted then both deltas and FAQs are
@@ -125,23 +131,17 @@ If you want to mimic the behavior of F<perldoc-search>, also use the
 F<ack> C<-l> option, which causes only the names of matching files to be
 listed.
 
-If C<--perldelta> or C<--perlpod> is also asserted, this option is
+If C<--perldelta> or C<--perlcore> is also asserted, this option is
 ignored with a warning.
 
 =item --perlfaq
 
 This causes the F<perlfaq*.pod> files to be searched. This takes
-precedence over both C<--perldoc> and C<--perlpod>, and a warning is
+precedence over both C<--perldoc> and C<--perlcore>, and a warning is
 issued if either is asserted.
 
 If C<--perldelta> is also asserted then both deltas and FAQs are
 searched.
-
-=item --perlpod
-
-This causes the documentation for the Perl interpreter to be searched,
-but not the documentation for installed modules. This takes precedence
-over C<--perldoc>, and a warning is issued if C<--perldoc> is asserted.
 
 =back
 

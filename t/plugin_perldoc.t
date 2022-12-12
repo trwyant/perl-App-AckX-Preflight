@@ -17,7 +17,7 @@ my @want;
 
 @got = CLASS->__options();
 is \@got,
-    [ qw{ perldelta! perldoc! perlfaq! perlpod! } ],
+    [ qw{ perlcore! perldelta! perldoc! perlfaq! } ],
     'Options';
 
 
@@ -35,13 +35,13 @@ is \@got, \@want, q<Parse '--perldoc --syntax doc'>;
 is \@got, [ qw{ --syntax doc }, inc() ], q<Process '--perldoc --syntax doc'>;
 
 
-@got = prs( qw{ --perlpod -w NaN } );
-@want = ( { perlpod => 1 }, qw{ -w NaN } );
-is \@got, \@want, q<Parse --perlpod-w NaN>;
+@got = prs( qw{ --perlcore -w NaN } );
+@want = ( { perlcore => 1 }, qw{ -w NaN } );
+is \@got, \@want, q<Parse --perlcore -w NaN>;
 
 @got = xqt( @want );
 @want = ( qw{ -w NaN }, perlpod() );
-is \@got, \@want,  q<Process --perlpod -w NaN>;
+is \@got, \@want,  q<Process --perlcore -w NaN>;
 
 
 @got = prs( qw{ --perldelta --syntax=documentation } );
