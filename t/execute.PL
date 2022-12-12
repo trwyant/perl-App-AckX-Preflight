@@ -4,6 +4,8 @@ use 5.008008;
 use strict;
 use warnings;
 
+use blib;
+
 use App::AckX::Preflight;
 use Getopt::Long 2.33 qw{ :config no_auto_version pass_through };
 use Pod::Usage;
@@ -13,6 +15,7 @@ our $VERSION = '0.000_042';
 my %opt;
 
 GetOptions( \%opt,
+    qw{ exec! output=s verbose! },
     help => sub { pod2usage( { -verbose => 2 } ) },
     version	=> sub {
 	local @ARGV = qw{ --version };
@@ -20,7 +23,13 @@ GetOptions( \%opt,
     },
 ) and @ARGV or pod2usage( { -verbose => 0 } );
 
-App::AckX::Preflight->__execute( $^X, @ARGV );
+my $ackxp = App::AckX::Preflight->new(
+    exec	=> $opt{exec},
+    output	=> $opt{output},
+    verbose	=> $opt{verbose},
+);
+
+$ackxp->__execute( $^X, @ARGV );
 
 __END__
 
@@ -36,6 +45,11 @@ execute.PL - Helper script for t/execute.t
 
 =head1 OPTIONS
 
+=head2 --exec
+
+This Boolean option sets the C<exec> argument to
+L<App::AckX::Preflight|App::AckX::Preflight>->C<new()>.
+
 =head2 -help
 
 This option displays the documentation for this script. The script then
@@ -49,7 +63,8 @@ This option displays the version of this script. The script then exits.
 
 This Perl script simply calls
 
- App::AckX::Preflight->__execute( $^X, @ARGV );
+ my $ackxp = App::AckX::Preflight->new( exec => $opt{exec} );
+ $ackxp->__execute( $^X, @ARGV );
 
 The idea is that the test script runs this script in back ticks and
 judges whether C<__execute()> is working by comparing the output of that

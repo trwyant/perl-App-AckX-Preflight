@@ -37,6 +37,7 @@ sub build_requires {
 	'Test2::V0'		=> 0,
 	'Test2::Plugin::BailOnFail'	=> 0,
 	'Test2::Tools::LoadModule'	=> 0.002, # for all_modules_tried_ok
+	'blib'		=> 0,
 	'lib'		=> 0,		# To load inc/ stuff.
 	( $^O eq 'MSWin32' ?
 	    (

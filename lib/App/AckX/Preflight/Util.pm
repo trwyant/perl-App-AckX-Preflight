@@ -41,6 +41,7 @@ our @EXPORT_OK = qw{
     __file_id
     __getopt
     __interpret_plugins
+    __interpret_exit_code
     __open_for_read
     __syntax_types
     __warn
@@ -160,6 +161,16 @@ sub _get_option_parser {
     return $psr;
 }
 
+sub __interpret_exit_code {
+    my ( $num ) = @_;
+    $num == -1
+	and return "Failed to execute command: $!";
+    $num & 0x7F
+	and return sprintf 'Child died with signal %s, %s coredump',
+	    _sig_num( $num ), $num & 0x80 ? 'with' : 'without';
+    return sprintf 'Child exited with value %d', $num >> 8;
+}
+
 sub __interpret_plugins {
     my ( @plugin_list ) = @_;
     my $default = ( HASH_REF eq ref $plugin_list[0] ) ? shift @plugin_list : {};
@@ -249,6 +260,18 @@ sub __open_for_read {
     open my $fh, '<:encoding(utf-8)', $path
 	or __die( "Unable to open $path: $!" );
     return $fh;
+}
+
+sub _sig_num {
+    my ( $num ) = @_;
+    $num &= 0x7F;
+    local $@ = undef;
+    eval { require Config; 1 }
+	or return sprintf '%d', $num;
+    my @sig;
+    @sig[ split / /, $Config::Config{sig_num} ] =
+	split / /, $Config::Config{sig_name};
+    return sprintf '%d ( SIG%s )', $num, $sig[$num];
 }
 
 sub __syntax_types {
@@ -357,6 +380,14 @@ L<__options()|App::AckX::Preflight::Plugin/__options> and
 L<__peek_opt()|App::AckX::Preflight::Plugin/__peek_opt> methods to
 determine which options to parse, and returns a reference to the options
 hash.
+
+=head2 __interpret_exit_code
+
+ say __interpret_exit_code( $? )
+
+This subroutine takes as its argument a subprocess exit code, and
+returns a string interpreting that code. Its implementation leans
+heavily on the example given in L<perlop> under C<qx/*STRING*/>.
 
 =head2 __interpret_plugins
 

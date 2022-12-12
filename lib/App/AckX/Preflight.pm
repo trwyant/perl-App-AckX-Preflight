@@ -17,6 +17,7 @@ use Text::ParseWords ();
 our $VERSION = '0.000_042';
 our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 
+use constant DEFAULT_OUTPUT	=> '-';
 use constant DEVELOPMENT => grep { m{ \b blib \b }smx } @INC;
 
 use constant IS_VMS	=> 'VMS' eq $^O;
@@ -29,12 +30,15 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 
 {
     my %default = (
+	exec	=> 0,
 	global	=> IS_VMS ? undef :	# TODO what, exactly?
 	    IS_WINDOWS ? Win32::CSIDL_COMMON_APPDATA() :
 	    '/etc',
 	home	=> IS_VMS ? $ENV{'SYS$LOGIN'} :
 	    IS_WINDOWS ? Win32::CSIDL_APPDATA() :
 	    $ENV{HOME},
+	output	=> DEFAULT_OUTPUT,
+	verbose	=> 0,
     );
 
     sub new {
@@ -63,6 +67,13 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 	return bless \%arg, ref $class || $class;
     }
 
+    sub exec : method {	## no critic (ProhibitBuiltinHomonyms)
+	my ( $self ) = @_;
+	ref $self
+	    or $self = \%default;
+	return $self->{exec};
+    }
+
     sub global {
 	my ( $self ) = @_;
 	ref $self
@@ -75,6 +86,20 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 	ref $self
 	    or $self = \%default;
 	return $self->{home};
+    }
+
+    sub output {
+	my ( $self ) = @_;
+	ref $self
+	    or $self = \%default;
+	return $self->{output};
+    }
+
+    sub verbose {
+	my ( $self ) = @_;
+	ref $self
+	    or $self = \%default;
+	return $self->{verbose};
     }
 }
 
@@ -175,8 +200,11 @@ EOD
 	$p->{class}->__process( $self, $p->{opt} );
     }
 
-    local $self->{verbose} = $opt{verbose};
     local $self->{dry_run} = $opt{dry_run};
+    local $self->{output}  = defined $opt{output} ?
+	$opt{output} : $self->{output};
+    local $self->{verbose} = defined $opt{verbose} ?
+	$opt{verbose} : $self->{verbose};
 
     my @inject = @{ $self->{inject} };
 
@@ -195,27 +223,66 @@ EOD
 	@ARGV,
     );
 
-    $self->_trace( @arg );
-
-    $self->{dry_run}
-	and return;
-
-    if ( defined $opt{output} && $opt{output} ne '-' ) {
-	close STDOUT;
-	# TODO preserve encoding?
-	open STDOUT, '>', $opt{output}
-	    or __die( "Failed to open $opt{output}: $!" );
-    }
-
     return $self->__execute( @arg );
 }
 
 sub __execute {
-    my ( undef, @arg ) = @_;
+    my ( $self, @arg ) = @_;
+
+    $self->_trace( @arg );
+
+    ref $self
+	and $self->{dry_run}
+	and return;
 
     local $! = 0;
-    exec { $arg[0] } @arg
-	or __die( "Failed to exec $arg[0]: $!" );
+    my $output = $self->output();
+
+    if ( $self->exec() ) {
+
+	unless ( $output eq DEFAULT_OUTPUT ) {
+	    close STDOUT;
+	    # TODO preserve encoding?
+	    open STDOUT, '>', $output
+		or __die( "Failed to open $output: $!" );
+	}
+
+	local $| = 1;
+
+	exec { $arg[0] } @arg
+	    or __die( "Failed to exec $arg[0]: $!" );
+
+    } else {
+
+	unless ( $output eq DEFAULT_OUTPUT || IPC::Cmd->can_capture_buffer()) {
+	    __warn( '--output ignored; ',
+		'IPC::Cmd::run can not capture buffers' );
+	    $output = DEFAULT_OUTPUT;
+	}
+
+	my ( $ok, $errmsg, $stderr );
+	if ( $output eq DEFAULT_OUTPUT ) {
+	    system { $arg[0] } @arg;
+	    $ok = ! $?;
+	    $errmsg = __interpret_exit_code( $? );
+	} else {
+	    ( $ok, $errmsg, undef, my $stdout, $stderr ) = IPC::Cmd::run(
+		command	=> \@arg,
+	    );
+	    if ( $ok ) {
+		open my $fh, '>', $output
+		    or __die( "Unable to open $output: $!" );
+		print { $fh } @{ $stdout };
+		close $fh;
+	    }
+	}
+
+	$ok
+	    or __die( "Failed to spawn $arg[0]: $errmsg" );
+
+    }
+
+    return;
 }
 
 sub __find_config_files {
@@ -373,8 +440,7 @@ sub _shell_quote {
 
 sub _trace {
     my ( $self, @arg ) = @_;
-    ref $self
-	and $self->{verbose}
+    $self->verbose()
 	or return;
     warn scalar _shell_quote( '$', @arg ), "\n";
     return;
@@ -500,6 +566,15 @@ takes the following optional arguments as name/value pairs.
 
 =over
 
+=item exec
+
+If this Boolean argument is true, F<ack> is run by C<exec()>, meaning
+that the caller of L<run()|/run> never gets control back. If false,
+F<ack> is run by either L<IPC::Cmd::run()|IPC::Cmd> if L<run()|/run>
+finds the C<--output> option, or C<system()> if not.
+
+The default is C<0>, i.e. false.
+
 =item global
 
 This is the name of the directory in which the global configuration file
@@ -533,10 +608,29 @@ and chosen to be compatible with L<App::Ack|App::Ack>:
 
 =back
 
+=item output
+
+This is the default output file name. The default is C<'-'>, which
+specifies standard output.
+
+=item verbose
+
+This Boolean is the default verbosity setting. The default is C<0> (i.e.
+false) which means non-verbose.
+
 =back
 
 If C<new()> is called as a normal method it clones its invocant,
 applying the arguments (if any) after the clone.
+
+=head2 exec
+
+ say App::Ack::Preflight->global();
+ say $aaxp->global();
+
+If called on an object, this method returns the value of the C<{exec}>
+attribute, whether explicit or defaulted. If called statically, it
+returns the default value of the C<{exec}> attribute.
 
 =head2 global
 
@@ -566,6 +660,30 @@ command used to C<exec()> F<ack>.
 B<Note> that if B<any> C<@INC> entry matches C</\bblib\b/>, B<and> any
 injected item matches C</\A-MApp::AckX::Preflight\b/>, C<-Mblib> will be
 injected before the first such item.
+
+=head2 output
+
+ say App::Ack::Preflight->output();
+ say $aaxp->output();
+
+If called on an object, this method returns the value of the C<{output}>
+attribute, whether explicit or defaulted. If called statically, it
+returns the default value of the C<{output}> attribute.
+
+B<Note> that the L<run()|/run> method may override this if C<--output>
+was specified on the command line.
+
+=head2 verbose
+
+ say App::Ack::Preflight->verbose();
+ say $aaxp->verbose();
+
+If called on an object, this method returns the value of the
+C<{verbose}> attribute, whether explicit or defaulted. If called
+statically, it returns the default value of the C<{verbose}> attribute.
+
+B<Note> that the L<run()|/run> method may override this if C<--verbose>
+or C<--no-verbose> was specified on the command line.
 
 =head2 run
 

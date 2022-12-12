@@ -5,6 +5,7 @@ use 5.008008;
 use strict;
 use warnings;
 
+use App::AckX::Preflight;
 use File::Temp;
 use IPC::Cmd ();
 use Test2::V0;
@@ -37,7 +38,7 @@ foreach my $app ( 'blib/script/ackxp', ACKXP_STANDALONE ) {
 # FIXME building the standalone app is broken unless it also includes
 # ack_standalone
 
-foreach my $app ( [ $^X, qw{ -Mblib blib/script/ackxp --verbose } ] ) {
+foreach my $app ( [ $^X, qw{ -Mblib blib/script/ackxp } ] ) {
     -x $app->[0]
 	or next;
 
@@ -94,25 +95,19 @@ sub need_to_regenerate_ackxp_standalone {
 sub xqt {
     my ( $app, @arg ) = @_;
     my $want = pop @arg;
+
     my $out = File::Temp->new();
-    splice @arg, 0, 0, @{ $app }, '--output', $out->filename();
-    my $title = "@arg";
+    local @ARGV = ( qw{ --output }, $out->filename(), @arg );
+    my $title = "@ARGV";
 
-    local $! = 0;
-
-    my ( $ok, $errmsg, undef, $stdout, $stderr ) = IPC::Cmd::run(
-	command => \@arg );
-
-    unless ( $ok ) {
-	chomp $errmsg;
-	$title .= " failed: error $errmsg";
-	if ( IPC::Cmd->can_capture_buffer() ) {
-	    local $" = '';
-	    $title .= "\nstdout = @{ $stdout }\nstderr = @{ $stderr }";
-	}
-	@_ = ( $title );
+    local $@ = undef;
+    eval {
+	App::AckX::Preflight->run();
+	1;
+    } or do {
+	@_ = $@;
 	goto &fail;
-    }
+    };
 
     seek $out, 0, 0;
 
@@ -121,28 +116,6 @@ sub xqt {
     local $/ = undef;	# Slurp
     @_ = ( scalar( <$out> ), $want, $title );
     goto &is;
-}
-
-sub exit_code {
-    my ( $num ) = @_;
-    $num == -1
-	and return "Failed to execute command: $!";
-    $num & 0x7F
-	and return sprintf 'Child died with signal %s, %s coredump',
-	    sig_num( $num ), $num & 0x80 ? 'with' : 'without';
-    return sprintf 'Child exited with value %d', $num >> 8;
-}
-
-sub sig_num {
-    my ( $num ) = @_;
-    $num &= 0x7F;
-    local $@ = undef;
-    eval { require Config; 1 }
-	or return sprintf '%d', $num;
-    my @sig;
-    @sig[ split / /, $Config::Config{sig_num} ] =
-	split / /, $Config::Config{sig_name};
-    return sprintf '%d ( SIG%s )', $num, $sig[$num];
 }
 
 1;
