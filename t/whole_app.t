@@ -105,7 +105,7 @@ sub xqt {
 	App::AckX::Preflight->run();
 	1;
     } or do {
-	@_ = $@;
+	@_ = "$title did not run: $@";
 	goto &fail;
     };
 
