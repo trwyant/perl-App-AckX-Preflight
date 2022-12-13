@@ -101,7 +101,10 @@ sub module_name {
 sub no_index {
     return +{
 	directory	=> [ qw{ inc t tools xt } ],
-	package		=> [ qw{ App::AckX::Preflight::_Config } ],
+	package		=> [ qw{
+	    App::AckX::Preflight::_Config
+	    App::AckX::Preflight::_Redirect::Stdout
+	    } ],
 	namespace	=> [ qw{ App::AckX::Preflight::_Config } ],
     };
 }

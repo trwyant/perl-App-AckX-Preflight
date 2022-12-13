@@ -11,6 +11,8 @@ use Exporter qw{ import };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
 use Text::ParseWords ();
 
+use constant DEFAULT_OUTPUT	=> '-';
+
 use constant ARRAY_REF	=> ref [];
 use constant CODE_REF	=> ref sub {};
 use constant HASH_REF	=> ref {};
@@ -47,6 +49,8 @@ our @EXPORT_OK = qw{
     __warn
 
     ACK_FILE_CLASS
+
+    DEFAULT_OUTPUT
 
     ARRAY_REF
     CODE_REF
@@ -453,6 +457,11 @@ exported by default.
 This is the name of the Ack class that represents a file. It is
 C<'App::Ack::File'> if the version of L<App::Ack|App::Ack> is at least
 C<2.999>; otherwise it is C<'App::Ack::Resource'>.
+
+=head2 DEFAULT_OUTPUT
+
+This is the string that the C<--output> option uses to indicate default
+output. Its value is C<'-'>;
 
 =head2 ARRAY_REF
 

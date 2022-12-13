@@ -17,7 +17,6 @@ use Text::ParseWords ();
 our $VERSION = '0.000_043';
 our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 
-use constant DEFAULT_OUTPUT	=> '-';
 use constant DEVELOPMENT => grep { m{ \b blib \b }smx } @INC;
 
 use constant IS_VMS	=> 'VMS' eq $^O;
@@ -127,7 +126,7 @@ sub run {
     my @argv = @ARGV;
 
     __getopt( \%opt,
-	qw{ default=s% dry_run|dry-run! output=s verbose! },
+	qw{ default=s% dry_run|dry-run! exec! output=s verbose! },
 	'disable=s'	=> sub {
 	    my ( undef, $plugin ) = @_;
 	    $plugin =~ m/ :: /smx
@@ -201,6 +200,8 @@ EOD
     }
 
     local $self->{dry_run} = $opt{dry_run};
+    local $self->{exec}    = defined $opt{exec} ?
+	$opt{exec} : $self->{exec};
     local $self->{output}  = defined $opt{output} ?
 	$opt{output} : $self->{output};
     local $self->{verbose} = defined $opt{verbose} ?
@@ -235,51 +236,26 @@ sub __execute {
 	and $self->{dry_run}
 	and return;
 
-    local $! = 0;
-    my $output = $self->output();
+    # Redirect STDOUT to a file if needed. We make no direct use of the
+    # returned object, but hold it because its destructor undoes the
+    # redirect on scope exit.
+    # NOTE that we rely on the fact that destructors are NOT run when an
+    # exec() is done.
+    my $redirect = App::AckX::Preflight::_Redirect::Stdout->new(
+	$self->output() );
 
     if ( $self->exec() ) {
-
-	unless ( $output eq DEFAULT_OUTPUT ) {
-	    close STDOUT;
-	    # TODO preserve encoding?
-	    open STDOUT, '>', $output
-		or __die( "Failed to open $output: $!" );
-	}
-
-	local $| = 1;
 
 	exec { $arg[0] } @arg
 	    or __die( "Failed to exec $arg[0]: $!" );
 
     } else {
 
-	unless ( $output eq DEFAULT_OUTPUT || IPC::Cmd->can_capture_buffer()) {
-	    __warn( '--output ignored; ',
-		'IPC::Cmd::run can not capture buffers' );
-	    $output = DEFAULT_OUTPUT;
-	}
-
-	my ( $ok, $errmsg, $stderr );
-	if ( $output eq DEFAULT_OUTPUT ) {
-	    system { $arg[0] } @arg;
-	    $ok = ! $?;
-	    $errmsg = __interpret_exit_code( $? );
-	} else {
-	    ( $ok, $errmsg, undef, my $stdout, $stderr ) = IPC::Cmd::run(
-		command	=> \@arg,
-	    );
-	    if ( $ok ) {
-		open my $fh, '>', $output
-		    or __die( "Unable to open $output: $!" );
-		print { $fh } @{ $stdout };
-		close $fh;
-	    }
-	}
-
-	$ok
-	    or __die( "Failed to spawn $arg[0]: $errmsg" );
-
+	system { $arg[0] } @arg;
+	$? == 0
+	    or $? == 0x100
+	    or __die( __interpret_exit_code( $? ) );
+	return $? >> 8;
     }
 
     return;
@@ -530,6 +506,37 @@ sub open : method {	## no critic (ProhibitBuiltinHomonyms)
     return $self;
 }
 
+package App::AckX::Preflight::_Redirect::Stdout;	## no critic (ProhibitMultiplePackages)
+
+use App::AckX::Preflight::Util qw{ DEFAULT_OUTPUT __die };
+
+sub new {
+    my ( $class, $to ) = @_;
+
+    # No need for cleanup if we do not actually redirect.
+    defined $to
+	and $to ne DEFAULT_OUTPUT
+	or return undef;	## no critic (ProhibitExplicitReturnUndef)
+
+    open my $from, '>&', \*STDOUT	## no critic (RequireBriefOpen)
+	or __die( "Failed to dup STDOUT: $!" );
+    close STDOUT;
+    open STDOUT, '>', $to
+	or __die( "Failed to re-open STDOUT to $to: $!" );
+
+    return bless \$from, $class;
+}
+
+sub DESTROY {
+    my ( $self ) = @_;
+    if ( defined ${ $self } ) {
+	close STDOUT;
+	open STDOUT, '>&', ${ $self }
+	    or __die( "Failed to restore STDOUT: $!" );
+    }
+    return;
+}
+
 1;
 
 __END__
@@ -583,8 +590,7 @@ and chosen to be compatible with L<App::Ack|App::Ack>:
 
 =over
 
-=item VMS: None. I will fix this if someone will tell me what it should
-be.
+=item VMS: None. I will fix this if someone will tell me what it should be.
 
 =item Windows: C<Win32::CSIDL_COMMON_APPDATA()>.
 
@@ -716,7 +722,13 @@ Plug-ins whose options do not appear in the actual command, or that do
 not implement an L<__options()|App::AckX::Preflight::Plugin/__options>
 method are called last, in ASCIIbetical order.
 
-This method B<does not return.>
+If the C<exec> attribute is true, this method runs F<ack> via
+C<exec()>, and B<does not return.>
+
+If the C<exec> attribute is false (the default), this method runs F<ack>
+via C<system()>. In this case, it dies if F<ack> signals, or exits with
+any status but C<0> or C<1>. If it does not die, it returns the exit
+status.
 
 =head1 PLUGINS
 

@@ -9,7 +9,7 @@ use App::AckX::Preflight;
 
 our $VERSION = '0.000_043';
 
-App::AckX::Preflight->run( exec => 1 );
+App::AckX::Preflight->new( exec => 1 )->run();
 
 __END__
 
@@ -42,6 +42,22 @@ documentation for what files may be processed, and
 
 for what files are actually processed.
 
+=head2 --default
+
+ --default perldoc=--syntax=doc
+
+This option specifies default options (sic!) for plugins. The argument
+is the name of the plugin (typically the last portion of the class name,
+converted to lower case), an equals sign, and the default arguments to
+be applied if that plugin is to be used.
+
+If the value for a plugin is used, it will be parsed by
+L<Text::ParseWords::shellwords()|Text::ParseWords>, and then by
+L<Getopt::Long>. Any options found will be applied to the appropriate
+plugin provided that option was not specified explicitly.
+
+This option is really only useful in a configuration file.
+
 =head2 --disable
 
  --disable=plugin_name
@@ -51,6 +67,17 @@ class name or the name without the C<'App::AckX::Preflight::Plugin::'>
 prefix.
 
 An exception occurs if the name of an unknown plugin is given.
+
+=head2 --dry-run
+
+If this Boolean option is asserted,
+L<App::AckX::Preflight|App::AckX::Preflight> exits at the point where it
+would otherwise execute F<ack>.
+
+If this option is asserted, the L<--verbose|/--verbose> option defaults
+to C<--verbose>.
+
+The default is C<--no-dry-run>.
 
 =head2 --enable
 
@@ -71,32 +98,21 @@ C<App::AckX::Preflight>. This option is passed on to F<ack> itself.
 
 The default is C<--env>, but this can be negated with C<--noenv>.
 
-=head2 --default
+=begin comment
 
- --default perldoc=--syntax=doc
+=head2 --exec
 
-This option specifies default options (sic!) for plugins. The argument
-is the name of the plugin (typically the last portion of the class name,
-converted to lower case), an equals sign, and the default arguments to
-be applied if that plugin is to be used.
+If this Boolean option is true, F<ack> is run via C<exec()>. If not, it
+is run via C<system()>.
 
-If the value for a plugin is used, it will be parsed by
-L<Text::ParseWords::shellwords()|Text::ParseWords>, and then by
-L<Getopt::Long>. Any options found will be applied to the appropriate
-plugin provided that option was not specified explicitly.
+The default is the corresponding object attribute, which itself defaults
+to false.
 
-This option is really only useful in a configuration file.
+This option is commented out because I consider it of interest to
+developers only. The F<script/ackxp> script defaults this to true, but
+it can be turned off for troubleshooting with C<--no-exec>.
 
-=head2 --dry-run
-
-If this Boolean option is asserted,
-L<App::AckX::Preflight|App::AckX::Preflight> exits at the point where it
-would otherwise execute F<ack>.
-
-If this option is asserted, the L<--verbose|/--verbose> option defaults
-to C<--verbose>.
-
-The default is C<--no-dry-run>.
+=end comment
 
 =head2 --help
 
