@@ -1,6 +1,6 @@
 package App::AckX::Preflight;
 
-use 5.008008;
+use 5.010001;
 
 use strict;
 use warnings;
@@ -66,8 +66,7 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 	}
 
 	foreach ( keys %default ) {
-	    defined $arg{$_}
-		or $arg{$_} = $default{$_};
+	    $arg{$_} //= $default{$_};
 	}
 
 	$arg{disable}	= {};
@@ -190,8 +189,7 @@ EOD
 	},
     );
 
-    defined $opt{verbose}
-	or $opt{verbose} = $opt{dry_run};
+    $opt{verbose} //= $opt{dry_run};
 
     $opt{verbose}
 	and warn scalar _shell_quote( '$', $0, @argv ), "\n";
@@ -540,11 +538,9 @@ sub new {
 
 sub DESTROY {
     my ( $self ) = @_;
-    if ( defined ${ $self } ) {
-	close STDOUT;
-	open STDOUT, '>&', ${ $self }
-	    or __die( "Failed to restore STDOUT: $!" );
-    }
+    close STDOUT;
+    open STDOUT, '>&', ${ $self }
+	or __die( "Failed to restore STDOUT: $!" );
     return;
 }
 

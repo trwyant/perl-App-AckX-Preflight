@@ -1,6 +1,6 @@
 package App::AckX::Preflight::Syntax::_cc_like;
 
-use 5.008008;
+use 5.010001;
 
 use strict;
 use warnings;

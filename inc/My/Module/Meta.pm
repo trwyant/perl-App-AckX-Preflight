@@ -1,6 +1,6 @@
 package My::Module::Meta;
 
-use 5.008008;
+use 5.010001;
 
 use strict;
 use warnings;
@@ -163,7 +163,7 @@ sub requires {
 ##  if ( ! $self->distribution() ) {
 ##  }
     return +{
-	'App::Ack'			=> 0,
+	'App::Ack'			=> 3.0,	# Current major
 	'Carp'				=> 0,
 	'Config'			=> 0,
 	'Cwd'				=> 0,
@@ -187,7 +187,7 @@ sub requires {
 }
 
 sub requires_perl {
-    return 5.008008;
+    return 5.010001;	# Because App::Ack requires it.
 }
 
 sub script_files {

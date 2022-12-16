@@ -1,6 +1,6 @@
 package App::AckX::Preflight::Plugin::File;
 
-use 5.008008;
+use 5.010001;
 
 use strict;
 use warnings;
