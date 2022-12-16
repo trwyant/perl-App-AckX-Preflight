@@ -64,12 +64,20 @@ sub want_pod_man {
     defined $perl_ver
         or $perl_ver = THIS_PERL;
 
-    # NOTE that if we need to play this game with higher versions of
-    # Perl, the github-actions script needs to be modified too,
+=begin comment
+
     $perl_ver < PERL_5_10
         and return 'RRA/podlators-4.14.tar.gz';
     $perl_ver < PERL_5_12
-        and return 'Pod::Man';
+        and return 'Pod::Simple Pod::Man';
+
+=end comment
+
+=cut
+
+    $perl_ver < PERL_5_12
+        and return 'RRA/podlators-4.14.tar.gz';
+
     return '';
 }
 

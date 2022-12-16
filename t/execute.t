@@ -16,24 +16,29 @@ App::Ack $App::Ack::VERSION
     $App::Ack::COPYRIGHT
 Perl $^V";
 
+my $quote = {
+    dos		=> q<">,
+    MSWin32	=> q<">,
+}->{$^O} // q<'>;
+
 is xqt( '-version' ), WANT_VERSION, 'spawn Version';
 
 # NOTE in the xqt() call the Perl string has to be quoted twice so that
 # it will still be quoted when interpolated into qx//.
-is xqt( '-le', q<'print "Hello, world."'> ), 'Hello, world.',
+is xqt( '-le', "${quote}print q/Hello, world./$quote" ), 'Hello, world.',
     'spawn Hello, world.';
 
-is xqt( qw{ --exec -le }, q<'print "Hello, sailor!"'> ),
+is xqt( qw{ --exec -le }, "${quote}print q/Hello, sailor!/$quote" ),
     'Hello, sailor!', 'exec Hello, sailor!';
 
 # NOTE in the xqto() call the Perl string does NOT have to be quoted
 # twice because it is passed to either a multi-argument system() or
 # IPC::Cmd::run().
-is xqto( qw{ -le }, 'print "Hello, world."' ),
+is xqto( qw{ -le }, 'print q/Hello, world./' ),
     '--output: Hello, world.',
     'spawn Hello, world via --output';
 
-is xqto( qw{ --exec -le }, 'print "Hello, sailor!"' ),
+is xqto( qw{ --exec -le }, 'print q/Hello, sailor!/' ),
     '--output: Hello, sailor!', 'exec Hello, sailor! via --output';
 
 done_testing;
