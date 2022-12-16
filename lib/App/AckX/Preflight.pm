@@ -40,6 +40,13 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 	verbose	=> 0,
     );
 
+    foreach my $dir ( qw{ global home } ) {
+	defined $default{$dir}
+	    or next;
+	-d $default{$dir}
+	    or $default{$dir} = undef;
+    }
+
     sub new {
 	my ( $class, %arg ) = @_;
 
@@ -51,14 +58,16 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 		or __die( "Argument '$_' not supported" );
 	}
 
+	foreach ( qw{ global home } ) {
+	    defined $arg{$_}
+		or next;
+	    -d $arg{$_}
+		or __die( "Argument '$_' must be a directory" );
+	}
+
 	foreach ( keys %default ) {
 	    defined $arg{$_}
 		or $arg{$_} = $default{$_};
-	}
-
-	foreach ( qw{ global home } ) {
-	    -d $arg{$_}
-		or __die( "Argument '$_' must be a directory" );
 	}
 
 	$arg{disable}	= {};
@@ -333,6 +342,8 @@ sub _file_from_parts {
 	_ackxprc } ];
     @arg
 	or __die_hard( 'No file parts specified' );
+    defined $arg[0]
+	or return;
     my $path = File::Spec->$method( @arg );
     -d $path
 	or return App::AckX::Preflight::_Config::File->new( name => $path );
