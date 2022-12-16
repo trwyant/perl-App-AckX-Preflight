@@ -17,23 +17,8 @@ use Test2::V0;
 }->{$^O}
     and plan skip_all => "Fork command via -| does not work under $^O";
 
-use constant ACKXP_STANDALONE	=> 'ackxp-standalone';
-
 -x $^X
     or plan skip_all => "Somethig strange is going on. \$^X ($^X) is not executable.";
-
-=begin comment
-
-if ( need_to_regenerate_ackxp_standalone() ) {
-    note 'Regenerating ', ACKXP_STANDALONE;
-    system { 'perl' } qw{ perl -Mblib tools/squash -o }, ACKXP_STANDALONE;
-}
-
-foreach my $app ( 'blib/script/ackxp', ACKXP_STANDALONE ) {
-
-=end comment
-
-=cut
 
 # FIXME building the standalone app is broken unless it also includes
 # ack_standalone
@@ -79,18 +64,6 @@ EOD
 }
 
 done_testing;
-
-# We need to regenerate ackxp-standalone if:
-# * It does not exist, or
-# * App::Ack is newer.
-sub need_to_regenerate_ackxp_standalone {
-    -x ACKXP_STANDALONE
-	or return 1;
-    my $ackxp_mv = ( stat _ )[9];
-    require App::Ack;
-    my $ack_mv = ( stat $INC{'App/Ack.pm'} )[9];
-    return $ackxp_mv < $ack_mv;
-}
 
 sub xqt {
     my ( $app, @arg ) = @_;
