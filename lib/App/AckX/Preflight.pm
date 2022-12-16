@@ -69,6 +69,12 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 	    $arg{$_} //= $default{$_};
 	}
 
+	if ( IS_WINDOWS ) {
+	    delete $arg{exec}
+		and __warn( q/'exec' ignored under Windows/ );
+
+	}
+
 	$arg{disable}	= {};
 
 	return bless \%arg, ref $class || $class;
@@ -736,6 +742,10 @@ If the C<exec> attribute is false (the default), this method runs F<ack>
 via C<system()>. In this case, it dies if F<ack> signals, or exits with
 any status but C<0> or C<1>. If it does not die, it returns the exit
 status.
+
+B<Windows note:> The C<exec> mechanism does not seem to do what I want
+under Windows, so an attempt to set it to a true value will be ignored
+with a warning.
 
 =head1 PLUGINS
 

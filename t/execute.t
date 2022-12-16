@@ -9,6 +9,8 @@ use App::AckX::Preflight;
 use File::Temp;
 use Test2::V0;
 
+use constant IS_WINDOWS => App::AckX::Preflight->IS_WINDOWS();
+use constant EXEC_IGNORED	=> "--exec ignored under $^O";
 use constant WANT_VERSION	=>
 "App::AckX::Preflight $App::AckX::Preflight::VERSION
     $App::AckX::Preflight::COPYRIGHT
@@ -16,10 +18,7 @@ App::Ack $App::Ack::VERSION
     $App::Ack::COPYRIGHT
 Perl $^V";
 
-my $quote = {
-    dos		=> q<">,
-    MSWin32	=> q<">,
-}->{$^O} // q<'>;
+my $quote = IS_WINDOWS ? q<"> : q<'>;
 
 is xqt( '-version' ), WANT_VERSION, 'spawn Version';
 
@@ -28,8 +27,13 @@ is xqt( '-version' ), WANT_VERSION, 'spawn Version';
 is xqt( '-le', "${quote}print q/Hello, world./$quote" ), 'Hello, world.',
     'spawn Hello, world.';
 
-is xqt( qw{ --exec -le }, "${quote}print q/Hello, sailor!/$quote" ),
-    'Hello, sailor!', 'exec Hello, sailor!';
+SKIP: {
+    IS_WINDOWS
+	and skip EXEC_IGNORED, 1;
+
+    is xqt( qw{ --exec -le }, "${quote}print q/Hello, sailor!/$quote" ),
+	'Hello, sailor!', 'exec Hello, sailor!';
+}
 
 # NOTE in the xqto() call the Perl string does NOT have to be quoted
 # twice because it is passed to either a multi-argument system() or
@@ -38,8 +42,13 @@ is xqto( qw{ -le }, 'print q/Hello, world./' ),
     '--output: Hello, world.',
     'spawn Hello, world via --output';
 
-is xqto( qw{ --exec -le }, 'print q/Hello, sailor!/' ),
-    '--output: Hello, sailor!', 'exec Hello, sailor! via --output';
+SKIP: {
+    IS_WINDOWS
+	and skip EXEC_IGNORED, 1;
+
+    is xqto( qw{ --exec -le }, 'print q/Hello, sailor!/' ),
+	'--output: Hello, sailor!', 'exec Hello, sailor! via --output';
+}
 
 done_testing;
 
@@ -60,7 +69,8 @@ sub xqto {
 	local $/ = undef;
 	'--output: ' . <$temp>;
     };
-    chomp $rslt;
+    # Not chomp(), because of \r\n under Windows.
+    $rslt =~ s/ \s+ \z //smx;
     return $rslt;
 }
 

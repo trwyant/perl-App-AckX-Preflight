@@ -9,7 +9,9 @@ use App::AckX::Preflight;
 
 our $VERSION = '0.000_043';
 
-App::AckX::Preflight->new( exec => 1 )->run();
+App::AckX::Preflight->new(
+    exec	=> ! App::AckX::Preflight->IS_WINDOWS()
+)->run();
 
 __END__
 
