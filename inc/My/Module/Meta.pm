@@ -101,10 +101,7 @@ sub module_name {
 sub no_index {
     return +{
 	directory	=> [ qw{ inc t tools xt } ],
-	package		=> [ qw{
-	    App::AckX::Preflight::_Config
-	    App::AckX::Preflight::_Redirect::Stdout
-	    } ],
+	package		=> [ qw{ App::AckX::Preflight::_Config } ],
 	namespace	=> [ qw{ App::AckX::Preflight::_Config } ],
     };
 }
@@ -169,12 +166,14 @@ sub requires {
 	'Cwd'				=> 0,
 	'Exporter'			=> 0,
 	'ExtUtils::Manifest'		=> 0,
+	'Fcntl'				=> 0,
 	'File::Find'			=> 0,
 	'File::Spec'			=> 0,
 	'Getopt::Long'			=> 2.39,	# getoptionsfromarray
 	'IPC::Cmd'			=> 0,
 	'List::Util'			=> 1.45,	# uniqstr
 	'Pod::Usage'			=> 0,
+	'Scope::Guard'			=> 0,
 	'Text::Abbrev'			=> 0,
 	'Text::ParseWords'		=> 0,
 	'constant'			=> 0,

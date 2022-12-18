@@ -27,18 +27,11 @@ use constant CRYSTAL_CODE	=> <<'EOD';
   12:     name = "#{ARGV[0]}"
   13: end
   14:
-  24: puts "Hello, #{name}!"
+  18: puts "Hello, #{name}!"
 EOD
 
 use constant CRYSTAL_COMMENTS	=> <<'EOD';
    3: # This is a comment. Ack's type system calls this language 'crystal'.
-  15: # This is documentation because it precedes a language element,
-  16: # but we have no way to determine this without buffering the file.
-  17: # So at least in the short term we will mis-call this comment.
-  18: # I suppose a full implementation would buffer comments until
-  19: # we find a language element or a blank line, then back up $.
-  20: # and feed the lines one at a time with the proper identification,
-  21: # but that sounds fraught with opportunities to write bugs.
 EOD
 
 use constant CRYSTAL_METADATA => <<'EOD';
@@ -46,8 +39,12 @@ use constant CRYSTAL_METADATA => <<'EOD';
    5: annotation MyAnnotation	# This is metadata
    6: end
    8: @[MyAmnotation("This is metadata too")]
-  22: @[MyAnnotation(
-  23:     "This is also an annotation")]
+  16: @[MyAnnotation(
+  17:     "This is also an annotation")]
+EOD
+
+use constant CRYSTAL_DOCUMENTATION => <<'EOD';
+  15: # This is documentation because it precedes a language element.
 EOD
 
 $App::Ack::mappings{crystal} = [
@@ -61,7 +58,7 @@ my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ crystal } ],
     sprintf '%s handles crysta;', SYNTAX_FILTER;
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -72,7 +69,7 @@ is slurp( $crystal_resource ), CRYSTAL_CODE, 'Only code, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_COMMENT );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -83,7 +80,7 @@ is slurp( $crystal_resource ), CRYSTAL_COMMENTS, 'Only comments, reading resourc
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
 
-SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_METADATA );
+SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_METADATA );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_METADATA;
@@ -95,7 +92,21 @@ is slurp( $crystal_resource ), CRYSTAL_METADATA,
     'Metadata, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT,
-    'Code and comments, text resource';
+    'Metadata, text resource';
+
+SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_DOCUMENTATION );
+
+ok ! SYNTAX_FILTER->__want_everything(),
+    sprintf q<'%s' is not everything>, SYNTAX_DOCUMENTATION;
+
+is slurp( CRYSTAL_FILE ), CRYSTAL_DOCUMENTATION,
+    'Documentation, reading directly';
+
+is slurp( $crystal_resource ), CRYSTAL_DOCUMENTATION,
+    'Documentation, reading resource';
+
+is slurp( $text_resource ), TEXT_CONTENT,
+    'Documentation, text resource';
 
 done_testing;
 

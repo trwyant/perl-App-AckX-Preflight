@@ -14,7 +14,9 @@ use App::AckX::Preflight::Util
 	@CARP_NOT
     };
 use Exporter;
+use Fcntl qw{ :seek };
 use List::Util 1.45 ();	# for uniqstr
+use Scope::Guard ();
 use Text::Abbrev ();
 
 # This is PRIVATE to the App-AckX-Preflight package.
@@ -181,10 +183,18 @@ sub FILL {
 
     my $attr = $self->__my_attr();
 
+    # Localize so we do not hold handle after exiting FILL.
+    local $attr->{fh} = $fh;
+
     local $_ = undef;	# while (<>) does not localize $_
 
     while ( <$fh> ) {
-	my $type = $self->__classify();
+	my $type = do {
+	    # Localize so that scope guard created by
+	    # __get_peek_handle() (if called) will be cleaned up.
+	    local $attr->{guard} = undef;
+	    $self->__classify();
+	};
 	SYNTAX_CODE eq $type
 	    and $attr->{syntax_empty_code_is_comment}
 	    and m/ \A \s* \z /smx
@@ -442,6 +452,34 @@ use constant SYNTAX_FILTER_LAYER =>
     }
 }
 
+# FIXME this is a bit clunky. What I think I really want is return a
+# handle that triggers the cleanup when it goes out of scope. That seems
+# to require occupying multiple slots in a glob, but I have so far been
+# unable to make that work.
+sub __get_peek_handle {
+    my ( $self ) = @_;
+
+    my $attr = $self->__my_attr();
+    my $fh = $attr->{fh}
+	or __die_hard( 'No input handle defined' );
+
+    # Destroy previous Scope::Guard, if any. After this, $fh is right
+    # after the line being classified, and $. is the number of that
+    # line.
+    $attr->{guard} = undef;
+
+    my $position = tell $fh;
+    my $line = $.;
+    $attr->{guard} = Scope::Guard->new( sub {
+	    seek $fh, $position, SEEK_SET;
+	    $. = $line;	## no critic (RequireLocalizedPunctuationVars)
+	    return;
+	}
+    );
+
+    return $fh;
+}
+
 1;
 
 __END__
@@ -685,6 +723,17 @@ This method returns the syntax type of the line based on the contents of
 C<$_>, and possibly of the contents of the hash returned by the
 L<__my_attr()|/__my_attr> method, which this method is free to modify.
 
+=head2 __get_peek_handle()
+
+This method B<must> be called from within the
+L<__classify()|/__classify> method. It returns the file handle being
+read, positioned just B<after> the line being classified. Built-in
+variable C<$.> will be the line number of the line being classified.
+
+See
+L<App::AckX::Preflight::Syntax::Crystal|App::AckX::Preflight::Syntax::Crystal>
+for a sample of how this is used.
+
 =head2 SEEK
 
 This method is part of the L<PerlIO::via|PerlIO::via> interface. It is
@@ -706,6 +755,17 @@ a real possibility.
 This method returns a hash that the caller can use to store the data it
 needs to do its job, creating it if necessary. This is intended for the
 use of the L<__init()|/__init> and L<__classify()|/__classify> methods.
+
+=head2 __restore_file_position
+
+ my $scope_guard => $self->__restore_file_position( $fh );
+
+If a syntax filter decides to read the input file on its own behalf in
+(e.g.) its L<__classify()|/__classify> method, it B<must> preserve and
+restore the C<$.> variable and file position, and restore them when it
+is done. One way to do this is to call this method and preserve the
+returned lexical variable until scope exit. Destruction of the returned
+object will do the required restoration.
 
 =head2 IN_SERVICE
 

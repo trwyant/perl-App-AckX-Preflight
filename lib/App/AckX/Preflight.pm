@@ -12,6 +12,7 @@ use File::Spec;
 use IPC::Cmd ();	# for can_run
 use List::Util 1.45 ();	# For uniqstr, which this module does not use
 use Pod::Usage ();
+use Scope::Guard ();
 use Text::ParseWords ();
 
 our $VERSION = '0.000_043';
@@ -254,8 +255,25 @@ sub __execute {
     # redirect on scope exit.
     # NOTE that we rely on the fact that destructors are NOT run when an
     # exec() is done.
-    my $redirect = App::AckX::Preflight::_Redirect::Stdout->new(
-	$self->output() );
+    my $redirect;
+    {
+	my $output = $self->output();
+	if ( defined( $output ) && $output ne DEFAULT_OUTPUT ) {
+	    open my $from, '>&', \*STDOUT	## no critic (RequireBriefOpen)
+		or __die( "Failed to dup STDOUT: $!" );
+	    $redirect = Scope::Guard->new( sub {
+		    close STDOUT;
+		    open STDOUT, '>&', $from
+			or __die( "Failed to restore STDOUT: $!" );
+		    return;
+		},
+	    );
+	    close STDOUT;
+	    open STDOUT, '>', $output
+		or __die( "Failed to re-open STDOUT to $output: $!" );
+	}
+    }
+
 
     if ( $self->exec() ) {
 
@@ -519,35 +537,6 @@ sub open : method {	## no critic (ProhibitBuiltinHomonyms)
 	or __die( sprintf 'Environment variable %s not defined', $name );
     $self->{data} = [ Text::ParseWords::shellwords( $ENV{$name} ) ];
     return $self;
-}
-
-package App::AckX::Preflight::_Redirect::Stdout;	## no critic (ProhibitMultiplePackages)
-
-use App::AckX::Preflight::Util qw{ DEFAULT_OUTPUT __die };
-
-sub new {
-    my ( $class, $to ) = @_;
-
-    # No need for cleanup if we do not actually redirect.
-    defined $to
-	and $to ne DEFAULT_OUTPUT
-	or return undef;	## no critic (ProhibitExplicitReturnUndef)
-
-    open my $from, '>&', \*STDOUT	## no critic (RequireBriefOpen)
-	or __die( "Failed to dup STDOUT: $!" );
-    close STDOUT;
-    open STDOUT, '>', $to
-	or __die( "Failed to re-open STDOUT to $to: $!" );
-
-    return bless \$from, $class;
-}
-
-sub DESTROY {
-    my ( $self ) = @_;
-    close STDOUT;
-    open STDOUT, '>&', ${ $self }
-	or __die( "Failed to restore STDOUT: $!" );
-    return;
 }
 
 1;

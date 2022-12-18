@@ -15,6 +15,7 @@ sub __handles_syntax {
     return(
 	SYNTAX_CODE,
 	SYNTAX_COMMENT,
+	SYNTAX_DOCUMENTATION,
 	SYNTAX_METADATA,
     );
 }
@@ -42,7 +43,18 @@ sub _classification_engine {
     if ( $. == 1 && m/\A#!.*crystal/ ) {
 	return SYNTAX_METADATA;
     } elsif ( m/ \A \s* \# /smx ) {
-	# FIXME this could be documentation, if followed by non-empty.
+	state $preserve = { map { $_ => 1 } SYNTAX_COMMENT,
+	    SYNTAX_DOCUMENTATION };
+	$preserve->{$attr->{in}}
+	    and return $attr->{in};
+	my $fh = $self->__get_peek_handle();
+	local $_ = undef;	# while (<>) does not localize $_
+	while ( <$fh> ) {
+	    m/ \A \s* \# /smx
+		and next;
+	    return m/ \A \s* \z /smx ? SYNTAX_COMMENT :
+	    SYNTAX_DOCUMENTATION;
+	}
 	return SYNTAX_COMMENT;
     } elsif ( m/ \A \s* annotation \b /smx ) {
 	$attr->{end} = sub { return m/ \A \s* end \b /smx };

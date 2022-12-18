@@ -67,6 +67,6 @@ severity	= harsh
 [Perl::Critic::Policy::Variables::ProhibitUnusedVarsStricter]
 
 add_themes	= core
-allow_if_computed_by	= App::AckX::Preflight::_Redirect::Stdout
+allow_if_computed_by	= Scope::Guard
 allow_unused_subroutine_arguments	= 0
 severity	= stern
