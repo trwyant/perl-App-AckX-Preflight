@@ -179,9 +179,9 @@ sub __my_attr {
 sub FILL {
     my ( $self, $fh ) = @_;
 
-    local $_ = undef;	# Should not be needed, but seems to be.
-
     my $attr = $self->__my_attr();
+
+    local $_ = undef;	# while (<>) does not localize $_
 
     while ( <$fh> ) {
 	my $type = $self->__classify();
