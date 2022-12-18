@@ -84,6 +84,7 @@ our @CARP_NOT = qw{
     App::AckX::Preflight::Syntax::Batch
     App::AckX::Preflight::Syntax::Cc
     App::AckX::Preflight::Syntax::Cpp
+    App::AckX::Preflight::Syntax::Crystal
     App::AckX::Preflight::Syntax::Csharp
     App::AckX::Preflight::Syntax::Data
     App::AckX::Preflight::Syntax::Fortran

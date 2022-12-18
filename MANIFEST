@@ -24,6 +24,7 @@ lib/App/AckX/Preflight/Syntax/Asm.pm
 lib/App/AckX/Preflight/Syntax/Batch.pm
 lib/App/AckX/Preflight/Syntax/Cc.pm
 lib/App/AckX/Preflight/Syntax/Cpp.pm
+lib/App/AckX/Preflight/Syntax/Crystal.pm
 lib/App/AckX/Preflight/Syntax/Csharp.pm
 lib/App/AckX/Preflight/Syntax/Data.pm
 lib/App/AckX/Preflight/Syntax/Fortran.pm
@@ -57,6 +58,7 @@ t/data/asm_file.s
 t/data/batch_file.bat
 t/data/cc_file.c
 t/data/cpp_file.cpp
+t/data/crystal_file.cr
 t/data/csharp_file.cs
 t/data/file
 t/data/foo
@@ -95,6 +97,7 @@ t/syntax_asm.t
 t/syntax_batch.t
 t/syntax_cc.t
 t/syntax_cpp.t
+t/syntax_crystal.t
 t/syntax_csharp.t
 t/syntax_data.t
 t/syntax_fortran.t
