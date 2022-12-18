@@ -38,7 +38,7 @@ use constant CRYSTAL_METADATA => <<'EOD';
    1: #! /usr/bin/env crystal
    5: annotation MyAnnotation	# This is metadata
    6: end
-   8: @[MyAmnotation("This is metadata too")]
+   8: @[MyAnnotation("This is metadata too")]
   16: @[MyAnnotation(
   17:     "This is also an annotation")]
 EOD

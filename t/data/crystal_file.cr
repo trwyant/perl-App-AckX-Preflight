@@ -5,7 +5,7 @@
 annotation MyAnnotation	# This is metadata
 end
 
-@[MyAmnotation("This is metadata too")]
+@[MyAnnotation("This is metadata too")]
 if ARGV.size == 0
     name = "world"
 else
