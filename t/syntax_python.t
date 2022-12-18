@@ -96,7 +96,7 @@ my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ python } ],
     sprintf '%s handles python', SYNTAX_FILTER;
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -107,7 +107,7 @@ is slurp( $python_resource ), PYTHON_CODE, 'Only code, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_COMMENT );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -118,7 +118,7 @@ is slurp( $python_resource ), PYTHON_COMMENT, 'Only comments, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_METADATA );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_METADATA );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_METADATA;
@@ -129,12 +129,12 @@ is slurp( $python_resource ), PYTHON_METADATA, 'Only metadata, reading resource'
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only metadata, text resource';
 
-SYNTAX_FILTER->import( '-syntax', SYNTAX_DATA );
+SYNTAX_FILTER->import( '--syntax', SYNTAX_DATA );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_DATA;
 
-SYNTAX_FILTER->import( '-syntax', SYNTAX_DOCUMENTATION );
+SYNTAX_FILTER->import( '--syntax', SYNTAX_DOCUMENTATION );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_DOCUMENTATION;
@@ -145,7 +145,7 @@ is slurp( $python_resource ), PYTHON_DOC, 'Only documentation, reading resource'
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only documentation, text resource';
 
-SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_CODE, SYNTAX_DOCUMENTATION );
+SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_CODE, SYNTAX_DOCUMENTATION );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is not everything>, SYNTAX_CODE, SYNTAX_DOCUMENTATION;

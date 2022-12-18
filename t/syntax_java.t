@@ -104,7 +104,7 @@ is [ SYNTAX_FILTER->__handles_type() ],
     sprintf '%s handles groovy, java', SYNTAX_FILTER;
 
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -114,7 +114,7 @@ is slurp( JAVA_FILE ), JAVA_CODE, 'Only code, reading directly';
 is slurp( $resource ), JAVA_CODE, 'Only code, reading resource';
 
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_COMMENT );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -124,7 +124,7 @@ is slurp( JAVA_FILE ), JAVA_COMMENTS, 'Only comments, reading directly';
 is slurp( $resource ), JAVA_COMMENTS, 'Only comments, reading resource';
 
 
-SYNTAX_FILTER->import( '-syntax', SYNTAX_DOCUMENTATION );
+SYNTAX_FILTER->import( '--syntax', SYNTAX_DOCUMENTATION );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_DOCUMENTATION;
@@ -134,7 +134,7 @@ is slurp( JAVA_FILE ), JAVA_DOC, 'Only documentation, reading directly';
 is slurp( $resource ), JAVA_DOC, 'Only documentation, reading resource';
 
 
-SYNTAX_FILTER->import( '-syntax', SYNTAX_METADATA );
+SYNTAX_FILTER->import( '--syntax', SYNTAX_METADATA );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_METADATA;
@@ -144,7 +144,7 @@ is slurp( JAVA_FILE ), JAVA_METADATA, 'Only metadata, reading directly';
 is slurp( $resource ), JAVA_METADATA, 'Only metadata, reading resource';
 
 
-SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_CODE, SYNTAX_DOCUMENTATION );
+SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_CODE, SYNTAX_DOCUMENTATION );
 
 ok !SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is not everything>, SYNTAX_CODE, SYNTAX_DOCUMENTATION;

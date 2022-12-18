@@ -48,7 +48,7 @@ my $resource = ACK_FILE_CLASS->new( DATA_FILE );
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ json } ],
     sprintf '%s handles json', SYNTAX_FILTER;
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_DATA );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_DATA );
 
 ok SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is everything>, SYNTAX_DATA;
@@ -57,7 +57,7 @@ is slurp( DATA_FILE ), DATA_DATA, 'Only data, reading directly';
 
 is slurp( $resource ), DATA_DATA, 'Only data, reading resource';
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_COMMENT );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -66,7 +66,7 @@ is slurp( DATA_FILE ), DATA_COMMENT, 'Only comments, reading directly';
 
 is slurp( $resource ), DATA_COMMENT, 'Only comments, reading resource';
 
-SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_DATA, SYNTAX_COMMENT );
+SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_DATA, SYNTAX_COMMENT );
 
 ok SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is everything>, SYNTAX_DATA, SYNTAX_COMMENT;

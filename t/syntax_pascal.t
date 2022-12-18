@@ -83,7 +83,7 @@ is [ SYNTAX_FILTER->__handles_type() ],
     sprintf '%s handles delphi, pascal', SYNTAX_FILTER;
 
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -93,7 +93,7 @@ is slurp( PASCAL_FILE ), PASCAL_CODE, 'Only code, reading directly';
 is slurp( $resource ), PASCAL_CODE, 'Only code, reading resource';
 
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_COMMENT );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -103,7 +103,7 @@ is slurp( PASCAL_FILE ), PASCAL_COMMENT, 'Only comments, reading directly';
 is slurp( $resource ), PASCAL_COMMENT, 'Only comments, reading resource';
 
 
-SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_CODE, SYNTAX_COMMENT );
+SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_CODE, SYNTAX_COMMENT );
 
 ok SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is everything>, SYNTAX_CODE, SYNTAX_COMMENT;

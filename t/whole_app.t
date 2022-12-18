@@ -36,7 +36,7 @@ foreach my $app ( [ $^X, qw{ -Mblib blib/script/ackxp } ] ) {
 lib/App/AckX/Preflight.pm:18:our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 EOD
 
-    xqt( $app, qw{ --noenv --syntax-match -syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
+    xqt( $app, qw{ --noenv --syntax-match --syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
 meta:#!/usr/bin/env perl
 code:
 code:use strict;

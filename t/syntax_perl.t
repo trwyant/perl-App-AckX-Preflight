@@ -67,7 +67,7 @@ is [ SYNTAX_FILTER->__handles_type() ],
     [ qw{ parrot perl perltest perlpod } ],
     sprintf 'Added perlpod to %s', SYNTAX_FILTER;
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -78,7 +78,7 @@ is slurp( $perl_resource ), PERL_CODE, 'Only code, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_METADATA );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_METADATA );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_METADATA;
@@ -89,7 +89,7 @@ is slurp( $perl_resource ), PERL_METADATA, 'Only metadata, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only metadata, text resource';
 
-SYNTAX_FILTER->import( '-syntax', SYNTAX_DATA );
+SYNTAX_FILTER->import( '--syntax', SYNTAX_DATA );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_DATA;
@@ -100,7 +100,7 @@ is slurp( $perl_resource ), PERL_DATA, 'Only data, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only data, text resource';
 
-SYNTAX_FILTER->import( '-syntax', SYNTAX_DOCUMENTATION );
+SYNTAX_FILTER->import( '--syntax', SYNTAX_DOCUMENTATION );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_DOCUMENTATION;
@@ -111,7 +111,7 @@ is slurp( $perl_resource ), PERL_DOC, 'Only documentation, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only documentation, text resource';
 
-SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_CODE, SYNTAX_DOCUMENTATION );
+SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_CODE, SYNTAX_DOCUMENTATION );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is not everything>, SYNTAX_CODE, SYNTAX_DOCUMENTATION;
@@ -127,7 +127,7 @@ is slurp( $text_resource ), TEXT_CONTENT,
 
 note 'Test --syntax-empty-code-is-comment';
 
-SYNTAX_FILTER->import( '-syntax', SYNTAX_CODE,
+SYNTAX_FILTER->import( '--syntax', SYNTAX_CODE,
     '--syntax-empty-code-is-comment' );
 
 is slurp( PERL_FILE ),
@@ -137,7 +137,7 @@ is slurp( PERL_FILE ),
    6: printf "Hello %s!\n", @ARGV ? $ARGV[0] : 'world';
 EOD
 
-SYNTAX_FILTER->import( '-syntax', SYNTAX_COMMENT,
+SYNTAX_FILTER->import( '--syntax', SYNTAX_COMMENT,
     '--syntax-empty-code-is-comment' );
 
 is slurp( PERL_FILE ),

@@ -67,7 +67,7 @@ my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ sql } ],
     sprintf '%s handles sql', SYNTAX_FILTER;
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_CODE );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -78,7 +78,7 @@ is slurp( $java_resource ), JAVA_CODE, 'Only code, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
 
-SYNTAX_FILTER->import( sprintf '-syntax=%s', SYNTAX_COMMENT );
+SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -89,7 +89,7 @@ is slurp( $java_resource ), SQL_COMMENTS, 'Only comments, reading resource';
 
 is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
 
-SYNTAX_FILTER->import( '-syntax', join ':', SYNTAX_CODE, SYNTAX_COMMENT );
+SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_CODE, SYNTAX_COMMENT );
 
 ok SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is not everything>, SYNTAX_CODE, SYNTAX_COMMENT;
