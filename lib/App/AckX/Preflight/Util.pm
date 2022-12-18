@@ -457,7 +457,7 @@ C<2.999>; otherwise it is C<'App::Ack::Resource'>.
 
 =head2 DEFAULT_OUTPUT
 
-This is the string that the C<--output> option uses to indicate default
+This is the string that the C<--o> option uses to indicate default
 output. Its value is C<'-'>;
 
 =head2 ARRAY_REF

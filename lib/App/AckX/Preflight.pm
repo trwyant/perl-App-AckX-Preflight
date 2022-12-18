@@ -141,7 +141,7 @@ sub run {
     my @argv = @ARGV;
 
     __getopt( \%opt,
-	qw{ default=s% dry_run|dry-run! exec! output=s verbose! },
+	qw{ default=s% dry_run|dry-run! exec! o=s verbose! },
 	'disable=s'	=> sub {
 	    my ( undef, $plugin ) = @_;
 	    $plugin =~ m/ :: /smx
@@ -154,6 +154,11 @@ sub run {
 	    $plugin =~ m/ :: /smx
 		or $plugin = join '::', PLUGIN_SEARCH_PATH, $plugin;
 	    $self->{disable}{$plugin} = 0;
+	    return;
+	},
+	'o=s'	=> sub {
+	    my ( undef, $value ) = @_;
+	    $opt{output} = $value;
 	    return;
 	},
 	version	=> sub {
@@ -580,7 +585,7 @@ takes the following optional arguments as name/value pairs.
 If this Boolean argument is true, F<ack> is run by C<exec()>, meaning
 that the caller of L<run()|/run> never gets control back. If false,
 F<ack> is run by either L<IPC::Cmd::run()|IPC::Cmd> if L<run()|/run>
-finds the C<--output> option, or C<system()> if not.
+finds the C<--o> option, or C<system()> if not.
 
 The default is C<0>, i.e. false.
 
@@ -678,7 +683,7 @@ If called on an object, this method returns the value of the C<{output}>
 attribute, whether explicit or defaulted. If called statically, it
 returns the default value of the C<{output}> attribute.
 
-B<Note> that the L<run()|/run> method may override this if C<--output>
+B<Note> that the L<run()|/run> method may override this if C<--o>
 was specified on the command line.
 
 =head2 verbose

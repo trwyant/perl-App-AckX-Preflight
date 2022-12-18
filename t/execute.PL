@@ -15,7 +15,7 @@ our $VERSION = '0.000_043';
 my %opt;
 
 GetOptions( \%opt,
-    qw{ exec! output=s verbose! },
+    qw{ exec! o=s verbose! },
     help => sub { pod2usage( { -verbose => 2 } ) },
     version	=> sub {
 	local @ARGV = qw{ --version };
@@ -25,7 +25,7 @@ GetOptions( \%opt,
 
 my $ackxp = App::AckX::Preflight->new(
     exec	=> $opt{exec},
-    output	=> $opt{output},
+    output	=> $opt{o},
     verbose	=> $opt{verbose},
 );
 
@@ -40,8 +40,8 @@ execute.PL - Helper script for t/execute.t
 =head1 SYNOPSIS
 
  execute.PL
- execute.PL -help
- execute.PL -version
+ execute.PL --help
+ execute.PL --version
 
 =head1 OPTIONS
 
@@ -50,12 +50,22 @@ execute.PL - Helper script for t/execute.t
 This Boolean option sets the C<exec> argument to
 L<App::AckX::Preflight|App::AckX::Preflight>->C<new()>.
 
-=head2 -help
+=head2 --help
 
 This option displays the documentation for this script. The script then
 exits.
 
-=head2 -version
+=head2 --o
+
+ --o output_file.log
+
+This option specifies an output file. The default is standard output,
+which is also specified by C<'-'>.
+
+This would have been called C<--output>, but that is used by F<ack> for
+something else.
+
+=head2 --version
 
 This option displays the version of this script. The script then exits.
 

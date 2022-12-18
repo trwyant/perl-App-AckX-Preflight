@@ -158,13 +158,16 @@ The default is C<--no-ignore-ackxp-defaults>.
 
 This is a synonym for C<--help>, and takes the same optional arguments.
 
-=head2 --output
+=head2 --o
 
- --output search.log
+ --o search.log
 
 This option specifies an output file for the search results. This is
 implemented without using shell redirection. If you explicitly specify
 C<'-'>, output is unaffected.
+
+This option would have been called C<--output>, but F<ack> had already
+claimed that for something else.
 
 =head2 --verbose
 

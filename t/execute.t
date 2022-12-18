@@ -39,15 +39,15 @@ SKIP: {
 # twice because it is passed to either a multi-argument system() or
 # IPC::Cmd::run().
 is xqto( qw{ -le }, 'print q/Hello, world./' ),
-    '--output: Hello, world.',
-    'spawn Hello, world via --output';
+    '--o: Hello, world.',
+    'spawn Hello, world via --o';
 
 SKIP: {
     IS_WINDOWS
 	and skip EXEC_IGNORED, 1;
 
     is xqto( qw{ --exec -le }, 'print q/Hello, sailor!/' ),
-	'--output: Hello, sailor!', 'exec Hello, sailor! via --output';
+	'--o: Hello, sailor!', 'exec Hello, sailor! via --o';
 }
 
 done_testing;
@@ -62,12 +62,12 @@ sub xqt {
 sub xqto {
     my @arg = @_;
     my $temp = File::Temp->new();
-    system { $^X } $^X, 't/execute.PL', '--output', $temp->filename(), @arg;
+    system { $^X } $^X, 't/execute.PL', '--o', $temp->filename(), @arg;
     seek $temp, 0, 0;
     my $rslt = do {
 	# Localize $/ inside do() because chomp relies on $/
 	local $/ = undef;
-	'--output: ' . <$temp>;
+	'--o: ' . <$temp>;
     };
     # Not chomp(), because of \r\n under Windows.
     $rslt =~ s/ \s+ \z //smx;
