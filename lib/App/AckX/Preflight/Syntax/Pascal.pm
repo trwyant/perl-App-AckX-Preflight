@@ -88,8 +88,7 @@ The supported syntax types are:
 
 =item code
 
-=item comment (both C<(* ... *)> and C<{ ... }>-style block and C<//>
-single-line)
+=item comment (both C<(* ... *)> and C<{ ... }>-style block and C<//> single-line)
 
 =back
 
@@ -99,8 +98,6 @@ enclosed in C<'/* ... */'>, and in-line documentation enclosed in
 C<'/** ... */'>.  By default it applies to:
 
 =over
-
-=item c<actionscript>
 
 =item C<delphi>
 

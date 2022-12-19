@@ -80,8 +80,6 @@ C<'/** ... */'>.  By default it applies to:
 
 =over
 
-=item c<actionscript>
-
 =item C<cpp>
 
 =item C<go>

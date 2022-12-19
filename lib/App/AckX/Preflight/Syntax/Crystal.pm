@@ -99,15 +99,13 @@ The supported syntax types are:
 
 =item code
 
-=item comment
+=item comment (C<#...> followed by blank line)
+
+=item documentation (C<#...> followed by non-blank line)
 
 =item metadata (shebang, annotations)
 
 =back
-
-B<Note> that C<documentation> B<should> also be supported. But it is
-impossible to distinguish between comments and documentation without
-seeing what comes after them.
 
 =head1 METHODS
 
