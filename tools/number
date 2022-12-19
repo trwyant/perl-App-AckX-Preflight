@@ -16,6 +16,7 @@ our $VERSION = '0.000_043';
 my %opt;
 
 GetOptions( \%opt,
+    qw{ tell! },
     help => sub { pod2usage( { -verbose => 2 } ) },
 ) and @ARGV < 2 or pod2usage( { -verbose => 0 } );
 
@@ -27,7 +28,7 @@ if ( @ARGV ) {
     $fh = \*STDIN;
 }
 
-print slurp( $fh );
+print slurp( $fh, \%opt );
 
 __END__
 
@@ -39,17 +40,24 @@ number - Number the lines of files consistently with t/syntax_*.t
 
  number <foo
  number foo
- number -help
- number -version
+ number --help
+ number --version
 
 =head1 OPTIONS
 
-=head2 -help
+=head2 --help
 
 This option displays the documentation for this script. The script then
 exits.
 
-=head2 -version
+=head2 --tell
+
+If this Boolean option is asserted, than each line contains the line
+number and the position in the file B<after> the line is read,
+
+The default is C<--no-tell>.
+
+=head2 --version
 
 This option displays the version of this script. The script then exits.
 

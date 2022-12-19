@@ -29,7 +29,8 @@ use constant TEXT_CONTENT	=> <<'EOD';
 EOD
 
 sub slurp {
-    my ( $file ) = @_;
+    my ( $file, $opt ) = @_;
+    $opt ||= {};
     my $fh;
     if ( blessed( $file ) ) {
 	$fh = $file->open()
@@ -45,11 +46,10 @@ sub slurp {
     my $rslt;
     while ( <$fh> ) {
 	s/ \s+ \z //smx;
-	if ( '' eq $_ ) {
-	    $rslt .= sprintf "%4d:\n", $.;
-	} else {
-	    $rslt .= sprintf "%4d: %s\n", $., $_;
-	}
+	my $leader = $opt->{tell} ?
+	    sprintf '%4d %6d:', $., tell $fh :
+	    sprintf '%4d:', $.;
+	$rslt .= $_ eq '' ? "$leader\n" : "$leader $_\n";
     }
     if ( blessed( $file ) ) {
 	$file->close();
@@ -65,27 +65,59 @@ __END__
 
 =head1 NAME
 
-My::Module::TestSyntax - <<< replace boilerplate >>>
+My::Module::TestSyntax - Test syntax filters
 
 =head1 SYNOPSIS
 
-<<< replace boilerplate >>>
+ use lib qw{ inc };
+ use My::Module::TestSyntax;
+ 
+ print slurp( $file_name );
 
 =head1 DESCRIPTION
 
-<<< replace boilerplate >>>
+This Perl module contains support procedures for testing syntax filters.
+It is B<private> to the C<App-AckX-Preflight> distribution, and may be
+altered or retracted without notice. Documentation is a convenience of
+the author, not a commitment to the user. Void where prohibited.
 
-=head1 METHODS
+=head1 SUBROUTINES
 
-This class supports the following public methods:
+This module exports the following subroutines:
 
-=head1 ATTRIBUTES
+=head2 slurp
 
-This class has the following attributes:
+ print slurp( $file_name, \%options );
+
+This subroutine reads the given file, and returns its contents with line
+numbers prefixe.
+
+The \%option hash is itself optional. The only supported key is
+
+=over
+
+=item * tell - adds the file position B<after> the read to the output.
+
+=back
+
+=head1 MANIFEST CONSTANTS
+
+This module exports the following manifest constants:
+
+=head2 TEXT_FILE
+
+This is the path to a plain text file used for testing. In fact, it is
+F<t/data/text_file.txt>.
+
+=head2 TEXT_CONTENT
+
+This is the content of TEXT_FILE, after having been run through the
+L<slurp()|/slurp> subroutine with default options.
 
 =head1 SEE ALSO
 
-<<< replace or remove boilerplate >>>
+L<App::AckX::Preflight::Syntax|App::AckX::Preflight::Syntax> and
+friends.
 
 =head1 SUPPORT
 
