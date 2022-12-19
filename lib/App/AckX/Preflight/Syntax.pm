@@ -184,7 +184,7 @@ sub FILL {
     my $attr = $self->__my_attr();
 
     # Localize so we do not hold handle after exiting FILL.
-    local $attr->{fh} = $fh;
+    local $attr->{input_handle} = $fh;
 
     local $_ = undef;	# while (<>) does not localize $_
 
@@ -192,7 +192,7 @@ sub FILL {
 	my $type = do {
 	    # Localize so that scope guard created by
 	    # __get_peek_handle() (if called) will be cleaned up.
-	    local $attr->{guard} = undef;
+	    local $attr->{input_scope_guard} = undef;
 	    $self->__classify();
 	};
 	SYNTAX_CODE eq $type
@@ -460,22 +460,19 @@ sub __get_peek_handle {
     my ( $self ) = @_;
 
     my $attr = $self->__my_attr();
-    my $fh = $attr->{fh}
+    my $fh = $attr->{input_handle}
 	or __die_hard( 'No input handle defined' );
 
-    # Destroy previous Scope::Guard, if any. After this, $fh is right
-    # after the line being classified, and $. is the number of that
-    # line.
-    $attr->{guard} = undef;
-
-    my $position = tell $fh;
-    my $line = $.;
-    $attr->{guard} = Scope::Guard->new( sub {
-	    seek $fh, $position, SEEK_SET;
-	    $. = $line;	## no critic (RequireLocalizedPunctuationVars)
-	    return;
-	}
-    );
+    unless ( $attr->{input_scope_guard} ) {
+	my $position = tell $fh;
+	my $line = $.;
+	$attr->{input_scope_guard} = Scope::Guard->new( sub {
+		seek $fh, $position, SEEK_SET;
+		$. = $line;	## no critic (RequireLocalizedPunctuationVars)
+		return;
+	    }
+	);
+    }
 
     return $fh;
 }
@@ -725,10 +722,12 @@ L<__my_attr()|/__my_attr> method, which this method is free to modify.
 
 =head2 __get_peek_handle()
 
-This method B<must> be called from within the
-L<__classify()|/__classify> method. It returns the file handle being
-read, positioned just B<after> the line being classified. Built-in
-variable C<$.> will be the line number of the line being classified.
+The L<__classify()|/__classify> method can call this method to get a
+file handle to the input, in case it needs to read ahead to classify a
+line. This method B<must not> be called from any other place.
+
+After the L<__classify()|/__classify> method returns, the file handle's
+position and Perl's line counter (C<$.>) will be restored.
 
 See
 L<App::AckX::Preflight::Syntax::Crystal|App::AckX::Preflight::Syntax::Crystal>
