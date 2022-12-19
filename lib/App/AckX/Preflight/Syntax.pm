@@ -51,12 +51,9 @@ sub __get_syntax_opt {
 	'syntax_del|syntax-del=s'	=> $mod_syntax,
 	'syntax_set|syntax-set=s'	=> $mod_syntax,
 	qw{
-	    syntax=s@
 	    syntax-empty-code-is-comment!
-	    syntax_type|syntax-type!
-	    syntax_wc|syntax-wc!
-	    syntax_wc_only|syntax-wc-only!
 	},
+	__PACKAGE__->__main_parser_options(),
     );
     if ( $strict && @{ $arg } ) {
 	local $" = ', ';
@@ -171,6 +168,16 @@ sub __handles_syntax {
 	return;
     }
 
+}
+
+sub __main_parser_options {
+    return( qw{
+	syntax=s@
+	syntax_match|syntax-match!
+	syntax_type|syntax-type!
+	syntax_wc|syntax-wc!
+	syntax_wc_only|syntax-wc-only!
+    } );
 }
 
 sub __my_attr {
@@ -755,16 +762,11 @@ This method returns a hash that the caller can use to store the data it
 needs to do its job, creating it if necessary. This is intended for the
 use of the L<__init()|/__init> and L<__classify()|/__classify> methods.
 
-=head2 __restore_file_position
+=head2 __main_parser_options
 
- my $scope_guard => $self->__restore_file_position( $fh );
-
-If a syntax filter decides to read the input file on its own behalf in
-(e.g.) its L<__classify()|/__classify> method, it B<must> preserve and
-restore the C<$.> variable and file position, and restore them when it
-is done. One way to do this is to call this method and preserve the
-returned lexical variable until scope exit. Destruction of the returned
-object will do the required restoration.
+This static method centralize the options that need to be seen by the
+main command line parser. These are C<--syntax>, C<--syntax-match>,
+C<--syntax-type>, C<--syntax-wc>, and C<--syntax-wc-only>.
 
 =head2 IN_SERVICE
 

@@ -13,13 +13,7 @@ use App::AckX::Preflight::Util qw{ @CARP_NOT };
 our $VERSION = '0.000_043';
 
 sub __options {
-    return( qw{
-	syntax=s@
-	syntax_match|syntax-match!
-	syntax_type|syntax-type!
-	syntax_wc|syntax-wc!
-	syntax_wc_only|syntax-wc-only!
-    } );
+    return App::AckX::Preflight::Syntax->__main_parser_options();
 }
 
 sub __peek_opt {
