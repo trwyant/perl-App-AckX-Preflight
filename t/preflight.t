@@ -50,19 +50,13 @@ is xqt( qw{ --noenv --file t/data/foo } ),
     ],
     '--file t/data/foo';
 
-SKIP: {
-
-    '5.010' le $]
-	or skip( "Perl 5.10 required; this is $]", 1 );
-
-    is xqt( qw{ --noenv --file t/data/fubar } ),
-	[
-	    $^X,
-	    $ack,
-	    qw{ --match (?|(?i:\bfu\b)|(?i:\bbar\b)) --noenv },
-	],
-	'--file t/data/fubar';
-}
+is xqt( qw{ --noenv --file t/data/fubar } ),
+    [
+	$^X,
+	$ack,
+	qw{ --match (?|(?i:\bfu\b)|(?i:\bbar\b)) --noenv },
+    ],
+    '--file t/data/fubar';
 
 # Test combining plug-ins.
 

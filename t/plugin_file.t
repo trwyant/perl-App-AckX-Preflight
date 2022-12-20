@@ -72,31 +72,25 @@ is \@got,
     'Process --file=t/data/foo --literal';
 
 
-SKIP: {
+@got = prs( qw{ --file=t/data/fubar } );
+@want = ( { file => 't/data/fubar' } );
+is \@got, \@want,
+    q<Parse '--file=t/data/fubar'>;
 
-    '5.010' le $]
-	or skip( "Perl 5.10 required; this is $]", 4 );
+@got = xqt( @want );
+is \@got,
+    [ qw{ --match (?|(?i:\bfu\b)|(?i:\bbar\b)) } ],
+    '--file=t/data/fubar';
 
-    @got = prs( qw{ --file=t/data/fubar } );
-    @want = ( { file => 't/data/fubar' } );
-    is \@got, \@want,
-	q<Parse '--file=t/data/fubar'>;
+@got = prs( qw{ --file=t/data/foo-extended } );
+@want = ( { file => 't/data/foo-extended' } );
+is \@got, \@want,
+    q<Parse '--file=t/data/foo-extended'>;
 
-    @got = xqt( @want );
-    is \@got,
-	[ qw{ --match (?|(?i:\bfu\b)|(?i:\bbar\b)) } ],
-	'--file=t/data/fubar';
-
-    @got = prs( qw{ --file=t/data/foo-extended } );
-    @want = ( { file => 't/data/foo-extended' } );
-    is \@got, \@want,
-	q<Parse '--file=t/data/foo-extended'>;
-
-    @got = xqt( @want );
-    is \@got,
-        [ '--match', '(?|(?#)|(?:# This is a comment)|(?i:\bfoo\b))' ],
-	'--file=t/data/foo-extended';
-}
+@got = xqt( @want );
+is \@got,
+    [ '--match', '(?|(?#)|(?:# This is a comment)|(?i:\bfoo\b))' ],
+    '--file=t/data/foo-extended';
 
 @got = prs( qw{ --file=t/data/foo-extended --file-extended } );
 @want = ( { file => 't/data/foo-extended', 'file-extended' => 1 } );

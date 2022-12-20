@@ -132,18 +132,14 @@ sub __file_id {
 	Cwd::abs_path( $path );
 }
 
-{
-    my $psr;	# Oh, for 5.10 and 'state'.
-
-    sub __getopt {
-	my ( @opt_spec ) = @_;
-	$psr ||= _get_option_parser();
-	my $source = ARRAY_REF eq ref $opt_spec[0] ? shift @opt_spec : \@ARGV;
-	my $opt = HASH_REF eq ref $opt_spec[0] ? shift @opt_spec : {};
-	$psr->getoptionsfromarray( $source, $opt, @opt_spec )
-	    or __die( 'Invalid option on command line' );
-	return $opt;
-    }
+sub __getopt {
+    my ( @opt_spec ) = @_;
+    state $psr = _get_option_parser();
+    my $source = ARRAY_REF eq ref $opt_spec[0] ? shift @opt_spec : \@ARGV;
+    my $opt = HASH_REF eq ref $opt_spec[0] ? shift @opt_spec : {};
+    $psr->getoptionsfromarray( $source, $opt, @opt_spec )
+	or __die( 'Invalid option on command line' );
+    return $opt;
 }
 
 sub __err_exclusive {

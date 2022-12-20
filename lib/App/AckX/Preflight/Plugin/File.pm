@@ -56,11 +56,6 @@ sub __process {
     # If we got more than one pattern
     if ( 1 < @pattern ) {
 
-	# The Regex we need to build requires 5.009005, really.
-	'5.009005' gt $]
-	    and __die(
-	    "Perl $] does not support multiple patterns in a file" );
-
 	# Enclose the individual patterns in (?: ... ) unless it
 	# looks like they are already parenthesized.
 	@pattern = map {
@@ -116,10 +111,6 @@ therefore any line in the file.
 If C<--file-extended> is asserted, the file syntax is extended to ignore
 empty lines and lines whose first non-blank character is C<'#'>.
 Otherwise all lines are considered to be patterns, like F<grep>.
-
-Files containing more than one pattern can only be processed when
-running under at least Perl 5.9.5. An attempt to use such a file under
-an earlier Perl will result in an exception.
 
 Multiple patterns are joined via a branch reset; that is, something like
 C<(?!pattern_1|pattern_2...)>. Each pattern is enclosed in C<(?:...)> to

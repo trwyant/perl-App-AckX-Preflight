@@ -17,21 +17,18 @@ sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT );
 }
 
-{
-    my $block_end = {	# TODO state variable when we get to 5.10
+sub __block_re {
+    state $block_end = {
 	'(*'	=> qr< [*] [)] >smx,
 	'{'	=> qr< [}] >smx,
     };
-
-    sub __block_re {
-	return(
-	    qr< \A \s* ( [(] [*] | [{] ) >smx,	# } )
-	    sub {
-		my ( $capture ) = @_;
-		return $block_end->{$capture};
-	    },
-	);
-    }
+    return(
+	qr< \A \s* ( [(] [*] | [{] ) >smx,	# } )
+	sub {
+	    my ( $capture ) = @_;
+	    return $block_end->{$capture};
+	},
+    );
 }
 
 =begin comment
@@ -39,21 +36,18 @@ sub __handles_syntax {
 I find no evidence for any sort of inline documentation for Pascal. The
 following cold code is my presumption for what it would look like.
 
-{
-    my $block_end = {	# TODO state variable when we get to 5.10
+sub __in_line_doc_re {
+    state $block_end = {	# TODO state variable when we get to 5.10
 	'(**'	=> qr< [*] [)] >smx,
 	'{*'	=> qr< [}] >smx,
     };
-
-    sub __in_line_doc_re {
-	return(
-	    qr< \A \s* ( [(] [*]{2} | [{] [*] ) >smx,	# } )
-	    sub {
-		my ( $capture ) = @_;
-		return $block_end->{$capture};
-	    },
-	);
-    }
+    return(
+	qr< \A \s* ( [(] [*]{2} | [{] [*] ) >smx,	# } )
+	sub {
+	    my ( $capture ) = @_;
+	    return $block_end->{$capture};
+	},
+    );
 }
 
 =end comment
