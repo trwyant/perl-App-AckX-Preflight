@@ -68,6 +68,12 @@ type.
 
 This plug-in recognizes and processes the following options:
 
+=head2 --help-syntax
+
+This option causes all file types that support syntax to be listed,
+along with the short name of the syntax plugin that handles them. Perl
+then exits.
+
 =head2 --syntax
 
 This specifies the syntax types which are to be searched. It can take

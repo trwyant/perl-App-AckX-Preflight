@@ -7,6 +7,7 @@ use warnings;
 
 use App::AckX::Preflight;
 use App::AckX::Preflight::Util qw{ :syntax };
+use App::AckX::Preflight::Syntax;
 use Test2::V0 -target => 'App::AckX::Preflight::Plugin::Syntax';
 
 use lib qw{ inc };
@@ -18,13 +19,17 @@ my @want;
 
 @got = CLASS->__options();
 is \@got,
-    [ qw{
-	syntax=s@
-	syntax_match|syntax-match!
-	syntax_type|syntax-type!
-	syntax_wc|syntax-wc!
-	syntax_wc_only|syntax-wc-only!
-	} ],
+    [
+	'help_syntax|help-syntax' => App::AckX::Preflight::Syntax->can(
+	    '__help_syntax' ),
+	qw{
+	    syntax=s@
+	    syntax_match|syntax-match!
+	    syntax_type|syntax-type!
+	    syntax_wc|syntax-wc!
+	    syntax_wc_only|syntax-wc-only!
+	},
+    ],
     'Options';
 
 

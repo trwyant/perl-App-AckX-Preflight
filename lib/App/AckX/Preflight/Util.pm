@@ -196,19 +196,24 @@ sub __interpret_plugins {
 	    my @s;
 	    my $info = $plugin_info{$plugin};
 	    foreach my $os ( @spec ) {
-		push @s, $os, index( $os, '%' ) >= 0 ?
-		    sub {	# Hash option 
-			$opt{$_[0]}{$_[1]} = $_[2];
-			$info->{order} = @ARGV;
-		    } : index( $os, '@' ) >= 0 ?
-		    sub {	# Array option
-			push @{ $opt{$_[0]} }, $_[1];
-			$info->{order} = @ARGV;
-		    } :
-		    sub {	# Scalar option
-			$opt{$_[0]} = $_[1];
-			$info->{order} = @ARGV;
-		    };
+		if ( ref $os ) {
+		    my $old = pop @s;
+		    push @s, sub { $old->( @_ ); $os->( @_ ); };
+		} else {
+		    push @s, $os, index( $os, '%' ) >= 0 ?
+			sub {	# Hash option 
+			    $opt{$_[0]}{$_[1]} = $_[2];
+			    $info->{order} = @ARGV;
+			} : index( $os, '@' ) >= 0 ?
+			sub {	# Array option
+			    push @{ $opt{$_[0]} }, $_[1];
+			    $info->{order} = @ARGV;
+			} :
+			sub {	# Scalar option
+			    $opt{$_[0]} = $_[1];
+			    $info->{order} = @ARGV;
+			};
+		}
 	    }
 	    __getopt( \%opt, @s );
 	    foreach my $key ( keys %opt ) {

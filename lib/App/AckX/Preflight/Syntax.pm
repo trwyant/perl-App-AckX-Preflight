@@ -170,8 +170,26 @@ sub __handles_syntax {
 
 }
 
+sub __help_syntax {
+    my %syntax;
+    my $len = 0;
+    foreach my $filter ( __PACKAGE__->__plugins() ) {
+	( my $name = $filter ) =~ s/ .* :: //smx;
+	foreach my $type ( $filter->__handles_type() ) {
+	    $len = List::Util::max( $len, length $type );
+	    push @{ $syntax{$type} ||= [] }, $name;
+	}
+    }
+    foreach my $type ( sort keys %syntax ) {
+	say sprintf '%-*s  %s', $len, $type, "@{ $syntax{$type} }";
+    }
+    exit;
+}
+
 sub __main_parser_options {
-    return( qw{
+    return(
+	'help_syntax|help-syntax'	=> \&__help_syntax,
+	qw{
 	syntax=s@
 	syntax_match|syntax-match!
 	syntax_type|syntax-type!
