@@ -61,7 +61,7 @@ my $shell_resource = ACK_FILE_CLASS->new( SHELL_FILE );
 
 my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
 
-is [ SYNTAX_FILTER->__handles_type() ], [ qw{ python shell } ],
+is [ SYNTAX_FILTER->__handles_type() ], [ qw{ shell } ],
     sprintf '%s handles python, shell', SYNTAX_FILTER;
 
 SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );

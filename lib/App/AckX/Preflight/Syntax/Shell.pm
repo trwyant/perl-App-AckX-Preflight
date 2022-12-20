@@ -11,7 +11,7 @@ use App::AckX::Preflight::Util qw{ :syntax @CARP_NOT };
 
 our $VERSION = '0.000_043';
 
-__PACKAGE__->__handles_type_mod( qw{ set python shell } );
+__PACKAGE__->__handles_type_mod( qw{ set shell } );
 
 sub __handles_syntax {
     return( SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_METADATA );
