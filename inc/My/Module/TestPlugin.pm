@@ -11,14 +11,14 @@ use Config;
 use Exporter qw{ import };
 use File::Spec;
 
-our @EXPORT_OK = qw{ inc perlpod prs xqt };
+our @EXPORT_OK = qw{ inc perlpod prs xqt xqt_unsafe };
 
-our @EXPORT = qw{ prs xqt };
+our @EXPORT = qw{ prs xqt xqt_unsafe };
 
 our %EXPORT_TAGS = (
     all		=> \@EXPORT_OK,
     dirs	=> [ qw{ inc perlpod } ],
-    test	=> [ qw{ prs xqt } ],
+    test	=> [ qw{ prs xqt xqt_unsafe } ],
 );
 
 our $VERSION = '0.000_044';
@@ -49,6 +49,8 @@ sub prs {
     return ( $info->{opt}, @ARGV );
 }
 
+=begin comment
+
 sub xqt {
     local @ARGV = @_;
     my $caller = caller;
@@ -59,6 +61,44 @@ sub xqt {
     $caller->CLASS()->__wants_to_run( $opt )
 	and $caller->CLASS()->__process( $aaxp, $opt );
     return ( @ARGV );
+}
+
+=end comment
+
+=cut
+
+sub xqt_unsafe {
+    unshift @_, sub {
+	my ( $caller, $aaxp, $opt ) = @_;
+	$caller->CLASS()->__process( $aaxp, $opt );
+	return;
+    };
+    goto &_xqt;
+}
+
+sub xqt {
+    unshift @_, sub {
+	my ( $caller, $aaxp, $opt ) = @_;
+	local $@ = undef;
+	eval {
+	    $caller->CLASS()->__process( $aaxp, $opt );
+	    1;
+	} or push @ARGV, $@;
+	return;
+    };
+    goto &_xqt;
+}
+
+sub _xqt {
+    ( my $callback, local @ARGV ) = @_;
+    my $caller = caller;
+    my $aaxp = 'App::AckX::Preflight' eq ref $ARGV[0] ?
+	shift @ARGV :
+	App::AckX::Preflight->new();
+    my $opt = HASH_REF eq ref $ARGV[0] ? shift @ARGV : {};
+    $caller->CLASS()->__wants_to_run( $opt )
+	and $callback->( $caller, $aaxp, $opt );
+    return @ARGV;
 }
 
 1;
@@ -125,6 +165,8 @@ This subroutine loads C<@argv> into a localized C<@ARGV>, and then calls
  $plugin_class_name->__process( $aaxp, $opt );
 
 on the plugin. It returns whatever was left in C<@ARGV> after the call.
+Any exceptions are caught, and C<$@> is appended to C<@ARGV> as it
+stands at the time of the exception.
 
 The plugin class name is obtained from manifest constant C<CLASS>,
 
@@ -138,6 +180,16 @@ used.
 
 Any remaining arguments are loaded into a localized C<@ARGV> before the
 plugin is called.
+
+Exported by default, and by tags C<:all> and C<:test>.
+
+=head2 xqt_unsafe
+
+ @argv = xqt_unsafe( $aaxp, $opt, @argv );
+
+This subroutine is like L<xqt()|/xqt> (above), but exceptions are thrown
+to the caller. You need to use this if you intend to test the exception
+itself.
 
 Exported by default, and by tags C<:all> and C<:test>.
 

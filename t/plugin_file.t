@@ -33,8 +33,8 @@ is \@got,
 is \@got, \@want,
     q<Parse '--file fu --match bar'>;
 
-my $str = eval { xqt( @want ); 'No exception'; } || $@;
-like $str, qr{ \b \Qmutually exclusive\E \b }smx,
+like dies { xqt_unsafe( @want ) },
+    qr{ \b \Qmutually exclusive\E \b }smx,
     q<Parse '--file fu --match bar' gave correct exception>;
 
 

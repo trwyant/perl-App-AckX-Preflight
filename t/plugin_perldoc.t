@@ -7,6 +7,7 @@ use warnings;
 
 use App::AckX::Preflight;
 use File::Find;
+use List::Util 1.45 qw{ all };
 use Test2::V0 -target => 'App::AckX::Preflight::Plugin::Perldoc';
 
 use lib qw{ inc };
@@ -26,6 +27,16 @@ is \@got,
     [],
     'Peek options';
 
+@got = CLASS->_perlpod();
+@want = perlpod();
+is \@got, \@want, 'Got expected Perl pod directories';
+
+{
+    my $got = all { defined } @got;
+    ok $got, 'All _perlpod() results are defined'
+	or diag '_perlpod() returned ( ',
+	    join( ', ', map { defined ? "'$_'" : 'undef' } @got ), ' )';
+}
 
 @got = prs( qw{ --perldoc --syntax doc } );
 @want = ( { perldoc => 1 }, qw{ --syntax doc } );
