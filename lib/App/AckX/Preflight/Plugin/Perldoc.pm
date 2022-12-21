@@ -17,27 +17,26 @@ sub __options {
     return( qw{ perlcore! perldelta! perldoc! perlfaq! } );
 }
 
-{
-    my @perlpod;
-    sub _perlpod {
-	unless ( @perlpod ) {
-	    foreach my $key ( map { $Config::Config{$_} } qw{
-		archlibexp
-		privlibexp
-		sitelibexp
-		vendorlibexp
-	    } ) {
-		defined $key
-		    and $key ne ''
-		    or next;
-		my $dir = File::Spec->catfile( $key, 'pods' );
-		-d $dir
-		    or next;
-		push @perlpod, $dir;
-	    }
+sub _perlpod {
+    state $perlpod = do {
+	my @rslt;
+	foreach my $key ( map { $Config::Config{$_} } qw{
+	    archlibexp
+	    privlibexp
+	    sitelibexp
+	    vendorlibexp
+	} ) {
+	    defined $key
+		and $key ne ''
+		or next;
+	    my $dir = File::Spec->catfile( $key, 'pods' );
+	    -d $dir
+		or next;
+	    push @rslt, $dir;
 	}
-	return @perlpod;
-    }
+	\@rslt;
+    };
+    return @{ $perlpod };
 }
 
 sub __process {
