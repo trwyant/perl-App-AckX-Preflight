@@ -35,7 +35,7 @@ is \@got, \@want, 'Got expected Perl pod directories';
     my $got = all { defined } @got;
     ok $got, 'All _perlpod() results are defined'
 	or diag '_perlpod() returned ( ',
-	    join( ', ', map { defined ? "'$_'" : 'undef' } @got ), ' )';
+	    join( ', ', map { defined() ? "'$_'" : 'undef' } @got ), ' )';
 }
 
 @got = prs( qw{ --perldoc --syntax doc } );
