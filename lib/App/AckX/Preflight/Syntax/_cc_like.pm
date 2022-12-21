@@ -9,7 +9,7 @@ use parent qw{ App::AckX::Preflight::Syntax };
 
 use App::AckX::Preflight::Util qw{ :croak :ref :syntax @CARP_NOT };
 
-our $VERSION = '0.000_043';
+our $VERSION = '0.000_044';
 
 sub __handles_syntax {
     __die_hard( '__handles_syntax() must be overridden' );

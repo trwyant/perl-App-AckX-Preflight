@@ -1,3 +1,29 @@
+0.000_044	2022-12-21	T. R. Wyant
+    Add --help-syntax to the Syntax plug-in.  This lists all the
+    languages covered by the syntax filters, and the short name of the
+    filter that handles each. The Perl script then exits.
+
+    Allow the syntax filter ->__classify() method to read the input
+    file. Its position is reset after the method exits.
+
+    Add a syntax filter for the Crystal language. This needed the above
+    enhancement to distinguish comments from documentation.
+
+    Added option --o to send output to a file. This would have been
+    --output, but Ack already has an --output option that does something
+    different.
+
+    Raise minimum requirements to App::Ack 3.0, Perl 5.10.1.
+
+    Allow default 'home' and 'global' directories not to exist.
+
+    Skip t/whole_app.t when run as a GitHub action.  At least until I
+    figure out why I get nothing back from Ack when I do this.
+
+    Simplify spawning ack; always use system().  We capture --o by
+    re-opening STDOUT, with a scope guard to put it back the way it was
+    when we're done.
+
 0.000_043	2022-12-12	T. R. Wyant
 
     Redo ack dispatch. Default is now system() or IPC::Cmd::run().

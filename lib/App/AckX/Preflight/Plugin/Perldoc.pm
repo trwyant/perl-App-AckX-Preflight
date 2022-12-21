@@ -11,7 +11,7 @@ use App::AckX::Preflight::Util qw{ :all };
 use Config ();
 use File::Find ();
 
-our $VERSION = '0.000_043';
+our $VERSION = '0.000_044';
 
 sub __options {
     return( qw{ perlcore! perldelta! perldoc! perlfaq! } );

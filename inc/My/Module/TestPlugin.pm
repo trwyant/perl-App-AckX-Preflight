@@ -21,7 +21,7 @@ our %EXPORT_TAGS = (
     test	=> [ qw{ prs xqt } ],
 );
 
-our $VERSION = '0.000_043';
+our $VERSION = '0.000_044';
 
 sub inc {
     return( grep { -d } @INC );
