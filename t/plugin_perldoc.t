@@ -32,10 +32,25 @@ is \@got,
 is \@got, \@want, 'Got expected Perl pod directories';
 
 {
+    # FIXME This block and the other FIXME annotations in this file are
+    # due to my efforts to track down GitHub CI failures under the
+    # current Ubuntu, but Perl 5.10.1. The failure is
+    # Error: invalid top directory at ../lib/5.10.1/File/Find.pm line 598.
+    # I do not know which version this is, but my 5.10.1 has File::Find
+    # 1.14, and generates this message at this line if the first (and
+    # only the first) directory to search is undef.
+
+    diag 'File::Find version ', File::Find->VERSION();
+
     my $got = all { defined } @got;
     ok $got, 'All _perlpod() results are defined'
-	or diag '_perlpod() returned ( ',
+	or diag CLASS, '->_perlpod() returned ( ',
 	    join( ', ', map { defined() ? "'$_'" : 'undef' } @got ), ' )';
+
+    $got = all { defined } @want;
+    ok $got, 'All _perlpod() results are defined'
+	or diag 'perlpod() (i.e. the test routine) returned ( ',
+	    join( ', ', map { defined() ? "'$_'" : 'undef' } @want ), ' )';
 }
 
 @got = prs( qw{ --perldoc --syntax doc } );
@@ -66,6 +81,7 @@ find(
 	m/ \A perl [0-9]+ delta [.] pod \z /smx
 	    and push @want, $File::Find::name;
     },
+    grep { defined }	# FIXME These OUGHT to all be defined, but ...
     perlpod()
 );
 is \@got, \@want, q<Process '--perldoc --syntax=documentation>;
@@ -82,6 +98,7 @@ find(
 	m/ \A perlfaq [0-9]+ [.] pod \z /smx
 	    and push @want, $File::Find::name;
     },
+    grep { defined }	# FIXME These OUGHT to all be defined, but ...
     perlpod()
 );
 is \@got, \@want, q<Process '--perlfaq -l>;
