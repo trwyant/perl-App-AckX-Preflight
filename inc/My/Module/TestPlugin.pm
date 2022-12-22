@@ -5,11 +5,41 @@ use 5.010001;
 use strict;
 use warnings;
 
+# FIXME part of the continuing effort to find out why File::Find::find
+# is crapping out under Ubuntu and Perl 5.10.1. It's getting
+# Conan-the-Barbarianish here.
+use File::Find;
+use Test2::API 1.302096 ();
+use Test2::API::Context 1.302096 ();	# for pass_and_release().
+{
+    my $find = \&File::Find::find;
+    sub my_find {
+	eval {
+	    $find->( @_ );
+	    1;
+	} or do {
+	    my $ctx = Test2::API::context();
+	    $ctx->diag( "File::Find::find failed: $@" );
+	    my $lvl = 0;
+	    while ( 1 ) {
+		my ( undef, $file, $line ) = caller( $lvl++ )
+		    or last;
+		$ctx->diag( "    from $file line $line" );
+	    }
+	    $ctx->release();
+	};
+	return;
+    }
+    no warnings qw{ redefine };
+    *File::Find::find = \&my_find;
+}
+
 use App::AckX::Preflight::Util qw{ HASH_REF __interpret_plugins };
 # use Carp;
 use Config;
 use Exporter qw{ import };
 use File::Spec;
+
 
 our @EXPORT_OK = qw{ inc perlpod prs xqt xqt_unsafe };
 

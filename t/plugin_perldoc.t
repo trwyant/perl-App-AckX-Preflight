@@ -5,13 +5,15 @@ use 5.010001;
 use strict;
 use warnings;
 
+# FIXME has to come first so we can patch File::Find before anyone else
+# gets their hands on it.
+use lib qw{ inc };
+use My::Module::TestPlugin qw{ :all };	# Imports prs() and xqt()
+
 use App::AckX::Preflight;
 use File::Find;
 use List::Util 1.45 qw{ all };
 use Test2::V0 -target => 'App::AckX::Preflight::Plugin::Perldoc';
-
-use lib qw{ inc };
-use My::Module::TestPlugin qw{ :all };	# Imports prs() and xqt()
 
 my @got;
 my @want;
@@ -32,13 +34,14 @@ is \@got,
 is \@got, \@want, 'Got expected Perl pod directories';
 
 {
-    # FIXME This block and the other FIXME annotations in this file are
-    # due to my efforts to track down GitHub CI failures under the
-    # current Ubuntu, but Perl 5.10.1. The failure is
+    # FIXME This block and the other FIXME annotations in this file amd
+    # in inc/My/Module/TestPlugin.pm are due to my efforts to track down
+    # GitHub CI failures under the current Ubuntu, but Perl 5.10.1. The
+    # failure is
     # Error: invalid top directory at ../lib/5.10.1/File/Find.pm line 598.
-    # I do not know which version this is, but my 5.10.1 has File::Find
-    # 1.14, and generates this message at this line if the first (and
-    # only the first) directory to search is undef.
+    # This is File::Find 1.14, and my read of the code says it generates
+    # this message at this line if the first (and only the first)
+    # directory to search is undef.
 
     diag 'File::Find version ', File::Find->VERSION();
 
