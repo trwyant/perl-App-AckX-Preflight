@@ -20,19 +20,22 @@ sub __options {
 sub _perlpod {
     state $perlpod = do {
 	my @rslt;
+	# NOTE: eliminated sitelibexp and vendorlibexp since all I am
+	# looking for is core Perl stuff.
 	foreach my $key ( map { $Config::Config{$_} } qw{
 	    archlibexp
 	    privlibexp
-	    sitelibexp
-	    vendorlibexp
 	} ) {
 	    defined $key
 		and $key ne ''
 		or next;
-	    my $dir = File::Spec->catfile( $key, 'pods' );
-	    -d $dir
-		or next;
-	    push @rslt, $dir;
+	    foreach my $dir ( qw{ pods pod } ) {
+		my $path = File::Spec->catfile( $key, $dir );
+		-d $path
+		    or next;
+		push @rslt, $path;
+		last;
+	    }
 	}
 	\@rslt;
     };
@@ -112,6 +115,13 @@ This causes the documentation for the Perl interpreter to be searched,
 but not the documentation for installed modules. This takes precedence
 over C<--perldoc>, and a warning is issued if C<--perldoc> is asserted.
 
+B<Note> that a certain amount of ad-hocery is necessary to find core
+Perl documentation to the exclusion of installed module documentation.
+In the worst case it will find nothing at all. If this happens there
+will be a test failure in F<t/plugin_perldoc.t>. The output of this
+failure B<should> help figure out where I should look for the core Perl
+documentation.
+
 =item --perldelta
 
 This causes the F<perl*delta.pod> files to be searched. This takes
@@ -120,6 +130,8 @@ issued if either is asserted.
 
 If C<--perlfaq> is also asserted then both deltas and FAQs are
 searched.
+
+See the note on L<--perlcore|/--perlcore> above if this option fails.
 
 =item --perldoc
 
@@ -141,6 +153,8 @@ issued if either is asserted.
 
 If C<--perldelta> is also asserted then both deltas and FAQs are
 searched.
+
+See the note on L<--perlcore|/--perlcore> above if this option fails.
 
 =back
 

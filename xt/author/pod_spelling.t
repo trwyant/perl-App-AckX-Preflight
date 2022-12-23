@@ -25,6 +25,7 @@ Fortran
 getopt
 hh
 hoc
+hocery
 Javadoc
 Lua
 merchantability

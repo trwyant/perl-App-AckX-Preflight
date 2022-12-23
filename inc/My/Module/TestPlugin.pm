@@ -5,35 +5,6 @@ use 5.010001;
 use strict;
 use warnings;
 
-# FIXME part of the continuing effort to find out why File::Find::find
-# is crapping out under Ubuntu and Perl 5.10.1. It's getting
-# Conan-the-Barbarianish here.
-use File::Find;
-use Test2::API 1.302096 ();
-use Test2::API::Context 1.302096 ();	# for pass_and_release().
-{
-    my $find = \&File::Find::find;
-    sub my_find {
-	eval {
-	    $find->( @_ );
-	    1;
-	} or do {
-	    my $ctx = Test2::API::context();
-	    $ctx->diag( "File::Find::find failed: $@" );
-	    my $lvl = 0;
-	    while ( 1 ) {
-		my ( undef, $file, $line ) = caller( $lvl++ )
-		    or last;
-		$ctx->diag( "    from $file line $line" );
-	    }
-	    $ctx->release();
-	};
-	return;
-    }
-    no warnings qw{ redefine };
-    *File::Find::find = \&my_find;
-}
-
 use App::AckX::Preflight::Util qw{ HASH_REF __interpret_plugins };
 # use Carp;
 use Config;
@@ -47,7 +18,7 @@ our @EXPORT = qw{ prs xqt xqt_unsafe };
 
 our %EXPORT_TAGS = (
     all		=> \@EXPORT_OK,
-    dirs	=> [ qw{ inc perlpod } ],
+    dirs	=> [ qw{ inc } ],
     test	=> [ qw{ prs xqt xqt_unsafe } ],
 );
 
@@ -57,45 +28,12 @@ sub inc {
     return( grep { -d } @INC );
 }
 
-sub perlpod {
-    return(
-	grep { -d }
-	map { File::Spec->catdir( $_, 'pods' ) }
-	grep { defined( $_ ) && $_ ne '' }
-	map { $Config{$_} }
-	qw{
-	    archlibexp
-	    privlibexp
-	    sitelibexp
-	    vendorlibexp
-	}
-    )
-}
-
 sub prs {
     local @ARGV = @_;
     my $caller = caller;
     my ( $info ) = __interpret_plugins( $caller->CLASS() );
     return ( $info->{opt}, @ARGV );
 }
-
-=begin comment
-
-sub xqt {
-    local @ARGV = @_;
-    my $caller = caller;
-    my $aaxp = 'App::AckX::Preflight' eq ref $ARGV[0] ?
-	shift @ARGV :
-	App::AckX::Preflight->new();
-    my $opt = HASH_REF eq ref $ARGV[0] ? shift @ARGV : {};
-    $caller->CLASS()->__wants_to_run( $opt )
-	and $caller->CLASS()->__process( $aaxp, $opt );
-    return ( @ARGV );
-}
-
-=end comment
-
-=cut
 
 sub xqt_unsafe {
     unshift @_, sub {
@@ -162,14 +100,6 @@ The following subroutines are exportable:
 
 This subroutine returns all components of C<@INC> that are existing
 directories.
-
-Exported by tags C<:all> and C<:dirs>.
-
-=head2 perlpod
-
- say for perlpod();
-
-This subroutine returns all directories that contain core Perl POD.
 
 Exported by tags C<:all> and C<:dirs>.
 

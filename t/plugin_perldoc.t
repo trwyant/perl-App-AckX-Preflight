@@ -5,15 +5,14 @@ use 5.010001;
 use strict;
 use warnings;
 
-# FIXME has to come first so we can patch File::Find before anyone else
-# gets their hands on it.
+use App::AckX::Preflight;
+use File::Find;
+use Test2::V0 -target => 'App::AckX::Preflight::Plugin::Perldoc';
+
 use lib qw{ inc };
 use My::Module::TestPlugin qw{ :all };	# Imports prs() and xqt()
 
-use App::AckX::Preflight;
-use File::Find;
-use List::Util 1.45 qw{ all };
-use Test2::V0 -target => 'App::AckX::Preflight::Plugin::Perldoc';
+use constant NO_PERL_CORE	=> 'No perl core documentation found';
 
 my @got;
 my @want;
@@ -29,32 +28,44 @@ is \@got,
     [],
     'Peek options';
 
-@got = CLASS->_perlpod();
-@want = perlpod();
-is \@got, \@want, 'Got expected Perl pod directories';
+my @PERLPOD = CLASS->_perlpod();
 
-{
-    # FIXME This block and the other FIXME annotations in this file amd
-    # in inc/My/Module/TestPlugin.pm are due to my efforts to track down
-    # GitHub CI failures under the current Ubuntu, but Perl 5.10.1. The
-    # failure is
-    # Error: invalid top directory at ../lib/5.10.1/File/Find.pm line 598.
-    # This is File::Find 1.14, and my read of the code says it generates
-    # this message at this line if the first (and only the first)
-    # directory to search is undef.
-
-    diag 'File::Find version ', File::Find->VERSION();
-
-    my $got = all { defined } @got;
-    ok $got, 'All _perlpod() results are defined'
-	or diag CLASS, '->_perlpod() returned ( ',
-	    join( ', ', map { defined() ? "'$_'" : 'undef' } @got ), ' )';
-
-    $got = all { defined } @want;
-    ok $got, 'All _perlpod() results are defined'
-	or diag 'perlpod() (i.e. the test routine) returned ( ',
-	    join( ', ', map { defined() ? "'$_'" : 'undef' } @want ), ' )';
-}
+cmp_ok scalar @PERLPOD, '>', 0,
+    'Found at least one core Perl documentation directory'
+    or do {
+    require Config;
+    foreach my $item ( qw{
+	    archlibexp
+	    privlibexp
+	    sitelibexp
+	    vendorlibexp
+	} ) {
+	my $path = $Config::Config{$item};
+	if ( ! defined $path ) {
+	    diag "$item is undefined";
+	} elsif ( $path eq '' ) {
+	    diag "$item is empty";
+	} else {
+	    my $extant = -d $path ? 'exists' : 'does not exist';
+	    diag "$item is $path, which $extant";
+	}
+    }
+    local $@ = undef;
+    eval {
+	find(
+	    sub {
+		-d
+		    and return;
+		$_ eq 'perldelta.pod'
+		    or return;
+		diag "Found perldelta.pod in $File::Find::dir";
+		die;
+	    },
+	    inc(),
+	);
+	1;
+    } and diag "Unable to find perldelta.pod. No idea where it went.";
+};
 
 @got = prs( qw{ --perldoc --syntax doc } );
 @want = ( { perldoc => 1 }, qw{ --syntax doc } );
@@ -68,44 +79,55 @@ is \@got, [ qw{ --syntax doc }, inc() ], q<Process '--perldoc --syntax doc'>;
 @want = ( { perlcore => 1 }, qw{ -w NaN } );
 is \@got, \@want, q<Parse --perlcore -w NaN>;
 
-@got = xqt( @want );
-@want = ( qw{ -w NaN }, perlpod() );
-is \@got, \@want,  q<Process --perlcore -w NaN>;
+SKIP: {
+    @PERLPOD
+	or skip NO_PERL_CORE, 1;
+
+    @got = xqt( @want );
+    @want = ( qw{ -w NaN }, @PERLPOD );
+    is \@got, \@want,  q<Process --perlcore -w NaN>;
+}
 
 
 @got = prs( qw{ --perldelta --syntax=documentation } );
 @want = ( { perldelta => 1 }, qw{ --syntax=documentation } );
-is \@got, \@want, q<Parse '--perldoc --syntax=documentation>;
+is \@got, \@want, q<Parse '--perldelta --syntax=documentation>;
 
-@got = xqt( @want );
-@want = ( '--syntax=documentation' );
-find(
-    sub {
-	m/ \A perl [0-9]+ delta [.] pod \z /smx
-	    and push @want, $File::Find::name;
-    },
-    grep { defined }	# FIXME These OUGHT to all be defined, but ...
-    perlpod()
-);
-is \@got, \@want, q<Process '--perldoc --syntax=documentation>;
+SKIP: {
+    @PERLPOD
+	or skip NO_PERL_CORE, 1;
 
+    @got = xqt( @want );
+    @want = ( '--syntax=documentation' );
+    find(
+	sub {
+	    m/ \A perl [0-9]+ delta [.] pod \z /smx
+		and push @want, $File::Find::name;
+	},
+	@PERLPOD,
+    );
+    is \@got, \@want, q<Process '--perldelta --syntax=documentation>;
+}
 
 @got = prs( qw{ --perlfaq -l } );
 @want = ( { perlfaq => 1 }, '-l' );
 is \@got, \@want, q<Parse '--perlfaq -l>;
 
-@got = xqt( @want );
-@want = ( '-l' );
-find(
-    sub {
-	m/ \A perlfaq [0-9]+ [.] pod \z /smx
-	    and push @want, $File::Find::name;
-    },
-    grep { defined }	# FIXME These OUGHT to all be defined, but ...
-    perlpod()
-);
-is \@got, \@want, q<Process '--perlfaq -l>;
+SKIP: {
+    @PERLPOD
+	or skip NO_PERL_CORE, 1;
 
+    @got = xqt( @want );
+    @want = ( '-l' );
+    find(
+	sub {
+	    m/ \A perlfaq [0-9]+ [.] pod \z /smx
+		and push @want, $File::Find::name;
+	},
+	@PERLPOD,
+    );
+    is \@got, \@want, q<Process '--perlfaq -l>;
+}
 
 done_testing;
 
