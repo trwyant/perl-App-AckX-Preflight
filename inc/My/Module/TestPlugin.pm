@@ -25,7 +25,7 @@ our %EXPORT_TAGS = (
 our $VERSION = '0.000_044';
 
 sub inc {
-    return( grep { -d } @INC );
+    return( grep { -d } @INC, $Config{scriptdirexp} );
 }
 
 sub prs {

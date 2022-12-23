@@ -75,7 +75,7 @@ sub __process {
 
     } else {
 	# Append the Perl directories to the argument list
-	push @ARGV, grep { -d } @INC;
+	push @ARGV, grep { -d } @INC, $Config::Config{scriptdirexp};
     }
 
     return 1;
