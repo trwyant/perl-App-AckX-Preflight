@@ -19,6 +19,7 @@ ackxprc
 ASCIIbetical
 ASCIIbetically
 Asm
+declarator
 del
 env
 Fortran
@@ -31,6 +32,8 @@ Lua
 merchantability
 perlcore
 preflight
+raku
+TODO
 unabbreviated
 Vimscript
 VMS
