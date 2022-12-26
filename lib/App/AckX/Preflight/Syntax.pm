@@ -9,6 +9,7 @@ use App::AckX::Preflight::Util
     qw{
 	:croak
 	:syntax
+	__load
 	__syntax_types
 	ACK_FILE_CLASS
 	@CARP_NOT
@@ -283,92 +284,79 @@ sub TELL {
     return tell $fh;
 }
 
-{
-    my $syntax_abbrev;
+sub __normalize_options {
+    my ( $invocant, $opt ) = @_;
 
-    sub __normalize_options {
-	my ( $invocant, $opt ) = @_;
+    state $syntax_abbrev = Text::Abbrev::abbrev( __syntax_types(), 'none' );
 
-	$syntax_abbrev ||= Text::Abbrev::abbrev( __syntax_types(), 'none' );
+    my $class = ref $invocant || $invocant;
 
-	my $class = ref $invocant || $invocant;
-
-	if ( $opt->{syntax} ) {
-	    my @syntax;
-	    foreach ( map { split $ARG_SEP_RE } @{ $opt->{syntax} } ) {
-		defined $syntax_abbrev->{$_}
-		    or __die( "Unsupported syntax type '$_'" );
-		$_ = $syntax_abbrev->{$_};
-		if ( $_ eq 'none' ) {
-		    @syntax = ();
-		} else {
-		    push @syntax, $_;
-		}
-	    }
-	    if ( @syntax ) {
-		@{ $opt->{syntax} } = sort { $a cmp $b }
-		    List::Util::uniqstr( @syntax );
+    if ( $opt->{syntax} ) {
+	my @syntax;
+	foreach ( map { split $ARG_SEP_RE } @{ $opt->{syntax} } ) {
+	    defined $syntax_abbrev->{$_}
+		or __die( "Unsupported syntax type '$_'" );
+	    $_ = $syntax_abbrev->{$_};
+	    if ( $_ eq 'none' ) {
+		@syntax = ();
 	    } else {
-		delete $opt->{syntax};
+		push @syntax, $_;
 	    }
 	}
-
-	foreach ( @{ $opt->{syntax_mod} || [] } ) {
-	    my ( $filter, $mod, @val ) =
-		$invocant->_normalize_syntax_mod( $_ );
-	    unless ( $class eq $filter ) {
-		unshift @val, $filter;
-		$val[0] =~ s/ \A @{[ __PACKAGE__ ]} :: //smxo;
-	    }
-	    $_ = [ $filter, $mod, @val ];
+	if ( @syntax ) {
+	    @{ $opt->{syntax} } = sort { $a cmp $b }
+		List::Util::uniqstr( @syntax );
+	} else {
+	    delete $opt->{syntax};
 	}
-
-	return;
     }
+
+    foreach ( @{ $opt->{syntax_mod} || [] } ) {
+	my ( $filter, $mod, @val ) =
+	    $invocant->_normalize_syntax_mod( $_ );
+	unless ( $class eq $filter ) {
+	    unshift @val, $filter;
+	    $val[0] =~ s/ \A @{[ __PACKAGE__ ]} :: //smxo;
+	}
+	$_ = [ $filter, $mod, @val ];
+    }
+
+    return;
 }
 
-{
+sub _normalize_syntax_mod {
+    my ( $invocant, $spec ) = @_;
 
-    my $plugins;
+    state $plugins = { map { $_ => 1 } $invocant->__plugins() };
 
-    sub _normalize_syntax_mod {
-	my ( $invocant, $spec ) = @_;
-
-	$plugins ||= { map { $_ => 1 } $invocant->__plugins() };
-
-	my ( $name, $val ) = split qr{ = }smx, $spec, 2;
-	$name =~ s/ \A --? //smx;
-	( my $mod = $name ) =~ s/ .* [-_] //smx;
-	my $filter = ref $invocant || $invocant;
-	if ( __PACKAGE__ eq $filter ) {
-	    $val =~ s/ \A ( \w+ (?: :: \w+ )* ) $ARG_SEP_RE? //smx
-		or __die( "Invalid syntax filter name in --$name=$val" );
-	    my $filter = $1;
-	    $filter =~ m/ :: /smx
-		or $filter = join '::', __PACKAGE__, $filter;
-	}
-	$plugins->{$filter}
-	    or __die( "Unknown syntax filter $filter" );
-	return ( $filter, $mod, split $ARG_SEP_RE, $val );
+    my ( $name, $val ) = split qr{ = }smx, $spec, 2;
+    $name =~ s/ \A --? //smx;
+    ( my $mod = $name ) =~ s/ .* [-_] //smx;
+    my $filter = ref $invocant || $invocant;
+    if ( __PACKAGE__ eq $filter ) {
+	$val =~ s/ \A ( \w+ (?: :: \w+ )* ) $ARG_SEP_RE? //smx
+	    or __die( "Invalid syntax filter name in --$name=$val" );
+	my $filter = $1;
+	$filter =~ m/ :: /smx
+	    or $filter = join '::', __PACKAGE__, $filter;
     }
+    $plugins->{$filter}
+	or __die( "Unknown syntax filter $filter" );
+    return ( $filter, $mod, split $ARG_SEP_RE, $val );
 }
 
-{
-    my %loaded;
-
-    sub __plugins {
-	my @rslt;
-	foreach my $plugin ( @CARP_NOT ) {
-	    $plugin =~ PLUGIN_MATCH
-		or next;
-	    ( $loaded{$plugin} ||= eval "require $plugin; 1" )
-		or next;
-	    $plugin->IN_SERVICE()
-		or next;
-	    push @rslt, $plugin;
-	}
-	return @rslt;
+sub __plugins {
+    my @rslt;
+    foreach my $plugin ( @CARP_NOT ) {
+	$plugin =~ PLUGIN_MATCH
+	    or next;
+	__load( $plugin )
+	    or next;
+	$plugin->IN_SERVICE()
+	    or next;
+	push @rslt, $plugin;
     }
+    return @rslt;
 }
 
 sub __syntax_opt {
@@ -401,80 +389,77 @@ use constant SYNTAX_FILTER_LAYER =>
 
 # Hot patch the open() method on the App::Ack class that represents a
 # file, so that we can inject ourselves as a PerlIO::via layer.
-{
-    my $open;
-    sub __hot_patch {
-	$open
-	    and return;
+sub __hot_patch {
 
-	{
-	    local $@ = undef;
-	    eval sprintf 'require %s; 1', ACK_FILE_CLASS ## no critic (ProhibitStringyEval,RequireCheckingReturnValueOfEval)
-		or __die_hard( sprintf 'Can not load %s', ACK_FILE_CLASS );
+    state $open;
+
+    $open
+	and return;
+
+    __load( ACK_FILE_CLASS )
+	or __die_hard( sprintf 'Can not load %s', ACK_FILE_CLASS );
+
+    $open = ACK_FILE_CLASS->can( 'open' )
+	or __die_hard( sprintf '%s does not implement open()', ACK_FILE_CLASS );
+
+    no warnings qw{ redefine };	## no critic (ProhibitNoWarnings)
+    no strict qw{ refs };
+
+    my $repl = join '::', ACK_FILE_CLASS, 'open';
+
+    *$repl = sub {
+	my ( $self ) = @_;
+
+	# If the caller is a resource or a filter we're not opening for
+	# the main scan. Just use the normal machinery.
+	my $caller = caller;
+	foreach my $c ( ACK_FILE_CLASS, qw{ App::Ack::Filter } ) {
+	    $caller->isa( $c )
+		and return $open->( $self );
 	}
 
-	$open = ACK_FILE_CLASS->can( 'open' )
-	    or __die_hard( sprintf '%s does not implement open()', ACK_FILE_CLASS );
+	# Foreach of the syntax filter plug-ins
+	foreach my $syntax ( App::AckX::Preflight::Syntax->__plugins() ) {
 
-	no warnings qw{ redefine };	## no critic (ProhibitNoWarnings)
-	no strict qw{ refs };
+	    # See if this resource is of the type serviced by this
+	    # module. If not, try the next.
+	    $syntax->__handles_resource( $self )
+		or next;
 
-	my $repl = join '::', ACK_FILE_CLASS, 'open';
+	    # Open the file.
+	    my $fh = $open->( $self );
 
-	*$repl = sub {
-	    my ( $self ) = @_;
-
-	    # If the caller is a resource or a filter we're not opening for
-	    # the main scan. Just use the normal machinery.
-	    my $caller = caller;
-	    foreach my $c ( ACK_FILE_CLASS, qw{ App::Ack::Filter } ) {
-		$caller->isa( $c )
-		    and return $open->( $self );
+	    # If we want everything and we're not reporting syntax
+	    # types or word count we don't need the filter.
+	    if ( $syntax->__want_everything() ) {
+		my $opt = $syntax->__syntax_opt();
+		$opt->{syntax_type}
+		    or $opt->{syntax_wc}
+		    or return $fh;
 	    }
 
-	    # Foreach of the syntax filter plug-ins
-	    foreach my $syntax ( App::AckX::Preflight::Syntax->__plugins() ) {
-
-		# See if this resource is of the type serviced by this
-		# module. If not, try the next.
-		$syntax->__handles_resource( $self )
-		    or next;
-
-		# Open the file.
-		my $fh = $open->( $self );
-
-		# If we want everything and we're not reporting syntax
-		# types or word count we don't need the filter.
-		if ( $syntax->__want_everything() ) {
-		    my $opt = $syntax->__syntax_opt();
-		    $opt->{syntax_type}
-			or $opt->{syntax_wc}
-			or return $fh;
-		}
-
-		# Check to see if we're already on the PerlIO stack. If so,
-		# just return the file handle. The original open() is
-		# idempotent, and ack makes use of this, so we have to
-		# be idempotent also.
-		foreach my $layer ( PerlIO::get_layers( $fh ) ) {
-		    $layer =~ SYNTAX_FILTER_LAYER
-			and return $fh;
-		}
-
-		# Insert the correct syntax filter into the PerlIO stack.
-		binmode $fh, ":via($syntax)";
-
-		# Return the handle
-		return $fh;
+	    # Check to see if we're already on the PerlIO stack. If so,
+	    # just return the file handle. The original open() is
+	    # idempotent, and ack makes use of this, so we have to
+	    # be idempotent also.
+	    foreach my $layer ( PerlIO::get_layers( $fh ) ) {
+		$layer =~ SYNTAX_FILTER_LAYER
+		    and return $fh;
 	    }
 
-	    # No syntax filter found. Just open the file and return the
-	    # handle.
-	    return $open->( $self );
-	};
+	    # Insert the correct syntax filter into the PerlIO stack.
+	    binmode $fh, ":via($syntax)";
 
-	return;
-    }
+	    # Return the handle
+	    return $fh;
+	}
+
+	# No syntax filter found. Just open the file and return the
+	# handle.
+	return $open->( $self );
+    };
+
+    return;
 }
 
 # FIXME this is a bit clunky. What I think I really want is return a

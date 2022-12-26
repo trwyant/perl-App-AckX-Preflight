@@ -388,36 +388,31 @@ sub _file_from_parts {
     return App::AckX::Preflight::_Config::File->new( name => $f[0] );
 }
 
-{
-    my %loaded;
+sub __plugins {
+    my ( $self ) = @_;
 
-    sub __plugins {
-	my ( $self ) = @_;
-
-	my %disable;
-	ref $self
-	    and %disable = %{ $self->{disable} };
-	my @rslt;
-#	foreach my $plugin ( $mpo->plugins() ) {
-	foreach my $plugin ( @CARP_NOT ) {
-	    $plugin =~ PLUGIN_MATCH
-		or next;
-	    delete $disable{$plugin}
-		and next;
-	    ( $loaded{$plugin} ||= eval "require $plugin; 1" )
-		or next;
-	    $plugin->IN_SERVICE()
-		or next;
-	    push @rslt, $plugin;
-	}
-	if ( my @invalid = sort keys %disable ) {
-	    @invalid > 1
-		or __die( "Unknown plugin @invalid" );
-	    local $" = ', ';
-	    __die( "Unknown plugins @invalid" );
-	}
-	return @rslt;
+    my %disable;
+    ref $self
+	and %disable = %{ $self->{disable} };
+    my @rslt;
+    foreach my $plugin ( @CARP_NOT ) {
+	$plugin =~ PLUGIN_MATCH
+	    or next;
+	delete $disable{$plugin}
+	    and next;
+	__load( $plugin )
+	    or next;
+	$plugin->IN_SERVICE()
+	    or next;
+	push @rslt, $plugin;
     }
+    if ( my @invalid = sort keys %disable ) {
+	@invalid > 1
+	    or __die( "Unknown plugin @invalid" );
+	local $" = ', ';
+	__die( "Unknown plugins @invalid" );
+    }
+    return @rslt;
 }
 
 sub __process_config_files {

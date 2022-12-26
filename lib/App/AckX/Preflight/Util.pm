@@ -8,6 +8,7 @@ use warnings;
 use Carp ();
 use Exporter qw{ import };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
+use Module::Load ();
 use Text::ParseWords ();
 
 use constant DEFAULT_OUTPUT	=> '-';
@@ -40,6 +41,7 @@ our @EXPORT_OK = qw{
     __getopt
     __interpret_plugins
     __interpret_exit_code
+    __load
     __open_for_read
     __syntax_types
     __warn
@@ -254,6 +256,14 @@ sub __interpret_plugins {
     );
 }
 
+sub __load {
+    my ( $module ) = @_;
+    return eval {
+	Module::Load::load( $module );
+	1;
+    };
+}
+
 sub _me {
     return( ( File::Spec->splitpath( $0 ) )[2] );
 }
@@ -269,7 +279,7 @@ sub _sig_num {
     my ( $num ) = @_;
     $num &= 0x7F;
     local $@ = undef;
-    eval { require Config; 1 }
+    __require( 'Config' )
 	or return sprintf '%d', $num;
     my @sig;
     @sig[ split / /, $Config::Config{sig_num} ] =
@@ -425,6 +435,11 @@ specified plugin, if its C<__wants_to_run()> method returns a true
 value, the default arguments are parsed with
 C<Text::ParseWords::shellwords()> and then by each enabled plug-in. Any
 options found are used as default options for the relevant plug-ins.
+
+=head2 __load
+
+This subroutine loads the named module, returning a Boolean value that
+says whether the module was successfully loaded.
 
 =head2 __open_for_read
 

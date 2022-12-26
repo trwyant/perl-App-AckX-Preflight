@@ -172,6 +172,7 @@ sub requires {
 	'Getopt::Long'			=> 2.39,	# getoptionsfromarray
 	'IPC::Cmd'			=> 0,
 	'List::Util'			=> 1.45,	# uniqstr
+	'Module::Load'			=> 0,
 	'Pod::Usage'			=> 0,
 	'Scope::Guard'			=> 0,
 	'Text::Abbrev'			=> 0,
