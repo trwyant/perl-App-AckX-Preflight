@@ -52,7 +52,7 @@ sub __get_syntax_opt {
 	'syntax_del|syntax-del=s'	=> $mod_syntax,
 	'syntax_set|syntax-set=s'	=> $mod_syntax,
 	qw{
-	    syntax-empty-code-is-comment!
+	    syntax_empty_code_is_comment|syntax-empty-code-is-comment!
 	},
 	__PACKAGE__->__main_parser_options(),
     );
@@ -63,7 +63,7 @@ sub __get_syntax_opt {
     $opt->{syntax_wc} ||= $opt->{syntax_wc_only};
     $class->__normalize_options( $opt );
     %SYNTAX_OPT  = map { $_ => $opt->{$_} } qw{
-	syntax-empty-code-is-comment
+	syntax_empty_code_is_comment
 	syntax_type syntax_wc syntax_wc_only
 	};
     %WANT_SYNTAX = map { $_ => 1 } @{ $opt->{syntax} || [] };
@@ -80,7 +80,7 @@ sub __get_syntax_opt {
 	and @{ $opt->{syntax} }
 	and push @arg, '--syntax=' . join( ':', @{ $opt->{syntax} } );
     foreach my $name ( qw{
-	syntax-empty-code-is-comment
+	syntax_empty_code_is_comment
 	syntax_type syntax_wc syntax_wc_only
     } ) {
 	$opt->{$name}
@@ -264,7 +264,7 @@ sub PUSHED {
     my $self = bless {}, ref $class || $class;
     my $attr = $self->__my_attr();
     $attr->{syntax_empty_code_is_comment} =
-	$syntax_opt->{'syntax-empty-code-is-comment'};
+	$syntax_opt->{syntax_empty_code_is_comment};
     $attr->{syntax_type} = $syntax_opt->{syntax_type};
     $attr->{want} = $self->__want_syntax();
     $syntax_opt->{syntax_wc}
