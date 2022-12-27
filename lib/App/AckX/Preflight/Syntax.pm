@@ -395,6 +395,8 @@ sub __want_everything {
     $class->IS_EXHAUSTIVE
 	or return;
     my $want_syntax = $class->__want_syntax();
+    keys %{ $want_syntax }
+	or return 1;
     foreach my $type ( $class->__handles_syntax() ) {
 	$want_syntax->{$type}
 	    or return;
@@ -837,9 +839,6 @@ this is if there are lines of a file that would be returned (or would
 not be returned) no matter what combination of syntax types was
 requested.
 
-B<If> this is true B<and> no syntax types are requested, the filter
-should simply return C<undef> when executed.
-
 =head2 __want_everything
 
  $syntax_filter->__want_everything()
@@ -853,6 +852,8 @@ conditions are true:
 =over
 
 =item L<IS_EXHAUSTIVE|/IS_EXHAUSTIVE> is true;
+
+=item L<__want_syntax()|/__want_syntax> returns an empty hash, -OR-
 
 =item all syntax type returned by L<__handles_syntax()|/__handles_syntax> appear in the hash returned by L<__want_syntax()|/__want_syntax>.
 

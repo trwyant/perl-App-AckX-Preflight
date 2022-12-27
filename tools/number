@@ -37,11 +37,8 @@ SYNTAX_CLASS->__get_syntax_opt( \@ARGV );
 
 my $file = ACK_FILE_CLASS->new( $path );
 
-if ( my $syntax = SYNTAX_CLASS->__get_syntax_filter( $file ) ) {
-    my $want = $syntax->__want_syntax();
-    keys %{ $want }
-	and SYNTAX_CLASS->__hot_patch();
-}
+SYNTAX_CLASS->__get_syntax_filter( $file );
+SYNTAX_CLASS->__hot_patch();
 
 print slurp( $file, \%opt );
 
