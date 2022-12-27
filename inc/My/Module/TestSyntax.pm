@@ -41,15 +41,17 @@ sub slurp {
 	my $caller = caller;
 	my $syntax = $caller->SYNTAX_FILTER();
 	open $fh, "<:via($syntax)", $file
-	    or croak "Failed to open $file: $!\n";
+	    or croak "Failed to open $file: $!";
     }
+
     my $rslt;
     while ( <$fh> ) {
 	s/ \s+ \z //smx;
-	my $leader = $opt->{tell} ?
-	    sprintf '%4d %6d:', $., tell $fh :
-	    sprintf '%4d:', $.;
-	$rslt .= $_ eq '' ? "$leader\n" : "$leader $_\n";
+	my @leader;
+	push @leader, sprintf '%4d', $.;
+	$opt->{tell}
+	    and push @leader, sprintf '%6d', tell $fh;
+	$rslt .= $_ eq '' ? "@leader:\n" : "@leader: $_\n";
     }
     if ( blessed( $file ) ) {
 	$file->close();
@@ -92,11 +94,11 @@ This module exports the following subroutines:
 This subroutine reads the given file, and returns its contents with line
 numbers prefixe.
 
-The \%option hash is itself optional. The only supported key is
+The \%option hash is itself optional. The supported keys are:
 
 =over
 
-=item * tell - adds the file position B<after> the read to the output.
+=item C<{tell}> - if true, adds the file position B<after> the read to the output.
 
 =back
 

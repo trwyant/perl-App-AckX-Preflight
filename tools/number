@@ -5,30 +5,45 @@ use 5.010001;
 use strict;
 use warnings;
 
-use Getopt::Long 2.33 qw{ :config auto_version };
+use App::AckX::Preflight::Syntax ();
+use App::AckX::Preflight::Util qw{ ACK_FILE_CLASS __load };
+use Getopt::Long 2.33 qw{ :config auto_version pass_through };
 use Pod::Usage;
+use Text::Abbrev;
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
 
 our $VERSION = '0.000_044';
 
+use constant SYNTAX_CLASS	=> 'App::AckX::Preflight::Syntax';
+
 my %opt;
 
 GetOptions( \%opt,
     qw{ tell! },
     help => sub { pod2usage( { -verbose => 2 } ) },
-) and @ARGV < 2 or pod2usage( { -verbose => 0 } );
+) and @ARGV >= 1 or pod2usage( { -verbose => 0 } );
 
-my $fh;
-if ( @ARGV ) {
-    open $fh, '<', $ARGV[0]
-	or die "Failed to open $ARGV[0]: $!\n";
-} else {
-    $fh = \*STDIN;
+my $path = pop @ARGV;
+
+__load( ACK_FILE_CLASS )
+    or die "Failed to load @{[ ACK_FILE_CLASS ]}: $@";
+
+SYNTAX_CLASS->__get_syntax_opt( \@ARGV );
+
+-e $path
+    or die "File $path not found\n";
+
+my $file = ACK_FILE_CLASS->new( $path );
+
+if ( my $syntax = SYNTAX_CLASS->__get_syntax_filter( $file ) ) {
+    my $want = $syntax->__want_syntax();
+    keys %{ $want }
+	and SYNTAX_CLASS->__hot_patch();
 }
 
-print slurp( $fh, \%opt );
+print slurp( $file, \%opt );
 
 __END__
 
@@ -45,6 +60,11 @@ number - Number the lines of files consistently with t/syntax_*.t
 
 =head1 OPTIONS
 
+All options supported by
+L<App::AckX::Preflight::Plugin::Syntax|App::AckX::Preflight::Plugin::Syntax>
+are accepted, though not all actually do something. The following
+options specific to this script are also supported:
+
 =head2 --help
 
 This option displays the documentation for this script. The script then
@@ -52,8 +72,8 @@ exits.
 
 =head2 --tell
 
-If this Boolean option is asserted, than each line contains the line
-number and the position in the file B<after> the line is read,
+If this Boolean option is asserted, than the position in the file
+B<after> the line is read is added to the output.
 
 The default is C<--no-tell>.
 

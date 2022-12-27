@@ -117,6 +117,25 @@ sub import {	## no critic (RequireArgUnpacking)
 
 sub __handles_resource {
     my ( $self, $rsrc ) = @_;
+    unless ( keys %App::Ack::mappings ) {
+	# Hide these from xt/author/prereq.t, since we do not execute
+	# this code when called from the hot patch, which is the normal
+	# path through the code. It is needed for (e.g.) tools/number.
+	__load( $_ ) for qw{
+	    App::Ack::ConfigLoader
+	    App::Ack::Filter
+	    App::Ack::Filter::Default
+	    App::Ack::Filter::Extension
+	    App::Ack::Filter::FirstLineMatch
+	    App::Ack::Filter::Inverse
+	    App::Ack::Filter::Is
+	    App::Ack::Filter::IsPath
+	    App::Ack::Filter::Match
+	    App::Ack::Filter::Collection
+	};
+	my @arg_sources = App::Ack::ConfigLoader::retrieve_arg_sources();
+	App::Ack::ConfigLoader::process_args( @arg_sources );
+    }
     foreach my $type ( $self->__handles_type() ) {
 	foreach my $f ( @{ $App::Ack::mappings{$type} || [] } ) {
 	    $f->filter( $rsrc )
@@ -257,20 +276,28 @@ sub FILL {
     return;
 }
 
-sub PUSHED {
-#   my ( $class, $mode, $fh ) = @_;
-    my ( $class ) = @_;
-    my $syntax_opt = $class->__syntax_opt();
+sub __new {
+    my ( $class, $opt ) = @_;
+    $opt ||= $class->__syntax_opt();
     my $self = bless {}, ref $class || $class;
     my $attr = $self->__my_attr();
     $attr->{syntax_empty_code_is_comment} =
-	$syntax_opt->{syntax_empty_code_is_comment};
-    $attr->{syntax_type} = $syntax_opt->{syntax_type};
-    $attr->{want} = $self->__want_syntax();
-    $syntax_opt->{syntax_wc}
+	$opt->{syntax_empty_code_is_comment};
+    $attr->{syntax_type} = $opt->{syntax_type};
+    $attr->{want} = $opt->{syntax} || $self->__want_syntax();
+    $opt->{syntax_wc}
 	and $attr->{syntax_wc} = {};
-    $attr->{syntax_wc_only} = $syntax_opt->{syntax_wc_only};
+    $attr->{syntax_wc_only} = $opt->{syntax_wc_only};
     $self->__init();
+    return $self;
+}
+
+sub PUSHED {
+#   my ( $class, $mode, $fh ) = @_;
+    my ( $class ) = @_;
+
+    my $self = $class->__new();
+
     return $self;
 }
 
@@ -387,6 +414,22 @@ sub __want_syntax {
 use constant SYNTAX_FILTER_LAYER =>
     qr{ \A via\(App::AckX::Preflight::Syntax \b }smx;
 
+sub __get_syntax_filter {
+    my ( undef, $file ) = @_;
+    unless ( ref $file ) {
+	__load( ACK_FILE_CLASS )
+	    or __die_hard( sprintf 'Can not load %s', ACK_FILE_CLASS );
+	$file = ACK_FILE_CLASS->new( $file );
+    }
+
+    foreach my $syntax ( __PACKAGE__->__plugins() ) {
+	$syntax->__handles_resource( $file )
+	    and return $syntax;
+    }
+
+    return undef;	## no critic (ProhibitExplicitReturnUndef)
+}
+
 # Hot patch the open() method on the App::Ack class that represents a
 # file, so that we can inject ourselves as a PerlIO::via layer.
 sub __hot_patch {
@@ -418,45 +461,37 @@ sub __hot_patch {
 		and return $open->( $self );
 	}
 
-	# Foreach of the syntax filter plug-ins
-	foreach my $syntax ( App::AckX::Preflight::Syntax->__plugins() ) {
+	# Figure out which syntax filter we are using. If none, just
+	# open the file and return.
+	defined( my $syntax = __PACKAGE__->__get_syntax_filter( $self ) )
+	    or return $open->( $self );
 
-	    # See if this resource is of the type serviced by this
-	    # module. If not, try the next.
-	    $syntax->__handles_resource( $self )
-		or next;
+	# Open the file.
+	my $fh = $open->( $self );
 
-	    # Open the file.
-	    my $fh = $open->( $self );
-
-	    # If we want everything and we're not reporting syntax
-	    # types or word count we don't need the filter.
-	    if ( $syntax->__want_everything() ) {
-		my $opt = $syntax->__syntax_opt();
-		$opt->{syntax_type}
-		    or $opt->{syntax_wc}
-		    or return $fh;
-	    }
-
-	    # Check to see if we're already on the PerlIO stack. If so,
-	    # just return the file handle. The original open() is
-	    # idempotent, and ack makes use of this, so we have to
-	    # be idempotent also.
-	    foreach my $layer ( PerlIO::get_layers( $fh ) ) {
-		$layer =~ SYNTAX_FILTER_LAYER
-		    and return $fh;
-	    }
-
-	    # Insert the correct syntax filter into the PerlIO stack.
-	    binmode $fh, ":via($syntax)";
-
-	    # Return the handle
-	    return $fh;
+	# If we want everything and we're not reporting syntax types or
+	# word count we don't need the filter.
+	if ( $syntax->__want_everything() ) {
+	    my $opt = $syntax->__syntax_opt();
+	    $opt->{syntax_type}
+		or $opt->{syntax_wc}
+		or return $fh;
 	}
 
-	# No syntax filter found. Just open the file and return the
-	# handle.
-	return $open->( $self );
+	# Check to see if we're already on the PerlIO stack. If so, just
+	# return the file handle. The original open() is idempotent, and
+	# ack makes use of this, so we have to be idempotent also.
+	foreach my $layer ( PerlIO::get_layers( $fh ) ) {
+	    $layer =~ SYNTAX_FILTER_LAYER
+		and return $fh;
+	}
+
+	# Insert the correct syntax filter into the PerlIO stack.
+	binmode $fh, ":via($syntax)";
+
+	# Return the handle
+	return $fh;
+
     };
 
     return;
@@ -517,6 +552,14 @@ to its interface.
 In addition to the methods needed to implement a
 L<PerlIO::via|PerlIO::via> PerlIO layer, the following methods are
 provided:
+
+=head2 __get_syntax_filter
+
+This static method is passed either a file name or an
+L<App::Ack::File|App::Ack::File> object. It returns the fully-qualified
+class name of the C<App::AckX::Preflight> syntax filter that processes
+the file, or C<undef> if none can be found. The requisite syntax filter
+will have been loaded.
 
 =head2 __get_syntax_opt
 
@@ -811,8 +854,7 @@ conditions are true:
 
 =item L<IS_EXHAUSTIVE|/IS_EXHAUSTIVE> is true;
 
-=item all syntax type returned by L<__handles_syntax()|/__handles_syntax>
-appear in the hash returned by L<__want_syntax()|/__want_syntax>.
+=item all syntax type returned by L<__handles_syntax()|/__handles_syntax> appear in the hash returned by L<__want_syntax()|/__want_syntax>.
 
 =back
 
@@ -834,11 +876,6 @@ is:
 See C<--syntax-type> above.
 
 =back
-
-=head2 __want_everything
-
-This convenience static method returns a true value if and only if the
-filter is exhaustive and every supported syntax type was requested.
 
 =head2 __want_syntax
 
