@@ -46,7 +46,7 @@ foreach my $fn ( sort keys %{ maniread() } ) {
 	my $content = <$fh>;
 	close $fh;
 
-	unlike $content, qr/ \b use \s+ Carp \b /smx,
+	unlike $content, qr/ ^\s* use \s+ Carp \b /smx,
 	    "$_ should not 'use Carp;'";
     }
 }
