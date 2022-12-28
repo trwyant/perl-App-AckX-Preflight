@@ -43,6 +43,7 @@ our @EXPORT_OK = qw{
     __interpret_exit_code
     __load
     __open_for_read
+    __set_sub_name
     __syntax_types
     __warn
 
@@ -275,6 +276,16 @@ sub __open_for_read {
     return $fh;
 }
 
+{
+    local $@ = undef;
+    *__set_sub_name = eval {
+	__load( 'Sub::Util' ) && Sub::Util->can( 'set_subname' );
+    } || eval {
+	__load( 'Sub::Name' ) && Sub::Name->can( 'subname' );
+    } || sub { return $_[1] };
+}
+__set_sub_name( __set_sub_name => \&__set_sub_name );
+
 sub _sig_num {
     my ( $num ) = @_;
     $num &= 0x7F;
@@ -447,6 +458,19 @@ says whether the module was successfully loaded.
 
 This subroutine opens the named file for reading. It is assumed to be
 encoded C<UTF-8>. An exception is thrown if the open fails.
+
+=head2 __set_sub_name
+
+ my $code_ref = __set_sub_name( fubar => sub { die 'snafu' } );
+
+This subroutine attempts to set the subroutine name of a code reference.
+The code reference is returned.
+
+The heavy lifting is done by L<Sub::Util|Sub::Util> if that can be
+loaded, or by L<Sub::Name|Sub::Name> if B<that> can be loaded.
+
+If neither module can be loaded,  a dummy is provided that simply
+returns its second argument.
 
 =head2 __syntax_types
 

@@ -10,6 +10,7 @@ use App::AckX::Preflight::Util
 	:croak
 	:syntax
 	__load
+	__set_sub_name
 	__syntax_types
 	ACK_FILE_CLASS
 	@CARP_NOT
@@ -447,12 +448,7 @@ sub __hot_patch {
     $open = ACK_FILE_CLASS->can( 'open' )
 	or __die_hard( sprintf '%s does not implement open()', ACK_FILE_CLASS );
 
-    no warnings qw{ redefine };	## no critic (ProhibitNoWarnings)
-    no strict qw{ refs };
-
-    my $repl = join '::', ACK_FILE_CLASS, 'open';
-
-    *$repl = sub {
+    my $code = sub {
 	my ( $self ) = @_;
 
 	# If the caller is a resource or a filter we're not opening for
@@ -495,6 +491,13 @@ sub __hot_patch {
 	return $fh;
 
     };
+
+    no warnings qw{ redefine };	## no critic (ProhibitNoWarnings)
+    no strict qw{ refs };
+
+    my $repl = join '::', ACK_FILE_CLASS, 'open';
+
+    *$repl = __set_sub_name( open => $code );
 
     return;
 }
