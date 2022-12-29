@@ -502,6 +502,66 @@ sub __hot_patch {
     return;
 }
 
+# New App::AckX::Preflight::FileMonkey interface
+# TODO if this goes in. at least __want_everything goes away. And maybe
+# __new() becomes empty, since the configuration is available via
+# closure rather than being stored locally.
+sub __setup {
+    my ( undef, $config, $fh, $file ) = @_;	# Invocant unuded
+
+    # If the caller is a resource or a filter we're not opening for
+    # the main scan. Just use the normal machinery.
+    my ( $caller ) = caller 1;	# We want our caller's caller
+    foreach my $c ( ACK_FILE_CLASS, qw{ App::Ack::Filter } ) {
+	$caller->isa( $c )
+	    and return;
+    }
+
+    # Figure out which syntax filter we are using. If none, just return.
+    defined( my $syntax = __PACKAGE__->__get_syntax_filter( $file ) )
+	or return;
+
+    # If we want everything and we're not reporting syntax types or
+    # word count we don't need the filter.
+    my $want_syntax;
+    WANT_SYNTAX: {
+	$want_syntax = $config->{syntax} || [];
+
+	if ( $config->{syntax_type} || $config->{syntax_wc} ) {
+	    @{ $want_syntax }
+		or @{ $want_syntax } = $syntax->__handles_syntax();
+	    $want_syntax = { map { $_ => 1 } @{ $want_syntax } };
+	} else {
+	    @{ $want_syntax }
+		or return;
+	    $want_syntax = { map { $_ => 1 } @{ $want_syntax } };
+	    foreach my $type ( $syntax->__handles_syntax() ) {
+		$want_syntax->{$type}
+		    or last WANT_SYNTAX;
+	    }
+	    return;
+	}
+    }
+
+    # Check to see if we're already on the PerlIO stack. If so, just
+    # return the file handle. The original open() is idempotent, and
+    # ack makes use of this, so we have to be idempotent also.
+    foreach my $layer ( PerlIO::get_layers( $fh ) ) {
+	$layer =~ SYNTAX_FILTER_LAYER
+	    and return $fh;
+    }
+
+    # Stash the configuration
+    %SYNTAX_OPT = %{ $config };
+    $SYNTAX_OPT{syntax} = $want_syntax;
+    %WANT_SYNTAX = %{ $want_syntax };
+
+    # Insert the correct syntax filter into the PerlIO stack.
+    binmode $fh, ":via($syntax)";
+
+    return;
+}
+
 # FIXME this is a bit clunky. What I think I really want is return a
 # handle that triggers the cleanup when it goes out of scope. That seems
 # to require occupying multiple slots in a glob, but I have so far been

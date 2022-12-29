@@ -10,6 +10,7 @@ inc/My/Module/Preflight.pm
 inc/My/Module/TestPlugin.pm
 inc/My/Module/TestSyntax.pm
 lib/App/AckX/Preflight.pm
+lib/App/AckX/Preflight/FileMonkey.pm
 lib/App/AckX/Preflight/Plugin.pm
 lib/App/AckX/Preflight/Plugin/Expand.pm
 lib/App/AckX/Preflight/Plugin/File.pm

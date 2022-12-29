@@ -123,6 +123,12 @@ sub __inject {
     return;
 }
 
+sub __file_monkey {
+    my ( $self, $class, $config ) = @_;
+    push @{ $self->{file_monkey} }, [ $class => $config ];
+    return;
+}
+
 sub run {
     my ( $self ) = @_;
 
@@ -208,6 +214,7 @@ EOD
 
     use App::AckX::Preflight::Util qw{ __interpret_plugins };
 
+    $self->{file_monkey} = [];
     $self->{inject} = [];
 
     my @plugins = __interpret_plugins( $opt{default}, $self->__plugins() );
@@ -226,7 +233,14 @@ EOD
     local $self->{verbose} = defined $opt{verbose} ?
 	$opt{verbose} : $self->{verbose};
 
+    # TODO delete if FileMonkey works
     my @inject = @{ $self->{inject} };
+    @inject = ();
+
+    if ( @{ $self->{file_monkey} } ) {
+	my $string = __json_encode( $self->{file_monkey} );
+	splice @inject, 0, 0, "-MApp::AckX::Preflight::FileMonkey=$string";
+    }
 
     if ( DEVELOPMENT &&
 	List::Util::any { m/ \A -MApp::AckX::Preflight\b /smx } @inject

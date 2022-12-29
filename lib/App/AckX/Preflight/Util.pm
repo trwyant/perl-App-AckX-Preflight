@@ -8,6 +8,7 @@ use warnings;
 use Carp ();
 use Exporter qw{ import };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
+use JSON;
 use Module::Load ();
 use Text::ParseWords ();
 
@@ -41,6 +42,8 @@ our @EXPORT_OK = qw{
     __getopt
     __interpret_plugins
     __interpret_exit_code
+    __json_decode
+    __json_encode
     __load
     __open_for_read
     __set_sub_name
@@ -70,12 +73,14 @@ our @EXPORT_OK = qw{
 our %EXPORT_TAGS = (
     all		=> \@EXPORT_OK,
     croak	=> [ qw{ __die __die_hard __warn } ],
+    json	=> [ grep { m/ \A __json_ /smx } @EXPORT_OK ],
     ref		=> [ grep { m/ _REF \z /smx } @EXPORT_OK ],
     syntax	=> [ grep { m/ \A SYNTAX_ /smx } @EXPORT_OK ],
 );
 
 our @CARP_NOT = qw{
     App::AckX::Preflight
+    App::AckX::Preflight::FileMonkey
     App::AckX::Preflight::Plugin
     App::AckX::Preflight::Plugin::Expand
     App::AckX::Preflight::Plugin::File
@@ -255,6 +260,21 @@ sub __interpret_plugins {
 	    { $a->{order} <=> $b->{order} || $a->{class} cmp $b->{class} }
 	    values %plugin_info
     );
+}
+
+sub __json_decode {
+    my ( $string ) = @_;
+    $string =~ s/ % ( [[:xdigit:]]+ ) ; / chr hex $1 /smxge;
+    state $json = JSON->new()->utf8();
+    return $json->decode( $string );
+}
+
+sub __json_encode {
+    my ( $data ) = @_;
+    state $json = JSON->new()->utf8()->canonical();
+    my $string = $json->encode( $data );
+    $string =~ s/ ( [%,] ) / sprintf '%%%x;', ord $1 /smxge;
+    return $string;
 }
 
 sub __load {

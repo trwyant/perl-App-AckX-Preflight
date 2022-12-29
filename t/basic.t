@@ -21,6 +21,10 @@ load_module_ok 'App::AckX::Preflight';
 
 can_ok 'App::AckX::Preflight', [ qw{ new global home run } ];
 
+note 'File monkey';
+
+load_module_ok 'App::AckX::Preflight::FileMonkey';
+
 note 'Plugins';
 
 foreach ( qw{

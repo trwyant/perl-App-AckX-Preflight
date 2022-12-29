@@ -171,6 +171,7 @@ sub requires {
 	'File::Spec'			=> 0,
 	'Getopt::Long'			=> 2.39,	# getoptionsfromarray
 	'IPC::Cmd'			=> 0,
+	'JSON'				=> 0,
 	'List::Util'			=> 1.45,	# uniqstr
 	'Module::Load'			=> 0,
 	'Pod::Usage'			=> 0,

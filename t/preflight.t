@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight;
-use App::AckX::Preflight::Util qw{ :ref };
+use App::AckX::Preflight::Util qw{ :ref __json_encode };
 use Config;
 use Cwd qw{ abs_path };
 use ExtUtils::Manifest qw{ maniread };
@@ -16,6 +16,8 @@ use Test2::V0;
 use lib qw{ inc };
 use My::Module::Preflight;
 use My::Module::TestPlugin qw{ :dirs };
+
+use constant SYNTAX => 'App::AckX::Preflight::Syntax';
 
 delete @ENV{ qw{ ACKXPRC ACKXP_OPTIONS } };
 my @manifest = sort keys %{ maniread() };
@@ -131,13 +133,14 @@ SKIP: {
 }
 
 $got = xqt( qw{ --noenv --syntax=code } );
+my $M = make_M( SYNTAX, { syntax => [ 'code' ] } );
 is $got,
     [
 	$^X,
 	qw{
 	    -Mblib
-	    -MApp::AckX::Preflight::Syntax=--syntax=code
 	},
+	$M,
 	$ack,
 	qw{
 	    --noenv
@@ -146,13 +149,14 @@ is $got,
     '--noenv --syntax=code';
 
 $got = xqt( qw{ --noenv --syntax data } );
+$M = make_M( SYNTAX, { syntax => [ 'data' ] } );
 is $got,
     [
 	$^X,
 	qw{
 	    -Mblib
-	    -MApp::AckX::Preflight::Syntax=--syntax=data
 	},
+	$M,
 	$ack,
 	qw{
 	    --noenv
@@ -161,13 +165,14 @@ is $got,
     '--noenv --syntax=data';
 
 $got = xqt( qw{ --noenv --syntax doc } );
+$M = make_M( SYNTAX, { syntax => [ 'documentation' ] } );
 is $got,
     [
 	$^X,
 	qw{
 	    -Mblib
-	    -MApp::AckX::Preflight::Syntax=--syntax=documentation
 	},
+	$M,
 	$ack,
 	qw{
 	    --noenv
@@ -177,13 +182,14 @@ is $got,
 
 {
     $got = xqt( qw{ --noenv --syntax code;doc } );
+    $M = make_M( SYNTAX, { syntax => [ 'code', 'documentation' ] } );
     is $got,
 	[
 	    $^X,
 	    qw{
 		-Mblib
-		-MApp::AckX::Preflight::Syntax=--syntax=code:documentation
 	    },
+	    $M,
 	    $ack,
 	    qw{
 		--noenv
@@ -193,13 +199,14 @@ is $got,
 }
 
 $got = xqt( qw{ --noenv --syntax=code:data:doc } );
+$M = make_M( SYNTAX, { syntax => [ 'code', 'data', 'documentation' ] } );
 is $got,
     [
 	$^X,
 	qw{
 	    -Mblib
-	    -MApp::AckX::Preflight::Syntax=--syntax=code:data:documentation
 	},
+	$M,
 	$ack,
 	qw{
 	    --noenv
@@ -219,13 +226,14 @@ is $got,
     '--noenv --perldoc';
 
 $got = xqt( qw{ --noenv --perldoc --default=perldoc=--syntax=doc } );
+$M = make_M( SYNTAX, { syntax => [ 'documentation' ] } );
 is $got,
     [
 	$^X,
 	qw{
 	    -Mblib
-	    -MApp::AckX::Preflight::Syntax=--syntax=documentation
 	},
+	$M,
 	$ack,
 	qw{
 	    --noenv
@@ -235,6 +243,26 @@ is $got,
     '--noenv --perldoc --default=perldoc=--syntax=doc';
 
 done_testing;
+
+sub make_M {
+    my ( $class, $opt ) = @_;
+    if ( 1 ) {	# FileMonkey
+	my $data = __json_encode( [ [ $class, $opt ] ] );
+	return "-MApp::AckX::Preflight::FileMonkey=$data";
+    } else {
+	my @rest;
+	foreach my $key ( keys %{ $opt } ) {
+	    if ( $key eq 'syntax' ) {
+		push @rest, "--$key" . join ':', @{ $opt->{$key} };
+	    } else {
+		$opt->{$key}
+		    and push @rest, "--$key";
+	    }
+	}
+	local $" = ',';
+	return "-M$class=@rest";
+    }
+}
 
 sub xqt {
     local @ARGV = @_;
