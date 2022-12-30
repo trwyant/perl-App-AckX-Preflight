@@ -11,7 +11,7 @@ use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test2::V0;
 
 use lib qw{ inc };
-use My::Module::TestSyntax;	# for slurp() and TEXT_*
+use My::Module::TestSyntax;
 
 use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Fortran';
 
@@ -75,7 +75,7 @@ my $shell_resource = ACK_FILE_CLASS->new( FORTRAN_FILE );
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ fortran } ],
     sprintf '%s handles fortran', SYNTAX_FILTER;
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
+setup_syntax( syntax => [ SYNTAX_CODE ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -84,7 +84,7 @@ is slurp( FORTRAN_FILE ), FORTRAN_CODE, 'Only code, reading directly';
 
 is slurp( $shell_resource ), FORTRAN_CODE, 'Only code, reading resource';
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
+setup_syntax( syntax => [ SYNTAX_COMMENT ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -93,7 +93,7 @@ is slurp( FORTRAN_FILE ), FORTRAN_COMMENT, 'Only comments, reading directly';
 
 is slurp( $shell_resource ), FORTRAN_COMMENT, 'Only comments, reading resource';
 
-SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_CODE, SYNTAX_COMMENT );
+setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_COMMENT ] );
 
 ok SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is everything>, SYNTAX_CODE, SYNTAX_COMMENT;

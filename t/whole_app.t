@@ -32,7 +32,7 @@ foreach my $app ( [ $^X, qw{ -Mblib blib/script/ackxp } ] ) {
 
     diag "Testing @{ $app }";
 
-    xqt( $app, qw{ --noenv --syntax code -w Wyant lib/ }, <<'EOD' );
+    xqt( $app, qw{ --noenv --syntax cod -w Wyant lib/ }, <<'EOD' );
 lib/App/AckX/Preflight.pm:19:our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 EOD
 

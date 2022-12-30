@@ -117,12 +117,6 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
     }
 }
 
-sub __inject {
-    my ( $self, @arg ) = @_;
-    push @{ $self->{inject} }, @arg;
-    return;
-}
-
 sub __file_monkey {
     my ( $self, $class, $config ) = @_;
     push @{ $self->{file_monkey} }, [ $class => $config ];
@@ -215,7 +209,6 @@ EOD
     use App::AckX::Preflight::Util qw{ __interpret_plugins };
 
     $self->{file_monkey} = [];
-    $self->{inject} = [];
 
     my @plugins = __interpret_plugins( $opt{default}, $self->__plugins() );
 
@@ -233,9 +226,7 @@ EOD
     local $self->{verbose} = defined $opt{verbose} ?
 	$opt{verbose} : $self->{verbose};
 
-    # TODO delete if FileMonkey works
-    my @inject = @{ $self->{inject} };
-    @inject = ();
+    my @inject;
 
     if ( @{ $self->{file_monkey} } ) {
 	my $string = __json_encode( $self->{file_monkey} );
@@ -647,12 +638,26 @@ applying the arguments (if any) after the clone.
 
 =head2 exec
 
- say App::Ack::Preflight->global();
- say $aaxp->global();
+ say App::Ack::Preflight->exec();
+ say $aaxp->exec();
 
 If called on an object, this method returns the value of the C<{exec}>
 attribute, whether explicit or defaulted. If called statically, it
 returns the default value of the C<{exec}> attribute.
+
+=head2 __file_monkey
+
+ $self->__file_monkey( $class => \%config );
+
+A plug-in would call this method to request
+L<App::AckX::Preflight::FileMonkey|App::AckX::Preflight::FileMonkey> to
+add the given class as a C<:via:> I/O layer in
+L<App::Ack::File|App::Ack::File>. The C<%config> hash contains
+configuration data for the I/O layer. See
+L<App::AckX::Preflight::Plugin::Syntax|App::AckX::Preflight::Plugin::Syntax>
+for an example of how to use this, and
+L<App::AckX::Preflight::FileMonkey|App::AckX::Preflight::FileMonkey> for
+implementation details.
 
 =head2 global
 
@@ -671,17 +676,6 @@ returns the default value of the C<{global}> attribute.
 If called on an object, this method returns the value of the C<{home}>
 attribute, whether explicit or defaulted. If called statically, it
 returns the default value of the C<{home}> attribute.
-
-=head2 __inject
-
- $self->__inject( qw{ -MFoo::Bar } )
-
-A plug-in would call this method to inject options into the F<perl>
-command used to C<exec()> F<ack>.
-
-B<Note> that if B<any> C<@INC> entry matches C</\bblib\b/>, B<and> any
-injected item matches C</\A-MApp::AckX::Preflight\b/>, C<-Mblib> will be
-injected before the first such item.
 
 =head2 output
 

@@ -11,7 +11,7 @@ use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test2::V0;
 
 use lib qw{ inc };
-use My::Module::TestSyntax;	# for slurp() and TEXT_*
+use My::Module::TestSyntax;
 
 use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Crystal';
 
@@ -53,12 +53,10 @@ $App::Ack::mappings{crystal} = [
 
 my $crystal_resource = ACK_FILE_CLASS->new( CRYSTAL_FILE );
 
-my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
-
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ crystal } ],
     sprintf '%s handles crysta;', SYNTAX_FILTER;
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
+setup_syntax( syntax => [ SYNTAX_CODE ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -67,9 +65,7 @@ is slurp( CRYSTAL_FILE ), CRYSTAL_CODE, 'Only code, reading directly';
 
 is slurp( $crystal_resource ), CRYSTAL_CODE, 'Only code, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
-
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
+setup_syntax( syntax => [ SYNTAX_COMMENT ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -78,9 +74,7 @@ is slurp( CRYSTAL_FILE ), CRYSTAL_COMMENTS, 'Only comments, reading directly';
 
 is slurp( $crystal_resource ), CRYSTAL_COMMENTS, 'Only comments, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
-
-SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_METADATA );
+setup_syntax( syntax => [ SYNTAX_METADATA ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_METADATA;
@@ -91,10 +85,7 @@ is slurp( CRYSTAL_FILE ), CRYSTAL_METADATA,
 is slurp( $crystal_resource ), CRYSTAL_METADATA,
     'Metadata, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT,
-    'Metadata, text resource';
-
-SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_DOCUMENTATION );
+setup_syntax( syntax => [ SYNTAX_DOCUMENTATION ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_DOCUMENTATION;
@@ -104,9 +95,6 @@ is slurp( CRYSTAL_FILE ), CRYSTAL_DOCUMENTATION,
 
 is slurp( $crystal_resource ), CRYSTAL_DOCUMENTATION,
     'Documentation, reading resource';
-
-is slurp( $text_resource ), TEXT_CONTENT,
-    'Documentation, text resource';
 
 done_testing;
 

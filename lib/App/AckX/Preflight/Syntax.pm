@@ -8,6 +8,7 @@ use warnings;
 use App::AckX::Preflight::Util
     qw{
 	:croak
+	:ref
 	:syntax
 	__load
 	__set_sub_name
@@ -15,7 +16,7 @@ use App::AckX::Preflight::Util
 	ACK_FILE_CLASS
 	@CARP_NOT
     };
-use Exporter;
+use Exporter qw{ import };
 use Fcntl qw{ :seek };
 use List::Util 1.45 ();	# for uniqstr
 use Scope::Guard ();
@@ -28,8 +29,6 @@ our $VERSION = '0.000_044';
 
 my $ARG_SEP_RE = qr{ \s* [:;,] \s* }smx;
 
-my %VALID_EXPORT = map { $_ => 1 } @EXPORT_OK;
-
 use constant IN_SERVICE		=> 1;
 use constant IS_EXHAUSTIVE	=> 1;
 
@@ -38,83 +37,6 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ __PACKAGE__ ]} :: [A-Z] >smxi;
 my %WANT_SYNTAX;
 my %SYNTAX_OPT;
 
-sub __get_syntax_opt {
-    my ( $class, $arg, $opt ) = @_;
-    my $strict = ! $opt;
-    $opt ||= {};
-    my $mod_syntax = sub {
-	my ( $name, $val ) = @_;
-	( my $alias = $name ) =~ tr/_/-/;
-	push @{ $opt->{syntax_mod} ||= [] }, "--$alias=$val";
-	return;
-    };
-    App::AckX::Preflight::Util::__getopt( $arg, $opt,
-	'syntax_add|syntax-add=s'	=> $mod_syntax,
-	'syntax_del|syntax-del=s'	=> $mod_syntax,
-	'syntax_set|syntax-set=s'	=> $mod_syntax,
-	qw{
-	    syntax_empty_code_is_comment|syntax-empty-code-is-comment!
-	},
-	__PACKAGE__->__main_parser_options(),
-    );
-    if ( $strict && @{ $arg } ) {
-	local $" = ', ';
-	__die( "Unsupported arguments @{ $arg }" );
-    }
-    $opt->{syntax_wc} ||= $opt->{syntax_wc_only};
-    $class->__normalize_options( $opt );
-    %SYNTAX_OPT  = map { $_ => $opt->{$_} } qw{
-	syntax_empty_code_is_comment
-	syntax_type syntax_wc syntax_wc_only
-	};
-    %WANT_SYNTAX = map { $_ => 1 } @{ $opt->{syntax} || [] };
-    foreach ( @{ $opt->{syntax_mod} || [] } ) {
-	my ( $filter, $mod, @val ) = @{ $_ };
-	$filter->__handles_type_mod( $mod, @val );
-    }
-
-    wantarray
-	or return $opt;
-
-    my @arg;
-    $opt->{syntax}
-	and @{ $opt->{syntax} }
-	and push @arg, '--syntax=' . join( ':', @{ $opt->{syntax} } );
-    foreach my $name ( qw{
-	syntax_empty_code_is_comment
-	syntax_type syntax_wc syntax_wc_only
-    } ) {
-	$opt->{$name}
-	    or next;
-	( my $alias = $name ) =~ tr/_/-/;
-	push @arg, "--$alias";
-    }
-    foreach ( @{ $opt->{syntax_mod} || [] } ) {
-	my ( undef, $mod, @val ) = @{ $_ };
-	local $" = ':';
-	push @arg, "--syntax-$mod=@val";
-    }
-
-    return @arg;
-}
-
-sub import {	## no critic (RequireArgUnpacking)
-    my ( $class, @arg ) = @_;
-    my @import;
-    @arg = grep { $VALID_EXPORT{$_} ? do { push @import, $_; 0 } : 1 } @arg;
-    __hot_patch();
-    $class->__get_syntax_opt( \@arg );
-    if ( @import ) {
-	# The following line is what the (RequireArgUnpacking)
-	# annotation actually refers to. But we have to dispatch
-	# &Exporter::import via goto so that the symbols are exported to
-	# our caller not to us, and we have to load the arguments into
-	# @_ so that &Exporter::import will see them.
-	@_ = ( $class, @import );
-	goto &Exporter::import;
-    }
-    return;
-}
 
 sub __handles_resource {
     my ( $self, $rsrc ) = @_;
@@ -433,115 +355,76 @@ sub __get_syntax_filter {
     return undef;	## no critic (ProhibitExplicitReturnUndef)
 }
 
-# Hot patch the open() method on the App::Ack class that represents a
-# file, so that we can inject ourselves as a PerlIO::via layer.
-sub __hot_patch {
-
-    state $open;
-
-    $open
-	and return;
-
-    __load( ACK_FILE_CLASS )
-	or __die_hard( sprintf 'Can not load %s', ACK_FILE_CLASS );
-
-    $open = ACK_FILE_CLASS->can( 'open' )
-	or __die_hard( sprintf '%s does not implement open()', ACK_FILE_CLASS );
-
-    my $code = sub {
-	my ( $self ) = @_;
-
-	# If the caller is a resource or a filter we're not opening for
-	# the main scan. Just use the normal machinery.
-	my $caller = caller;
-	foreach my $c ( ACK_FILE_CLASS, qw{ App::Ack::Filter } ) {
-	    $caller->isa( $c )
-		and return $open->( $self );
-	}
-
-	# Figure out which syntax filter we are using. If none, just
-	# open the file and return.
-	defined( my $syntax = __PACKAGE__->__get_syntax_filter( $self ) )
-	    or return $open->( $self );
-
-	# Open the file.
-	my $fh = $open->( $self );
-
-	# If we want everything and we're not reporting syntax types or
-	# word count we don't need the filter.
-	if ( $syntax->__want_everything() ) {
-	    my $opt = $syntax->__syntax_opt();
-	    $opt->{syntax_type}
-		or $opt->{syntax_wc}
-		or return $fh;
-	}
-
-	# Check to see if we're already on the PerlIO stack. If so, just
-	# return the file handle. The original open() is idempotent, and
-	# ack makes use of this, so we have to be idempotent also.
-	foreach my $layer ( PerlIO::get_layers( $fh ) ) {
-	    $layer =~ SYNTAX_FILTER_LAYER
-		and return $fh;
-	}
-
-	# Insert the correct syntax filter into the PerlIO stack.
-	binmode $fh, ":via($syntax)";
-
-	# Return the handle
-	return $fh;
-
-    };
-
-    no warnings qw{ redefine };	## no critic (ProhibitNoWarnings)
-    no strict qw{ refs };
-
-    my $repl = join '::', ACK_FILE_CLASS, 'open';
-
-    *$repl = __set_sub_name( open => $code );
-
-    return;
-}
-
 # New App::AckX::Preflight::FileMonkey interface
 # TODO if this goes in. at least __want_everything goes away. And maybe
 # __new() becomes empty, since the configuration is available via
 # closure rather than being stored locally.
 sub __setup {
-    my ( undef, $config, $fh, $file ) = @_;	# Invocant unuded
+    my ( $class, $config, $fh, $file ) = @_;	# Invocant unused
 
     # If the caller is a resource or a filter we're not opening for
     # the main scan. Just use the normal machinery.
     my ( $caller ) = caller 1;	# We want our caller's caller
-    foreach my $c ( ACK_FILE_CLASS, qw{ App::Ack::Filter } ) {
-	$caller->isa( $c )
-	    and return;
+    # NOTE that the only known way for $caller to be undefined is during
+    # testing.
+    if ( defined $caller ) {
+	foreach my $c ( ACK_FILE_CLASS, qw{ App::Ack::Filter } ) {
+	    $caller->isa( $c )
+		and return;
+	}
     }
 
     # Figure out which syntax filter we are using. If none, just return.
-    defined( my $syntax = __PACKAGE__->__get_syntax_filter( $file ) )
-	or return;
+    # NOTE that the only known way to call this on an actual syntax
+    # filter is during testing.
+    my $syntax;
+    if ( $class eq __PACKAGE__ ) {
+	defined( $syntax = __PACKAGE__->__get_syntax_filter( $file ) )
+	    or return;
+    } else {
+	$syntax = $class;
+    }
+
+    # Modify syntax types as needed
+    foreach my $key ( qw{ syntax_del syntax_set syntax_add } ) {
+	my $val = delete $config->{$key}
+	    or next;
+	( my $mod = $key ) =~ s/ .* _ //smx;
+	ref $val eq ARRAY_REF
+	    or $val = [ $val ];
+	my $code = $class->can( "_handles_type_$mod" )
+	    or __die_hard( "Invalid modification type '$mod'" );
+	$code->( $class, @{ $val } );
+    }
+
+    # Stash the configuration
+    %WANT_SYNTAX = map { $_ => 1 } @{ $config->{syntax} || [] };
+    %SYNTAX_OPT = %{ $config };
+    $SYNTAX_OPT{syntax} = \%WANT_SYNTAX;
 
     # If we want everything and we're not reporting syntax types or
     # word count we don't need the filter.
-    my $want_syntax;
-    WANT_SYNTAX: {
-	$want_syntax = $config->{syntax} || [];
+    # my $want_syntax;
 
+    WANT_SYNTAX: {
 	if ( $config->{syntax_type} || $config->{syntax_wc} ) {
-	    @{ $want_syntax }
-		or @{ $want_syntax } = $syntax->__handles_syntax();
-	    $want_syntax = { map { $_ => 1 } @{ $want_syntax } };
+	    keys %WANT_SYNTAX
+		or %WANT_SYNTAX = map { $_ => 1 } $syntax->__handles_syntax();
 	} else {
-	    @{ $want_syntax }
+	    keys %WANT_SYNTAX
 		or return;
-	    $want_syntax = { map { $_ => 1 } @{ $want_syntax } };
 	    foreach my $type ( $syntax->__handles_syntax() ) {
-		$want_syntax->{$type}
+		$WANT_SYNTAX{$type}
 		    or last WANT_SYNTAX;
 	    }
 	    return;
 	}
     }
+
+    # NOTE that the only known way $fh can be undefined is during
+    # testing.
+    $fh
+	or return;
 
     # Check to see if we're already on the PerlIO stack. If so, just
     # return the file handle. The original open() is idempotent, and
@@ -550,11 +433,6 @@ sub __setup {
 	$layer =~ SYNTAX_FILTER_LAYER
 	    and return $fh;
     }
-
-    # Stash the configuration
-    %SYNTAX_OPT = %{ $config };
-    $SYNTAX_OPT{syntax} = $want_syntax;
-    %WANT_SYNTAX = %{ $want_syntax };
 
     # Insert the correct syntax filter into the PerlIO stack.
     binmode $fh, ":via($syntax)";
@@ -625,101 +503,6 @@ L<App::Ack::File|App::Ack::File> object. It returns the fully-qualified
 class name of the C<App::AckX::Preflight> syntax filter that processes
 the file, or C<undef> if none can be found. The requisite syntax filter
 will have been loaded.
-
-=head2 __get_syntax_opt
-
-This method is passed a reference to the argument list, and returns a
-reference to an options hash. Anything parsed as an option will be
-removed from the argument list.
-
-The idea here is to provide common functionality. Specifically:
-
-The options parsed are:
-
-=over
-
-=item --syntax
-
-This option specifies the syntax types being requested. You can specify
-more than one punctuated by commas, colons, or semicolons (i.e. anything
-that matches C</[:;,]/>), and you can specify this option more than
-once.  Multiple types in a single value will be parsed out, so that the
-same options hash will be returned whether the input was
-
- --syntax=code,doc
-
-or
-
- --syntax=code --syntax=doc
-
-The valid syntax types are hose returned by
-L<__handles_syntax()|/__handles_syntax>, plus C<'none'>. Syntax types
-can be abbreviated, as long as the abbreviation is unique.
-
-Value C<'none'> cancels any C<--syntax> values specified up to the time
-at which it is encountered.
-
-=item --syntax-add
-
- --syntax-add=Perl:perlpod
-
-This option adds one or more file types to the filter. It can be
-specified more than once.
-
-If the invocant is C<App::AckX::Preflight::Syntax>, the argument is a
-syntax filter name and one or more C<ack> file types, punctuated by
-commas, colons, or semicolons (i.e. anything that matches C</[:;,]/>).
-
-If the invocant is a subclass of C<App::AckX::Preflight::Syntax>, the
-filter is the invocant, and the argument is one or more C<ack> file
-types, punctuated by commas, colons, or semicolons (i.e. anything that
-matches C</[:;,]/>).
-
-The filter name, if present, B<must> be the name of a syntax filter, but
-the leading C<App::AckX::Preflight::Filter::> can be omitted. The file
-types will be ineffective unless they are known to C<ack>.
-
-=item --syntax-del
-
- --syntax-del=Perl:perlpod
-
-This option removes one or more file types from the filter. It can be
-specified more than once.
-
-All the verbiage about the argument of C<--syntax-add>, above, applies
-here also.
-
-=item --syntax-set
-
- --syntax-set=Perl:perl:perlpod
-
-This option associates one or more file types to the filter, replacing
-any previously-handled file types. It can be specified more than once.
-
-All the verbiage about the argument of C<--syntax-add>, above, applies
-here also.
-
-=item --syntax-type
-
-If asserted, this Boolean option requests that the syntax filters prefix
-each line returned with the syntax type computed for that line.
-
-=item --syntax-wc
-
-If asserted, this Boolean option requests that L<wc (1)>-style
-information on each syntax type be appended to the output.
-
-=back
-
-=head2 import
-
-This static method does not actually export or import anything; instead
-it parses the import list to configure the syntax filters.
-
-The import list is parsed by L<__get_syntax_opt()|/__get_syntax_opt>.
-The import list must be completely consumed by this operation, or an
-exception is raised. All C<--syntax> arguments must be valid or an
-exception is raised.
 
 =head2 __handles_resource
 

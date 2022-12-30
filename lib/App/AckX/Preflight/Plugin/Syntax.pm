@@ -25,9 +25,6 @@ sub __process {
 
     $opt->{syntax_wc} ||= $opt->{syntax_wc_only};
 
-    # TODO delete if PatchMonkey works
-    my @arg = App::AckX::Preflight::Syntax->__get_syntax_opt( \@ARGV, $opt );
-
     if ( $opt->{syntax_match} && (
 	    $opt->{syntax_type} || $opt->{syntax_wc} ) ) {
 	$opt->{match}
@@ -35,11 +32,6 @@ sub __process {
     }
 
     defined $opt->{$_} or delete $opt->{$_} for keys %{ $opt };
-
-    # TODO delete if PatchMonkey works.
-    local $" = ',';
-    $aaxp->__inject(
-	"-MApp::AckX::Preflight::Syntax=@arg" );
 
     $aaxp->__file_monkey( 'App::AckX::Preflight::Syntax', $opt );
 

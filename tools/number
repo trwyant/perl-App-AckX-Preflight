@@ -5,8 +5,13 @@ use 5.010001;
 use strict;
 use warnings;
 
+use App::AckX::Preflight::Plugin::Syntax;
 use App::AckX::Preflight::Syntax ();
-use App::AckX::Preflight::Util qw{ ACK_FILE_CLASS __load };
+use App::AckX::Preflight::Util qw{
+    ACK_FILE_CLASS
+    __interpret_plugins
+    __load
+};
 use Getopt::Long 2.33 qw{ :config auto_version pass_through };
 use Pod::Usage;
 use Text::Abbrev;
@@ -17,30 +22,41 @@ use My::Module::TestSyntax;
 our $VERSION = '0.000_044';
 
 use constant SYNTAX_CLASS	=> 'App::AckX::Preflight::Syntax';
+use constant SYNTAX_PLUGIN	=> 'App::AckX::Preflight::Plugin::Syntax';
 
 my %opt;
 
+# FIXME Don't call __main_parser_options. Instead just call
+# __interpret_plugins and look at the results.
 GetOptions( \%opt,
     qw{ tell! },
     help => sub { pod2usage( { -verbose => 2 } ) },
 ) and @ARGV >= 1 or pod2usage( { -verbose => 0 } );
+
+my ( $plugin_info ) = __interpret_plugins( SYNTAX_PLUGIN );
+my $config = $plugin_info ? $plugin_info->{opt} : {};
 
 my $path = pop @ARGV;
 
 __load( ACK_FILE_CLASS )
     or die "Failed to load @{[ ACK_FILE_CLASS ]}: $@";
 
-SYNTAX_CLASS->__get_syntax_opt( \@ARGV );
-
 -e $path
     or die "File $path not found\n";
 
+my %slurp_opt;
+exists $opt{tell}
+    and $slurp_opt{tell} = delete $opt{tell};
+
 my $file = ACK_FILE_CLASS->new( $path );
 
-SYNTAX_CLASS->__get_syntax_filter( $file );
-SYNTAX_CLASS->__hot_patch();
+sub SYNTAX_FILTER {
+    return SYNTAX_CLASS->__get_syntax_filter( $file );
+}
 
-print slurp( $file, \%opt );
+setup_syntax( %{ $config } );
+
+print slurp( $file, \%slurp_opt );
 
 __END__
 

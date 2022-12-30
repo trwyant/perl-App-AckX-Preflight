@@ -5,18 +5,24 @@ use 5.010001;
 use strict;
 use warnings;
 
+use App::Ack::File;
 use Carp;
 use Exporter qw{ import };
+use App::AckX::Preflight::FileMonkey ();
 use Scalar::Util qw{ blessed openhandle };
 
 our $VERSION = '0.000_044';
 
 our @EXPORT = qw{
+    setup_syntax
     slurp
 
+    FILE_MONKEY
     TEXT_FILE
     TEXT_CONTENT
 };
+
+use constant FILE_MONKEY   => 'App::AckX::Preflight::FileMonkey';
 
 use constant TEXT_FILE	=> 't/data/text_file.txt';
 
@@ -27,6 +33,15 @@ use constant TEXT_CONTENT	=> <<'EOD';
    4:     In a relative way
    5: And returned the previous night.
 EOD
+
+sub setup_syntax {
+    my ( %config ) = @_;
+    my $caller = caller;
+    my $syntax = $caller->SYNTAX_FILTER();
+    $syntax->__setup( \%config );
+    FILE_MONKEY->import( [ [ $syntax, \%config ] ] );
+    return;
+}
 
 sub slurp {
     my ( $file, $opt ) = @_;
@@ -87,6 +102,15 @@ the author, not a commitment to the user. Void where prohibited.
 
 This module exports the following subroutines:
 
+=head2 setup_syntax
+
+ setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_COMMENT ] );
+
+This subroutine sets up the syntax filter with the given configuration.
+
+The caller is expected to have defined C<SYNTAX_FILTER> to the syntax
+filter being used.
+
 =head2 slurp
 
  print slurp( $file_name, \%options );
@@ -105,6 +129,10 @@ The \%option hash is itself optional. The supported keys are:
 =head1 MANIFEST CONSTANTS
 
 This module exports the following manifest constants:
+
+=head2 FILE_MONKEY
+
+This is just the module name C<'App::AckX::Preflight::FileMonkey'>.
 
 =head2 TEXT_FILE
 

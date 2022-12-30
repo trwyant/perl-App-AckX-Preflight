@@ -11,7 +11,7 @@ use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test2::V0;
 
 use lib qw{ inc };
-use My::Module::TestSyntax;	# for slurp() and TEXT_*
+use My::Module::TestSyntax;
 
 use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Cc';
 
@@ -70,12 +70,10 @@ $App::Ack::mappings{cc} = [
 
 my $cc_resource = ACK_FILE_CLASS->new( CC_FILE );
 
-my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
-
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ cc css less } ],
     sprintf '%s handles cc, css, less', SYNTAX_FILTER;
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
+setup_syntax( syntax => [ SYNTAX_CODE ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -84,9 +82,7 @@ is slurp( CC_FILE ), CC_CODE, 'Only code, reading directly';
 
 is slurp( $cc_resource ), CC_CODE, 'Only code, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
-
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
+setup_syntax( syntax => [ SYNTAX_COMMENT ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -95,9 +91,7 @@ is slurp( CC_FILE ), CC_COMMENTS, 'Only comments, reading directly';
 
 is slurp( $cc_resource ), CC_COMMENTS, 'Only comments, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
-
-SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_CODE, SYNTAX_COMMENT );
+setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_COMMENT ] );
 
 ok SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is everything>, SYNTAX_CODE, SYNTAX_COMMENT;
@@ -107,9 +101,6 @@ is slurp( CC_FILE ), CC_CODE_COMMENTS,
 
 is slurp( $cc_resource ), CC_CODE_COMMENTS,
     'Code and comments, reading resource';
-
-is slurp( $text_resource ), TEXT_CONTENT,
-    'Code and comments, text resource';
 
 done_testing;
 

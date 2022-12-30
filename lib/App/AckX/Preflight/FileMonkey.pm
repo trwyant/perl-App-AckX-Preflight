@@ -17,26 +17,30 @@ use JSON;
 
 our $VERSION = '0.000_044';
 
+my $SPEC;
+
 sub import {
     my ( $class, $arg ) = @_;
-    $arg //= '[]';
+    $arg //= [];
 
-    my $spec = eval {
-	__json_decode( $arg );
-    } or __die_hard( "Failed to parse '$arg' as JSON" );
+    my $spec = ref $arg ? $arg : eval {
+	    __json_decode( $arg );
+	}
+	|| __die_hard( "Failed to parse '$arg' as JSON" );
     foreach my $item ( @{ $spec } ) {
 	__load( $item->[0] )
 	    or __die( "Failed to load $item->[0]: $@" );
     }
 
-    $class->__hot_patch( $spec );
+    $SPEC = $spec;
+
+    $class->__hot_patch();
 
     return;
 
 }
 
 sub __hot_patch {
-    my ( undef, $spec ) = @_;	# Invocant unused.
 
     state $open;
 
@@ -54,7 +58,7 @@ sub __hot_patch {
 
 	my $fh = $open->( $self );
 
-	foreach my $item ( @{ $spec } ) {
+	foreach my $item ( @{ $SPEC } ) {
 	    $item->[0]->__setup( $item->[1], $fh, $self );
 	}
 

@@ -12,7 +12,7 @@ use Scalar::Util qw{ blessed openhandle };
 use Test2::V0;
 
 use lib qw{ inc };
-use My::Module::TestSyntax;	# for slurp() and TEXT_*
+use My::Module::TestSyntax;
 
 use constant SYNTAX_FILTER	=> 'App::AckX::Preflight::Syntax::Python';
 
@@ -91,12 +91,10 @@ $App::Ack::mappings{python} = [
 
 my $python_resource = ACK_FILE_CLASS->new( PYTHON_FILE );
 
-my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
-
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ python } ],
     sprintf '%s handles python', SYNTAX_FILTER;
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
+setup_syntax( syntax => [ SYNTAX_CODE ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -105,9 +103,8 @@ is slurp( PYTHON_FILE ), PYTHON_CODE, 'Only code, reading directly';
 
 is slurp( $python_resource ), PYTHON_CODE, 'Only code, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
+setup_syntax( syntax => [ SYNTAX_COMMENT ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -116,9 +113,8 @@ is slurp( PYTHON_FILE ), PYTHON_COMMENT, 'Only comments, reading directly';
 
 is slurp( $python_resource ), PYTHON_COMMENT, 'Only comments, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_METADATA );
+setup_syntax( syntax => [ SYNTAX_METADATA ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_METADATA;
@@ -127,14 +123,14 @@ is slurp( PYTHON_FILE ), PYTHON_METADATA, 'Only metadata, reading directly';
 
 is slurp( $python_resource ), PYTHON_METADATA, 'Only metadata, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only metadata, text resource';
 
-SYNTAX_FILTER->import( '--syntax', SYNTAX_DATA );
+setup_syntax( syntax => [ SYNTAX_DATA ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_DATA;
 
-SYNTAX_FILTER->import( '--syntax', SYNTAX_DOCUMENTATION );
+
+setup_syntax( syntax => [ SYNTAX_DOCUMENTATION ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_DOCUMENTATION;
@@ -143,9 +139,8 @@ is slurp( PYTHON_FILE ), PYTHON_DOC, 'Only documentation, reading directly';
 
 is slurp( $python_resource ), PYTHON_DOC, 'Only documentation, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only documentation, text resource';
 
-SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_CODE, SYNTAX_DOCUMENTATION );
+setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_DOCUMENTATION ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is not everything>, SYNTAX_CODE, SYNTAX_DOCUMENTATION;

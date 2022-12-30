@@ -11,7 +11,7 @@ use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test2::V0;
 
 use lib qw{ inc };
-use My::Module::TestSyntax;	# for slurp() and TEXT_*
+use My::Module::TestSyntax;
 
 use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Asm';
 
@@ -116,12 +116,10 @@ $App::Ack::mappings{asm} = [
 
 my $shell_resource = ACK_FILE_CLASS->new( ASM_FILE );
 
-my $text_resource = ACK_FILE_CLASS->new( TEXT_FILE );
-
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ asm } ],
     sprintf '%s handles asm', SYNTAX_FILTER;
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
+setup_syntax( syntax => [ SYNTAX_CODE ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -130,9 +128,7 @@ is slurp( ASM_FILE ), ASM_CODE, 'Only code, reading directly';
 
 is slurp( $shell_resource ), ASM_CODE, 'Only code, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only code, text resource';
-
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
+setup_syntax( syntax => [SYNTAX_COMMENT ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -141,10 +137,7 @@ is slurp( ASM_FILE ), ASM_COMMENTS, 'Only comments, reading directly';
 
 is slurp( $shell_resource ), ASM_COMMENTS, 'Only comments, reading resource';
 
-is slurp( $text_resource ), TEXT_CONTENT, 'Only comments, text resource';
-
-SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_CODE, SYNTAX_COMMENT,
-    SYNTAX_METADATA );
+setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_METADATA ] );
 
 ok SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is everything>, SYNTAX_CODE, SYNTAX_COMMENT;
@@ -154,9 +147,6 @@ is slurp( ASM_FILE ), ASM_CODE_COMMENT,
 
 is slurp( $shell_resource ), ASM_CODE_COMMENT,
     'Code and comments, reading resource';
-
-is slurp( $text_resource ), TEXT_CONTENT,
-    'Code and comments, text resource';
 
 done_testing;
 

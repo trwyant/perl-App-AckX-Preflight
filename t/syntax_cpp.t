@@ -11,7 +11,7 @@ use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test2::V0;
 
 use lib qw{ inc };
-use My::Module::TestSyntax;	# for slurp() and TEXT_*
+use My::Module::TestSyntax;
 
 use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Cpp';
 
@@ -85,7 +85,7 @@ is [ SYNTAX_FILTER->__handles_type() ],
     sprintf '%s handles actionscript, cpp, dart, go, hh, hpp, js, kotlin, objc, objcpp, sass, stylus', SYNTAX_FILTER;
 
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
+setup_syntax( syntax => [ SYNTAX_CODE ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -95,7 +95,7 @@ is slurp( CPP_FILE ), CPP_CODE, 'Only code, reading directly';
 is slurp( $resource ), CPP_CODE, 'Only code, reading resource';
 
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
+setup_syntax( syntax => [ SYNTAX_COMMENT ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -105,7 +105,7 @@ is slurp( CPP_FILE ), CPP_COMMENT, 'Only comments, reading directly';
 is slurp( $resource ), CPP_COMMENT, 'Only comments, reading resource';
 
 
-SYNTAX_FILTER->import( '--syntax', SYNTAX_DOCUMENTATION );
+setup_syntax( syntax => [ SYNTAX_DOCUMENTATION ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_DOCUMENTATION;
@@ -115,7 +115,7 @@ is slurp( CPP_FILE ), CPP_DOC, 'Only documentation, reading directly';
 is slurp( $resource ), CPP_DOC, 'Only documentation, reading resource';
 
 
-SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_CODE, SYNTAX_DOCUMENTATION );
+setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_DOCUMENTATION ] );
 
 ok !SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s' is not everything>, SYNTAX_CODE, SYNTAX_DOCUMENTATION;

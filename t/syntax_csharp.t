@@ -11,7 +11,7 @@ use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
 use Test2::V0;
 
 use lib qw{ inc };
-use My::Module::TestSyntax;	# for slurp() and TEXT_*
+use My::Module::TestSyntax;
 
 use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Csharp';
 
@@ -82,7 +82,7 @@ my $resource = ACK_FILE_CLASS->new( CSHARP_FILE );
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ csharp } ],
     sprintf '%s handles csharp', SYNTAX_FILTER;
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_CODE );
+setup_syntax( syntax => [ SYNTAX_CODE ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_CODE;
@@ -91,7 +91,7 @@ is slurp( CSHARP_FILE ), CSHARP_CODE, 'Only code, reading directly';
 
 is slurp( $resource ), CSHARP_CODE, 'Only code, reading resource';
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_COMMENT );
+setup_syntax( syntax => [ SYNTAX_COMMENT ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_COMMENT;
@@ -100,7 +100,7 @@ is slurp( CSHARP_FILE ), CSHARP_COMMENT, 'Only comments, reading directly';
 
 is slurp( $resource ), CSHARP_COMMENT, 'Only comments, reading resource';
 
-SYNTAX_FILTER->import( sprintf '--syntax=%s', SYNTAX_DOCUMENTATION );
+setup_syntax( syntax => [ SYNTAX_DOCUMENTATION ] );
 
 ok ! SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s' is not everything>, SYNTAX_DOCUMENTATION;
@@ -109,8 +109,8 @@ is slurp( CSHARP_FILE ), CSHARP_DOC, 'Only comments, reading directly';
 
 is slurp( $resource ), CSHARP_DOC, 'Only comments, reading resource';
 
-SYNTAX_FILTER->import( '--syntax', join ':', SYNTAX_CODE, SYNTAX_COMMENT,
-    SYNTAX_DOCUMENTATION );
+setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_COMMENT,
+	SYNTAX_DOCUMENTATION ] );
 
 ok SYNTAX_FILTER->__want_everything(),
     sprintf q<'%s:%s:%s' is everything>, SYNTAX_CODE, SYNTAX_COMMENT,
