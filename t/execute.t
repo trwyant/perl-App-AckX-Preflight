@@ -52,6 +52,10 @@ SKIP: {
 
 done_testing;
 
+# NOTE this business of asking an external Perl script to run a command
+# seems redundant, but if --exec is in force the script running the
+# command exits.
+
 sub xqt {
     my @arg = @_;
     my $rslt = `$^X t/execute.PL @arg`;
