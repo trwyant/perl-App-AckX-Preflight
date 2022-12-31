@@ -5,17 +5,15 @@ use 5.010001;
 use strict;
 use warnings;
 
+use parent qw{ App::AckX::Preflight };
+
 use Carp;
 
 our $VERSION = '0.000_044';
 
-use App::AckX::Preflight;
-
-our @ISA = qw{ App::AckX::Preflight };
-
 sub __execute {
-    my ( undef, @arg ) = @_;
-    return @arg;
+    my ( $self, @arg ) = @_;
+    return $self->_build_ack_command( @arg );
 }
 
 1;

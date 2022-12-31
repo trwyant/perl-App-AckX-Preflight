@@ -13,12 +13,17 @@ use IPC::Cmd ();	# for can_run
 use List::Util 1.45 ();	# For uniqstr, which this module does not use
 use Pod::Usage ();
 use Scope::Guard ();
+use Text::Abbrev ();
 use Text::ParseWords ();
 
 our $VERSION = '0.000_044';
 our $COPYRIGHT = 'Copyright (C) 2018-2022 by Thomas R. Wyant, III';
 
 use constant DEVELOPMENT => grep { m{ \b blib \b }smx } @INC;
+
+use constant DISPATCH_EXEC	=> 'exec';
+use constant DISPATCH_NONE	=> 'none';
+use constant DISPATCH_SYSTEM	=> 'system';
 
 use constant IS_VMS	=> 'VMS' eq $^O;
 use constant IS_WINDOWS	=> { map { $_ => 1 } qw{ dos MSWin32 } }->{$^O};
@@ -30,7 +35,7 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 
 {
     my %default = (
-	exec	=> 0,
+	dispatch => DISPATCH_SYSTEM,
 	global	=> IS_VMS ? undef :	# TODO what, exactly?
 	    IS_WINDOWS ? Win32::CSIDL_COMMON_APPDATA() :
 	    '/etc',
@@ -70,10 +75,9 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 	    $arg{$_} //= $default{$_};
 	}
 
-	if ( IS_WINDOWS ) {
-	    delete $arg{exec}
-		and __warn( q/'exec' ignored under Windows/ );
-
+	if ( IS_WINDOWS && $arg{dispatch} eq DISPATCH_EXEC ) {
+	    $arg{dispatch} = DISPATCH_SYSTEM;
+	    __warn( '--dispatch=exec ignored under Windows' );
 	}
 
 	$arg{disable}	= {};
@@ -81,11 +85,11 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 	return bless \%arg, ref $class || $class;
     }
 
-    sub exec : method {	## no critic (ProhibitBuiltinHomonyms)
+    sub dispatch {
 	my ( $self ) = @_;
 	ref $self
 	    or $self = \%default;
-	return $self->{exec};
+	return $self->{dispatch};
     }
 
     sub global {
@@ -141,7 +145,18 @@ sub run {
     my @argv = @ARGV;
 
     __getopt( \%opt,
-	qw{ default=s% dry_run|dry-run! exec! o=s verbose! },
+	qw{ default=s% dry_run|dry-run! o=s verbose! },
+	'dispatch=s'	=> sub {
+	    my ( $name, $value ) = @_;
+	    state $expand = Text::Abbrev::abbrev(
+		DISPATCH_EXEC,
+		DISPATCH_NONE,
+		DISPATCH_SYSTEM,
+	    );
+	    $self->{dispatch} = $expand->{$value}
+		or __die( "Invalid value '$value' for --$name" );
+	    return;
+	},
 	'disable=s'	=> sub {
 	    my ( undef, $plugin ) = @_;
 	    $plugin =~ m/ :: /smx
@@ -219,36 +234,38 @@ EOD
     }
 
     local $self->{dry_run} = $opt{dry_run};
-    local $self->{exec}    = defined $opt{exec} ?
-	$opt{exec} : $self->{exec};
-    local $self->{output}  = defined $opt{output} ?
-	$opt{output} : $self->{output};
-    local $self->{verbose} = defined $opt{verbose} ?
-	$opt{verbose} : $self->{verbose};
+    local $self->{dispatch} = $opt{dispatch} // $self->{dispatch};
+    local $self->{output}  = $opt{output} // $self->{output};
+    local $self->{verbose} = $opt{verbose} // $self->{verbose};
+
+    my @rslt = $self->__execute( @ARGV );
+
+    return @rslt;
+
+}
+
+sub _build_ack_command {
+    my ( $self, @arg ) = @_;
 
     my @inject;
 
-    if ( @{ $self->{file_monkey} } ) {
+    if ( $self->{file_monkey} && @{ $self->{file_monkey} } ) {
 	my $string = __json_encode( $self->{file_monkey} );
 	splice @inject, 0, 0, "-MApp::AckX::Preflight::FileMonkey=$string";
+	DEVELOPMENT
+	    and splice @inject, 0, 0, '-Mblib';
     }
 
-    if ( DEVELOPMENT &&
-	List::Util::any { m/ \A -MApp::AckX::Preflight\b /smx } @inject
-    ) {
-	splice @inject, 0, 0, '-Mblib';
+    unless ( $self->{dispatch_literal} ) {
+	my $ack = IPC::Cmd::can_run( 'ack' )
+	    or __die( q<Can not find 'ack' executable> );
+	push @inject, $ack;
     }
 
-    my $ack = IPC::Cmd::can_run( 'ack' )
-	or __die( q<Can not find 'ack' executable> );
-
-    my @arg = (
+    return(
 	$^X		=> @inject,
-	$ack,
-	@ARGV,
+	@arg,
     );
-
-    return $self->__execute( @arg );
 }
 
 sub __execute {
@@ -285,21 +302,29 @@ sub __execute {
     }
 
 
-    if ( $self->exec() ) {
+    state $dispatch = {
+	DISPATCH_EXEC,	sub {
+	    my ( $self, @arg ) = @_;
+	    @arg = $self->_build_ack_command( @arg );
+	    exec { $arg[0] } @arg
+		or __die( "Failed to exec $arg[0]: $!" );
+	    return;
+	},
+	DISPATCH_NONE,	sub {
+	    __die_hard( 'TODO --dispatch=none' );
+	},
+	DISPATCH_SYSTEM, sub {
+	    my ( $self, @arg ) = @_;
+	    @arg = $self->_build_ack_command( @arg );
+	    system { $arg[0] } @arg;
+	    $? == 0
+		or $? == 0x100
+		or __die( __interpret_exit_code( $? ) );
+	    return $? >> 8;
+	},
+    };
 
-	exec { $arg[0] } @arg
-	    or __die( "Failed to exec $arg[0]: $!" );
-
-    } else {
-
-	system { $arg[0] } @arg;
-	$? == 0
-	    or $? == 0x100
-	    or __die( __interpret_exit_code( $? ) );
-	return $? >> 8;
-    }
-
-    return;
+    return $dispatch->{ $self->dispatch() }->( $self, @arg );
 }
 
 sub __find_config_files {
@@ -580,14 +605,13 @@ takes the following optional arguments as name/value pairs.
 
 =over
 
-=item exec
+=item dispatch
 
-If this Boolean argument is true, F<ack> is run by C<exec()>, meaning
-that the caller of L<run()|/run> never gets control back. If false,
-F<ack> is run by either L<IPC::Cmd::run()|IPC::Cmd> if L<run()|/run>
-finds the C<--o> option, or C<system()> if not.
-
-The default is C<0>, i.e. false.
+This argument can be C<'exec'>, C<'none'> or C<'system'>, or any unique
+abbreviation thereof. The C<'exec'> and C<'system'> built-ins cause
+F<ack> to be run using the same-named system built-in. The C<'none'>
+value runs no external executable, but provides minimal functionality
+specific to F<ack>.
 
 =item global
 
@@ -636,14 +660,14 @@ false) which means non-verbose.
 If C<new()> is called as a normal method it clones its invocant,
 applying the arguments (if any) after the clone.
 
-=head2 exec
+=head2 dispatch
 
- say App::Ack::Preflight->exec();
- say $aaxp->exec();
+ say App::Ack::Preflight->dispatch();
+ say $aaxp->dispatch();
 
-If called on an object, this method returns the value of the C<{exec}>
-attribute, whether explicit or defaulted. If called statically, it
-returns the default value of the C<{exec}> attribute.
+If called on an object, this method returns the value of the
+C<{dispatch}> attribute, whether explicit or defaulted. If called
+statically, it returns the default value of the C<{dispatch}> attribute.
 
 =head2 __file_monkey
 
@@ -715,7 +739,7 @@ L<ackxp|ackxp>. For the convenience of the author, that documentation
 is not repeated here.
 
 This method then reads all the configuration files, calls the plugins,
-and then C<exec()>s F<ack>, passing it C<@ARGV> as it stands after all
+and then dispatches F<ack>, passing it C<@ARGV> as it stands after all
 the plugins have finished with it. See the
 L<CONFIGURATION|ackxp/CONFIGURATION> documentation in L<ackxp|ackxp> for
 the details.
@@ -732,17 +756,20 @@ Plug-ins whose options do not appear in the actual command, or that do
 not implement an L<__options()|App::AckX::Preflight::Plugin/__options>
 method are called last, in ASCIIbetical order.
 
-If the C<exec> attribute is true, this method runs F<ack> via
+If the C<dispatch> argument is C<'exec'>, this method runs F<ack> via
 C<exec()>, and B<does not return.>
 
-If the C<exec> attribute is false (the default), this method runs F<ack>
-via C<system()>. In this case, it dies if F<ack> signals, or exits with
-any status but C<0> or C<1>. If it does not die, it returns the exit
-status.
+If the C<dispatch> argument is C<'system'> (the default), this method
+runs F<ack> via C<system()>. In this case, it dies if F<ack> signals, or
+exits with any status but C<0> or C<1>. If it does not die, it returns
+the exit status.
+
+If the C<dispatch> argument is C<'none'>, this method does not run
+F<ack> at all, and provides reduced functionality.
 
 B<Windows note:> The C<exec> mechanism does not seem to do what I want
-under Windows, so an attempt to set it to a true value will be ignored
-with a warning.
+under Windows, so an attempt to set C<dispatch> to C<exec> will be
+ignored with a warning.
 
 =head1 PLUGINS
 

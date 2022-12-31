@@ -270,9 +270,7 @@ sub xqt {
 	shift @ARGV :
 	My::Module::Preflight->new();
 
-    my $arg = ARRAY_REF eq ref @ARGV ? shift @ARGV : [];
-
-    return [ $invocant->run( @{ $arg } ) ];
+    return [ $invocant->run( @ARGV ) ];
 
 }
 

@@ -15,7 +15,7 @@ our $VERSION = '0.000_044';
 my %opt;
 
 GetOptions( \%opt,
-    qw{ exec! o=s verbose! },
+    qw{ dispatch=s o=s verbose! },
     help => sub { pod2usage( { -verbose => 2 } ) },
     version	=> sub {
 	local @ARGV = qw{ --version };
@@ -24,12 +24,15 @@ GetOptions( \%opt,
 ) and @ARGV or pod2usage( { -verbose => 0 } );
 
 my $ackxp = App::AckX::Preflight->new(
-    exec	=> $opt{exec},
+    dispatch	=> $opt{dispatch},
     output	=> $opt{o},
     verbose	=> $opt{verbose},
 );
 
-$ackxp->__execute( $^X, @ARGV );
+{
+    local $ackxp->{dispatch_literal} = 1;
+    $ackxp->__execute( @ARGV );
+}
 
 __END__
 

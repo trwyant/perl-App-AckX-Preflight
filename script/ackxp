@@ -9,8 +9,14 @@ use App::AckX::Preflight;
 
 our $VERSION = '0.000_044';
 
+use constant PREFLIGHT	=> 'App::AckX::Preflight';
+
+use constant DISPATCH	=> PREFLIGHT->IS_WINDOWS() ?
+    PREFLIGHT->DISPATCH_SYSTEM() :
+    PREFLIGHT->DISPATCH_EXEC();
+
 App::AckX::Preflight->new(
-    exec	=> ! App::AckX::Preflight->IS_WINDOWS()
+    dispatch	=> DISPATCH,
 )->run();
 
 __END__
