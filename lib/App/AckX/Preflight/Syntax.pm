@@ -38,7 +38,7 @@ my %WANT_SYNTAX;
 my %SYNTAX_OPT;
 
 
-sub __handles_resource {
+sub __handles_file {
     my ( $self, $rsrc ) = @_;
     unless ( keys %App::Ack::mappings ) {
 	# Hide these from xt/author/prereq.t, since we do not execute
@@ -348,7 +348,7 @@ sub __get_syntax_filter {
     }
 
     foreach my $syntax ( __PACKAGE__->__plugins() ) {
-	$syntax->__handles_resource( $file )
+	$syntax->__handles_file( $file )
 	    and return $syntax;
     }
 
@@ -504,12 +504,11 @@ class name of the C<App::AckX::Preflight> syntax filter that processes
 the file, or C<undef> if none can be found. The requisite syntax filter
 will have been loaded.
 
-=head2 __handles_resource
+=head2 __handles_file
 
 This static convenience method takes as its argument an
-L<App::Ack::File|App::Ack::File> or L<App::Ack::Filter|App::Ack::Filter>
-object and returns a true value if this syntax filter handles the file.
-Otherwise it returns a false value.
+L<App::Ack::File|App::Ack::File> object and returns a true value if this
+syntax filter handles the file.  Otherwise it returns a false value.
 
 =head2 __handles_syntax
 
