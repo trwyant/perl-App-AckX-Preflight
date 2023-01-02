@@ -145,7 +145,7 @@ sub run {
     my @argv = @ARGV;
 
     __getopt( \%opt,
-	qw{ default=s% dry_run|dry-run! o=s verbose! },
+	qw{ default=s% dry_run|dry-run! verbose! },
 	'dispatch=s'	=> sub {
 	    my ( $name, $value ) = @_;
 	    state $expand = Text::Abbrev::abbrev(
@@ -171,7 +171,7 @@ sub run {
 	    $self->{disable}{$plugin} = 0;
 	    return;
 	},
-	'o=s'	=> sub {
+	'OUT=s'	=> sub {
 	    my ( undef, $value ) = @_;
 	    $opt{output} = $value;
 	    return;
@@ -710,7 +710,7 @@ If called on an object, this method returns the value of the C<{output}>
 attribute, whether explicit or defaulted. If called statically, it
 returns the default value of the C<{output}> attribute.
 
-B<Note> that the L<run()|/run> method may override this if C<--o>
+B<Note> that the L<run()|/run> method may override this if C<--OUT>
 was specified on the command line.
 
 =head2 verbose

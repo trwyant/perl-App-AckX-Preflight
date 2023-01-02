@@ -15,7 +15,7 @@ our $VERSION = '0.000_044';
 my %opt;
 
 GetOptions( \%opt,
-    qw{ dispatch=s o=s verbose! },
+    qw{ dispatch=s OUT=s verbose! },
     help => sub { pod2usage( { -verbose => 2 } ) },
     version	=> sub {
 	local @ARGV = qw{ --version };
@@ -25,7 +25,7 @@ GetOptions( \%opt,
 
 my $ackxp = App::AckX::Preflight->new(
     dispatch	=> $opt{dispatch},
-    output	=> $opt{o},
+    output	=> $opt{OUT},
     verbose	=> $opt{verbose},
 );
 
@@ -58,9 +58,9 @@ L<App::AckX::Preflight|App::AckX::Preflight>->C<new()>.
 This option displays the documentation for this script. The script then
 exits.
 
-=head2 --o
+=head2 --OUT
 
- --o output_file.log
+ --OUT output_file.log
 
 This option specifies an output file. The default is standard output,
 which is also specified by C<'-'>.

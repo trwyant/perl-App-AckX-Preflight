@@ -73,7 +73,7 @@ sub xqt {
     my $want = pop @arg;
 
     my $out = File::Temp->new();
-    local @ARGV = ( qw{ --o }, $out->filename(), @arg );
+    local @ARGV = ( qw{ --OUT }, $out->filename(), @arg );
     my $title = "@ARGV";
 
     local $@ = undef;
