@@ -28,7 +28,7 @@ use constant SQL_COMMENTS	=> <<'EOD';
    5: /*
    6:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
    7:  *
-   8:  * Copyright (C) 2018-2022 by Thomas R. Wyant, III
+   8:  * Copyright (C) 2018-2023 by Thomas R. Wyant, III
    9:  *
   10:  * This program is distributed in the hope that it will be useful, but
   11:  * without any warranty; without even the implied warranty of
@@ -46,7 +46,7 @@ use constant SQL_CODE_COMMENTS => <<'EOD';
    5: /*
    6:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
    7:  *
-   8:  * Copyright (C) 2018-2022 by Thomas R. Wyant, III
+   8:  * Copyright (C) 2018-2023 by Thomas R. Wyant, III
    9:  *
   10:  * This program is distributed in the hope that it will be useful, but
   11:  * without any warranty; without even the implied warranty of
