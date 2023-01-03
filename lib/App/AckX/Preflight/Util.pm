@@ -44,7 +44,8 @@ our @EXPORT_OK = qw{
     __interpret_exit_code
     __json_decode
     __json_encode
-    __load
+    __load_ack_config
+    __load_module
     __open_for_read
     __set_sub_name
     __syntax_types
@@ -81,6 +82,7 @@ our %EXPORT_TAGS = (
 our @CARP_NOT = qw{
     App::AckX::Preflight
     App::AckX::Preflight::FileMonkey
+    App::AckX::Preflight::MiniAck
     App::AckX::Preflight::Plugin
     App::AckX::Preflight::Plugin::Expand
     App::AckX::Preflight::Plugin::File
@@ -162,6 +164,7 @@ sub _get_option_parser {
     my $psr = Getopt::Long::Parser->new();
     $psr->configure( qw{
 	no_auto_version no_ignore_case no_auto_abbrev pass_through
+	bundling
 	},
     );
     return $psr;
@@ -277,7 +280,32 @@ sub __json_encode {
     return $string;
 }
 
-sub __load {
+sub __load_ack_config {
+    state $opt = do {
+	unless ( keys %App::Ack::mappings ) {
+	    # Hide these from xt/author/prereq.t, since we do not execute
+	    # this code when called from the hot patch, which is the normal
+	    # path through the code. It is needed for (e.g.) tools/number.
+	    __load_module( $_ ) for qw{
+		App::Ack::ConfigLoader
+		App::Ack::Filter
+		App::Ack::Filter::Default
+		App::Ack::Filter::Extension
+		App::Ack::Filter::FirstLineMatch
+		App::Ack::Filter::Inverse
+		App::Ack::Filter::Is
+		App::Ack::Filter::IsPath
+		App::Ack::Filter::Match
+		App::Ack::Filter::Collection
+	    };
+	}
+	my @arg_sources = App::Ack::ConfigLoader::retrieve_arg_sources();
+	App::Ack::ConfigLoader::process_args( @arg_sources );
+    };
+    return $opt;
+}
+
+sub __load_module {
     my ( $module ) = @_;
     return eval {
 	Module::Load::load( $module );
@@ -299,9 +327,9 @@ sub __open_for_read {
 {
     local $@ = undef;
     *__set_sub_name = eval {
-	__load( 'Sub::Util' ) && Sub::Util->can( 'set_subname' );
+	__load_module( 'Sub::Util' ) && Sub::Util->can( 'set_subname' );
     } || eval {
-	__load( 'Sub::Name' ) && Sub::Name->can( 'subname' );
+	__load_module( 'Sub::Name' ) && Sub::Name->can( 'subname' );
     } || sub { return $_[1] };
 }
 __set_sub_name( __set_sub_name => \&__set_sub_name );
@@ -467,7 +495,19 @@ value, the default arguments are parsed with
 C<Text::ParseWords::shellwords()> and then by each enabled plug-in. Any
 options found are used as default options for the relevant plug-ins.
 
-=head2 __load
+=head2 __load_ack_config
+
+This subroutine loads whatever F<ack> configuration this distribution
+needs to do its job. It takes no arguments and returns a reference to
+the parsed configuration.
+
+This subroutine is idempotent, so the only overhead in calling it
+multiple times is the overhead of a subroutine call plus that of
+checking that stuff has already been loaded.
+
+=head2 __load_module
+
+ __load_module( 'Foo::Bar' );
 
 This subroutine loads the named module, returning a Boolean value that
 says whether the module was successfully loaded.

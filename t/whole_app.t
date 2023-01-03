@@ -10,6 +10,10 @@ use File::Temp;
 use IPC::Cmd ();
 use Test2::V0;
 
+use constant COPYRIGHT	=> <<'EOD';
+lib/App/AckX/Preflight.pm:20:our $COPYRIGHT = 'Copyright (C) 2018-2023 by Thomas R. Wyant, III';
+EOD
+
 {
     AmigaOS	=> 1,
     'RISC OS'	=> 1,
@@ -17,26 +21,43 @@ use Test2::V0;
 }->{$^O}
     and plan skip_all => "Fork command via -| does not work under $^O";
 
+=begin comment
+
 $ENV{MY_IS_GITHUB_ACTION}
     and plan skip_all => 'Skipping until I figure out why I get nothing back when run as a GitHub action';
+
+=end comment
+
+=cut
 
 -x $^X
     or plan skip_all => "Somethig strange is going on. \$^X ($^X) is not executable.";
 
-# FIXME building the standalone app is broken unless it also includes
-# ack_standalone
+# FIXME only skip first iteration if on GitHub
 
-foreach my $app ( [ $^X, qw{ -Mblib blib/script/ackxp } ] ) {
-    -x $app->[0]
-	or next;
+foreach (
+    sub {
+	$ENV{MY_IS_GITHUB_ACTION}
+	    and skip 'Skipping until I figure out why this doesnt run', 3;
+	return( $^X, qw{ -Mblib blib/script/ackxp } );
+    },
+    sub {
+	return( $^X, qw{ -Mblib blib/script/ackxp --dispatch=none } );
+    },
+) {
 
-    diag "Testing @{ $app }";
+    SKIP: {
+	my @app = $_->();
 
-    xqt( $app, qw{ --noenv --syntax cod -w Wyant lib/ }, <<'EOD' );
-lib/App/AckX/Preflight.pm:20:our $COPYRIGHT = 'Copyright (C) 2018-2023 by Thomas R. Wyant, III';
-EOD
+	-x $app[0]
+	    or next;
 
-    xqt( $app, qw{ --noenv --syntax-match --syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
+	diag '';
+	diag "Testing @app";
+
+	xqt( \@app, qw{ --noenv --syntax cod -w Wyant lib/ }, COPYRIGHT );
+
+	xqt( \@app, qw{ --noenv --syntax-match --syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
 meta:#!/usr/bin/env perl
 code:
 code:use strict;
@@ -61,9 +82,8 @@ docu:	5	8	67
 meta:	2	3	38
 EOD
 
-    xqt( $app, qw{ --noenv --syntax code -file t/data/file lib/ }, <<'EOD' );
-lib/App/AckX/Preflight.pm:20:our $COPYRIGHT = 'Copyright (C) 2018-2023 by Thomas R. Wyant, III';
-EOD
+	xqt( \@app, qw{ --noenv --syntax code --file t/data/file lib/ }, COPYRIGHT );
+    }
 }
 
 done_testing;

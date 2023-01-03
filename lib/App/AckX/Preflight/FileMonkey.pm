@@ -8,7 +8,7 @@ use warnings;
 use App::AckX::Preflight::Util qw{
     :croak
     __json_decode
-    __load
+    __load_module
     __set_sub_name
     ACK_FILE_CLASS
     @CARP_NOT
@@ -28,7 +28,7 @@ sub import {
 	}
 	|| __die_hard( "Failed to parse '$arg' as JSON" );
     foreach my $item ( @{ $spec } ) {
-	__load( $item->[0] )
+	__load_module( $item->[0] )
 	    or __die( "Failed to load $item->[0]: $@" );
     }
 
@@ -47,7 +47,7 @@ sub __hot_patch {
     $open
 	and return;
 
-    __load( ACK_FILE_CLASS )
+    __load_module( ACK_FILE_CLASS )
 	or __die_hard( sprintf 'Can not load %s', ACK_FILE_CLASS );
 
     $open = ACK_FILE_CLASS->can( 'open' )

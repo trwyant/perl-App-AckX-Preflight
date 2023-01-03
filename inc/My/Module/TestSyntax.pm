@@ -5,10 +5,10 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::File;
 use Carp;
 use Exporter qw{ import };
 use App::AckX::Preflight::FileMonkey ();
+use App::AckX::Preflight::Util qw{ __load_module ACK_FILE_CLASS };
 use Scalar::Util qw{ blessed openhandle };
 
 our $VERSION = '0.000_044';
@@ -21,6 +21,8 @@ our @EXPORT = qw{
     TEXT_FILE
     TEXT_CONTENT
 };
+
+__load_module( ACK_FILE_CLASS );
 
 use constant FILE_MONKEY   => 'App::AckX::Preflight::FileMonkey';
 

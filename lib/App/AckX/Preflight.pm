@@ -311,7 +311,16 @@ sub __execute {
 	    return;
 	},
 	DISPATCH_NONE,	sub {
-	    __die_hard( 'TODO --dispatch=none' );
+	    my ( $self, @arg ) = @_;
+	    if ( $self->{file_monkey} && @{ $self->{file_monkey} } ) {
+		__load_module( 'App::AckX::Preflight::FileMonkey' )
+		    or die( "Failed to load FileMonkey: $@" );
+		App::AckX::Preflight::FileMonkey->import(
+		    $self->{file_monkey} );
+	    }
+	    __load_module( 'App::AckX::Preflight::MiniAck' )
+		or __die( "Failed to load MiniAck: $@" );
+	    return App::AckX::Preflight::MiniAck->run( @arg );
 	},
 	DISPATCH_SYSTEM, sub {
 	    my ( $self, @arg ) = @_;
@@ -430,7 +439,7 @@ sub __plugins {
 	    or next;
 	delete $disable{$plugin}
 	    and next;
-	__load( $plugin )
+	__load_module( $plugin )
 	    or next;
 	$plugin->IN_SERVICE()
 	    or next;

@@ -6,11 +6,12 @@ use strict;
 use warnings;
 
 use Getopt::Long 2.33 qw{ :config auto_version };
-use App::Ack::File;
 use App::AckX::Preflight::Syntax ();	# DO NOT run import()
-use App::AckX::Preflight::Util qw{ :json };
+use App::AckX::Preflight::Util qw{ :json __load_module ACK_FILE_CLASS };
 
 our $VERSION = '0.000_044';
+
+__load_module( ACK_FILE_CLASS );
 
 my %opt;
 
@@ -42,7 +43,7 @@ my $arg = __json_encode( [
 
 App::AckX::Preflight::FileMonkey->import( $arg );
 
-my $file = App::Ack::File->new( $path );
+my $file = ACK_FILE_CLASS->new( $path );
 
 my $fh = $file->open();
 

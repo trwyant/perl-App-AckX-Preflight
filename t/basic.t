@@ -110,6 +110,10 @@ foreach ( qw{
 
 }
 
+note 'Mini Ack';
+
+load_module_ok 'App::AckX::Preflight::MiniAck';
+
 all_modules_tried_ok;
 
 done_testing;

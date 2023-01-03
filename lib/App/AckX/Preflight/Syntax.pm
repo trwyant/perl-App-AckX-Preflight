@@ -10,7 +10,8 @@ use App::AckX::Preflight::Util
 	:croak
 	:ref
 	:syntax
-	__load
+	__load_ack_config
+	__load_module
 	__set_sub_name
 	__syntax_types
 	ACK_FILE_CLASS
@@ -40,25 +41,9 @@ my %SYNTAX_OPT;
 
 sub __handles_file {
     my ( $self, $rsrc ) = @_;
-    unless ( keys %App::Ack::mappings ) {
-	# Hide these from xt/author/prereq.t, since we do not execute
-	# this code when called from the hot patch, which is the normal
-	# path through the code. It is needed for (e.g.) tools/number.
-	__load( $_ ) for qw{
-	    App::Ack::ConfigLoader
-	    App::Ack::Filter
-	    App::Ack::Filter::Default
-	    App::Ack::Filter::Extension
-	    App::Ack::Filter::FirstLineMatch
-	    App::Ack::Filter::Inverse
-	    App::Ack::Filter::Is
-	    App::Ack::Filter::IsPath
-	    App::Ack::Filter::Match
-	    App::Ack::Filter::Collection
-	};
-	my @arg_sources = App::Ack::ConfigLoader::retrieve_arg_sources();
-	App::Ack::ConfigLoader::process_args( @arg_sources );
-    }
+
+    state $ack_config_loaded = __load_ack_config();
+
     foreach my $type ( $self->__handles_type() ) {
 	foreach my $f ( @{ $App::Ack::mappings{$type} || [] } ) {
 	    $f->filter( $rsrc )
@@ -300,7 +285,7 @@ sub __plugins {
     foreach my $plugin ( @CARP_NOT ) {
 	$plugin =~ PLUGIN_MATCH
 	    or next;
-	__load( $plugin )
+	__load_module( $plugin )
 	    or next;
 	$plugin->IN_SERVICE()
 	    or next;
@@ -342,7 +327,7 @@ use constant SYNTAX_FILTER_LAYER =>
 sub __get_syntax_filter {
     my ( undef, $file ) = @_;
     unless ( ref $file ) {
-	__load( ACK_FILE_CLASS )
+	__load_module( ACK_FILE_CLASS )
 	    or __die_hard( sprintf 'Can not load %s', ACK_FILE_CLASS );
 	$file = ACK_FILE_CLASS->new( $file );
     }
