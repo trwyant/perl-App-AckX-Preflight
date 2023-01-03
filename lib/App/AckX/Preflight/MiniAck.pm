@@ -16,9 +16,13 @@ __load_module( ACK_FILE_CLASS );
 sub run {
     ( undef, local @ARGV ) = @_;
 
+    $DB::single = 1;
+
     # Ack parses everything I want, and some more besides. So I can just
     # pick it out of Ack's options hash.
     my $opt = __load_ack_config();
+
+    $opt->{heading} //= -t STDOUT;
 
     delete $opt->{h}
 	and $opt->{H} = 0;
@@ -43,45 +47,47 @@ sub run {
     my @want_file;
 
     File::Find::find(
-	sub {
+	{
+	    wanted	=> sub {
 
-	    my $file = ACK_FILE_CLASS->new( $File::Find::name );
+		my $file = ACK_FILE_CLASS->new( $File::Find::name );
 
-	    if ( -d ) {
-		foreach my $filter ( @{ $opt->{idirs} } ) {
-		    $filter->filter( $file )
-			or next;
-		    $File::Find::prune = 1;
+		if ( -d ) {
+		    foreach my $filter ( @{ $opt->{idirs} } ) {
+			$filter->filter( $file )
+			    or next;
+			$File::Find::prune = 1;
+			return;
+		    }
 		    return;
 		}
-		return;
-	    }
 
-	    # The POD says that ack always selects files specified
-	    # explicitly.
-	    if ( $explicit{$File::Find::name} ) {
-		push @want_file, $File::Find::name;
-		return;
-	    }
-
-	    -B _
-		and return;
-
-	    $opt->{ifiles}->filter( $file )
-		and return;
-
-	    if ( $opt->{filters} ) {
-		foreach my $filter( @{ $opt->{filters} } ) {
-		    $filter->filter( $file )
-			or next;
+		# The POD says that ack always selects files specified
+		# explicitly.
+		if ( $explicit{$File::Find::name} ) {
 		    push @want_file, $File::Find::name;
 		    return;
 		}
-	    } else {
-		push @want_file, $File::Find::name;
-	    }
 
-	    return;
+		-B _
+		    and return;
+
+		$opt->{ifiles}->filter( $file )
+		    and return;
+		if ( $opt->{filters} ) {
+		    foreach my $filter( @{ $opt->{filters} } ) {
+			$filter->filter( $file )
+			    or next;
+			push @want_file, $File::Find::name;
+			return;
+		    }
+		} else {
+		    push @want_file, $File::Find::name;
+		}
+
+		return;
+	    },
+	    no_chdir	=> 1,
 	},
 	@ARGV,
     );
@@ -122,8 +128,6 @@ sub run {
     foreach my $path ( @want_file ) {
 	my $file = ACK_FILE_CLASS->new( $path );
 
-	my $header_printed = ! $opt->{H};
-
 	my $fh = $file->open();
 
 	local $_ = undef;
@@ -134,13 +138,39 @@ sub run {
 
 	    $exit_status = 0;
 
-	    $header_printed ||= do {
-		$opt->{break} and say '';
-		say $path;
-		1;
-	    };
+=begin comment
 
-	    print $opt->{H} ? "$.:$_" : $_;
+	    if ( $opt->{heading} ) {
+		$header_printed ||= do {
+		    $opt->{break} and say '';
+		    say $path;
+		    1;
+		};
+
+		print $opt->{H} ? "$.:$_" : $_;
+	    } else {
+		print $opt->{H} ? "$path:$.:$_" : "$path:$_";
+	    }
+
+=end comment
+
+=cut
+
+	    not $exit_status
+		and $opt->{break}
+		and say '';
+
+	    $opt->{heading}
+		and $opt->{H}
+		and say $path;
+
+	    my @line;
+	    $opt->{H}
+		and push @line, $path;
+	    $multi_file
+		and push @line, $.;
+	    print join ':', @line, $_;
+
 	}
 
 	$file->close();

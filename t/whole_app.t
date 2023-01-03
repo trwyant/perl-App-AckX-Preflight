@@ -39,25 +39,24 @@ foreach (
     sub {
 	$ENV{MY_IS_GITHUB_ACTION}
 	    and skip 'Skipping until I figure out why this doesnt run', 3;
-	return( $^X, qw{ -Mblib blib/script/ackxp } );
+	## return( $^X, qw{ -Mblib blib/script/ackxp } );
+	return;
     },
     sub {
-	return( $^X, qw{ -Mblib blib/script/ackxp --dispatch=none } );
+	## return( $^X, qw{ -Mblib blib/script/ackxp --dispatch=none } );
+	return( qw{ --dispatch=none } );
     },
 ) {
 
     SKIP: {
 	my @app = $_->();
 
-	-x $app[0]
-	    or next;
-
 	diag '';
 	diag "Testing @app";
 
-	xqt( \@app, qw{ --noenv --syntax cod -w Wyant lib/ }, COPYRIGHT );
+	xqt( @app, qw{ --noenv --syntax cod -w Wyant lib/ }, COPYRIGHT );
 
-	xqt( \@app, qw{ --noenv --syntax-match --syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
+	xqt( @app, qw{ --noenv --syntax-match --syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
 meta:#!/usr/bin/env perl
 code:
 code:use strict;
@@ -82,14 +81,14 @@ docu:	5	8	67
 meta:	2	3	38
 EOD
 
-	xqt( \@app, qw{ --noenv --syntax code --file t/data/file lib/ }, COPYRIGHT );
+	xqt( @app, qw{ --noenv --syntax code --file t/data/file lib/ }, COPYRIGHT );
     }
 }
 
 done_testing;
 
 sub xqt {
-    my ( $app, @arg ) = @_;
+    my ( @arg ) = @_;
     my $want = pop @arg;
 
     my $out = File::Temp->new();

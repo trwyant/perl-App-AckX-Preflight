@@ -220,11 +220,9 @@ sub TELL {
 }
 
 sub __normalize_options {
-    my ( $invocant, $opt ) = @_;
+    my ( undef, $opt ) = @_;
 
     state $syntax_abbrev = Text::Abbrev::abbrev( __syntax_types(), 'none' );
-
-    my $class = ref $invocant || $invocant;
 
     if ( $opt->{syntax} ) {
 	my @syntax;
@@ -246,38 +244,7 @@ sub __normalize_options {
 	}
     }
 
-    foreach ( @{ $opt->{syntax_mod} || [] } ) {
-	my ( $filter, $mod, @val ) =
-	    $invocant->_normalize_syntax_mod( $_ );
-	unless ( $class eq $filter ) {
-	    unshift @val, $filter;
-	    $val[0] =~ s/ \A @{[ __PACKAGE__ ]} :: //smxo;
-	}
-	$_ = [ $filter, $mod, @val ];
-    }
-
     return;
-}
-
-sub _normalize_syntax_mod {
-    my ( $invocant, $spec ) = @_;
-
-    state $plugins = { map { $_ => 1 } $invocant->__plugins() };
-
-    my ( $name, $val ) = split qr{ = }smx, $spec, 2;
-    $name =~ s/ \A --? //smx;
-    ( my $mod = $name ) =~ s/ .* [-_] //smx;
-    my $filter = ref $invocant || $invocant;
-    if ( __PACKAGE__ eq $filter ) {
-	$val =~ s/ \A ( \w+ (?: :: \w+ )* ) $ARG_SEP_RE? //smx
-	    or __die( "Invalid syntax filter name in --$name=$val" );
-	my $filter = $1;
-	$filter =~ m/ :: /smx
-	    or $filter = join '::', __PACKAGE__, $filter;
-    }
-    $plugins->{$filter}
-	or __die( "Unknown syntax filter $filter" );
-    return ( $filter, $mod, split $ARG_SEP_RE, $val );
 }
 
 sub __plugins {
@@ -340,10 +307,6 @@ sub __get_syntax_filter {
     return undef;	## no critic (ProhibitExplicitReturnUndef)
 }
 
-# New App::AckX::Preflight::FileMonkey interface
-# TODO if this goes in. at least __want_everything goes away. And maybe
-# __new() becomes empty, since the configuration is available via
-# closure rather than being stored locally.
 sub __setup {
     my ( $class, $config, $fh, $file ) = @_;	# Invocant unused
 

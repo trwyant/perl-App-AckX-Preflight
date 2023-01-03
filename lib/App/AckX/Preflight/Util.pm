@@ -281,7 +281,7 @@ sub __json_encode {
 }
 
 sub __load_ack_config {
-    state $opt = do {
+    state $loaded = do {	## no critic (ProhibitUnusedVarsStricter)
 	unless ( keys %App::Ack::mappings ) {
 	    # Hide these from xt/author/prereq.t, since we do not execute
 	    # this code when called from the hot patch, which is the normal
@@ -299,10 +299,9 @@ sub __load_ack_config {
 		App::Ack::Filter::Collection
 	    };
 	}
-	my @arg_sources = App::Ack::ConfigLoader::retrieve_arg_sources();
-	App::Ack::ConfigLoader::process_args( @arg_sources );
     };
-    return $opt;
+    my @arg_sources = App::Ack::ConfigLoader::retrieve_arg_sources();
+    return App::Ack::ConfigLoader::process_args( @arg_sources );
 }
 
 sub __load_module {
