@@ -99,7 +99,6 @@ foreach ( qw{
 	__handles_syntax
 	__handles_type
 	import
-	__normalize_options
 	__plugins
 	__want_everything
 	__want_syntax

@@ -17,12 +17,11 @@ my @got;
 my @want;
 
 
-@got = CLASS->__options();
+@got = grep { ! ref } CLASS->__options();
 is \@got,
     [
-	'help_syntax|help-syntax' => App::AckX::Preflight::Syntax->can(
-	    '__help_syntax' ),
 	qw{
+	    help_syntax|help-syntax
 	    syntax=s@
 	    syntax_match|syntax-match!
 	    syntax_type|syntax-type!

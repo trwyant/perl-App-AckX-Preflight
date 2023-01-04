@@ -26,8 +26,6 @@ use constant SYNTAX_PLUGIN	=> 'App::AckX::Preflight::Plugin::Syntax';
 
 my %opt;
 
-# FIXME Don't call __main_parser_options. Instead just call
-# __interpret_plugins and look at the results.
 GetOptions( \%opt,
     qw{ tell! },
     help => sub { pod2usage( { -verbose => 2 } ) },

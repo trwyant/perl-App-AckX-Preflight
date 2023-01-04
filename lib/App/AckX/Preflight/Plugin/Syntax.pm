@@ -7,13 +7,75 @@ use warnings;
 
 use parent qw{ App::AckX::Preflight::Plugin };
 
-use App::AckX::Preflight::Syntax qw{ __normalize_options };
-use App::AckX::Preflight::Util qw{ @CARP_NOT };
+use App::AckX::Preflight::Syntax ();
+use App::AckX::Preflight::Util qw{
+    __syntax_types
+    @CARP_NOT
+};
+use List::Util 1.45 ();	# for uniqstr
 
 our $VERSION = '0.000_044';
 
+my $ARG_SEP_RE = qr{ \s* [:;,] \s* }smx;
+
+sub _help_syntax {
+    my %syntax;
+    my $len = 0;
+    foreach my $filter ( App::AckX::Preflight::Syntax->__plugins() ) {
+	( my $name = $filter ) =~ s/ .* :: //smx;
+	foreach my $type ( $filter->__handles_type() ) {
+	    $len = List::Util::max( $len, length $type );
+	    push @{ $syntax{$type} ||= [] }, $name;
+	}
+    }
+    my $rslt;
+    foreach my $type ( sort keys %syntax ) {
+	$rslt .= sprintf "%-*s  %s\n", $len, $type, "@{ $syntax{$type} }";
+    }
+    return $rslt;
+}
+
+sub __normalize_options {
+    my ( undef, $opt ) = @_;
+
+    state $syntax_abbrev = Text::Abbrev::abbrev( __syntax_types(), 'none' );
+
+    if ( $opt->{syntax} ) {
+	my @syntax;
+	foreach ( map { split $ARG_SEP_RE } @{ $opt->{syntax} } ) {
+	    defined $syntax_abbrev->{$_}
+		or __die( "Unsupported syntax type '$_'" );
+	    $_ = $syntax_abbrev->{$_};
+	    if ( $_ eq 'none' ) {
+		@syntax = ();
+	    } else {
+		push @syntax, $_;
+	    }
+	}
+	if ( @syntax ) {
+	    @{ $opt->{syntax} } = sort { $a cmp $b }
+		List::Util::uniqstr( @syntax );
+	} else {
+	    delete $opt->{syntax};
+	}
+    }
+
+    return;
+}
+
 sub __options {
-    return App::AckX::Preflight::Syntax->__main_parser_options();
+    return(
+	'help_syntax|help-syntax'	=> sub {
+	    print _help_syntax();
+	    exit;
+	},
+	qw{
+	syntax=s@
+	syntax_match|syntax-match!
+	syntax_type|syntax-type!
+	syntax_wc|syntax-wc!
+	syntax_wc_only|syntax-wc-only!
+    } );
 }
 
 sub __peek_opt {
@@ -41,8 +103,8 @@ sub __process {
 
 sub __wants_to_run {
     my ( undef, $opt ) = @_;
-    return $opt->{syntax} || $opt->{syntax_type} ||
-	$opt->{syntax_wc} || $opt->{syntax_wc_only};
+    return !! ( $opt->{syntax} || $opt->{syntax_type} ||
+	$opt->{syntax_wc} || $opt->{syntax_wc_only} );
 }
 
 1;

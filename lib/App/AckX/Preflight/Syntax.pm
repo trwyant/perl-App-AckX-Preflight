@@ -28,25 +28,21 @@ our @EXPORT_OK = qw{ __normalize_options };
 
 our $VERSION = '0.000_044';
 
-my $ARG_SEP_RE = qr{ \s* [:;,] \s* }smx;
-
 use constant IN_SERVICE		=> 1;
 use constant IS_EXHAUSTIVE	=> 1;
 
 use constant PLUGIN_MATCH	=> qr< \A @{[ __PACKAGE__ ]} :: [A-Z] >smxi;
 
-my %WANT_SYNTAX;
 my %SYNTAX_OPT;
 
-
 sub __handles_file {
-    my ( $self, $rsrc ) = @_;
+    my ( $self, $file ) = @_;
 
     state $ack_config_loaded = __load_ack_config();
 
     foreach my $type ( $self->__handles_type() ) {
 	foreach my $f ( @{ $App::Ack::mappings{$type} || [] } ) {
-	    $f->filter( $rsrc )
+	    $f->filter( $file )
 		and return $type;
 	}
     }
@@ -98,34 +94,6 @@ sub __handles_syntax {
 
 }
 
-sub __help_syntax {
-    my %syntax;
-    my $len = 0;
-    foreach my $filter ( __PACKAGE__->__plugins() ) {
-	( my $name = $filter ) =~ s/ .* :: //smx;
-	foreach my $type ( $filter->__handles_type() ) {
-	    $len = List::Util::max( $len, length $type );
-	    push @{ $syntax{$type} ||= [] }, $name;
-	}
-    }
-    foreach my $type ( sort keys %syntax ) {
-	say sprintf '%-*s  %s', $len, $type, "@{ $syntax{$type} }";
-    }
-    exit;
-}
-
-sub __main_parser_options {
-    return(
-	'help_syntax|help-syntax'	=> \&__help_syntax,
-	qw{
-	syntax=s@
-	syntax_match|syntax-match!
-	syntax_type|syntax-type!
-	syntax_wc|syntax-wc!
-	syntax_wc_only|syntax-wc-only!
-    } );
-}
-
 sub __my_attr {
     my ( $self ) = @_;
     return $self->{ scalar caller } ||= {};
@@ -152,7 +120,7 @@ sub FILL {
 	    and $attr->{syntax_empty_code_is_comment}
 	    and m/ \A \s* \z /smx
 	    and $type = SYNTAX_COMMENT;
-	$attr->{want}{$type}
+	$attr->{syntax}{$type}
 	    or next;
 	$attr->{syntax_type}
 	    and $_ = join ':', substr( $type, 0, 4 ), $_;
@@ -185,17 +153,12 @@ sub FILL {
 }
 
 sub __new {
-    my ( $class, $opt ) = @_;
-    $opt ||= $class->__syntax_opt();
+    my ( $class ) = @_;
     my $self = bless {}, ref $class || $class;
     my $attr = $self->__my_attr();
-    $attr->{syntax_empty_code_is_comment} =
-	$opt->{syntax_empty_code_is_comment};
-    $attr->{syntax_type} = $opt->{syntax_type};
-    $attr->{want} = $opt->{syntax} || $self->__want_syntax();
-    $opt->{syntax_wc}
+    %{ $attr } = %{ $class->__syntax_opt() };
+    $attr->{syntax_wc}
 	and $attr->{syntax_wc} = {};
-    $attr->{syntax_wc_only} = $opt->{syntax_wc_only};
     $self->__init();
     return $self;
 }
@@ -217,34 +180,6 @@ sub SEEK {
 sub TELL {
     my ( undef, $fh ) = @_;
     return tell $fh;
-}
-
-sub __normalize_options {
-    my ( undef, $opt ) = @_;
-
-    state $syntax_abbrev = Text::Abbrev::abbrev( __syntax_types(), 'none' );
-
-    if ( $opt->{syntax} ) {
-	my @syntax;
-	foreach ( map { split $ARG_SEP_RE } @{ $opt->{syntax} } ) {
-	    defined $syntax_abbrev->{$_}
-		or __die( "Unsupported syntax type '$_'" );
-	    $_ = $syntax_abbrev->{$_};
-	    if ( $_ eq 'none' ) {
-		@syntax = ();
-	    } else {
-		push @syntax, $_;
-	    }
-	}
-	if ( @syntax ) {
-	    @{ $opt->{syntax} } = sort { $a cmp $b }
-		List::Util::uniqstr( @syntax );
-	} else {
-	    delete $opt->{syntax};
-	}
-    }
-
-    return;
 }
 
 sub __plugins {
@@ -280,12 +215,7 @@ sub __want_everything {
 }
 
 sub __want_syntax {
-    my ( $class ) = @_;
-    keys %WANT_SYNTAX
-	and return \%WANT_SYNTAX;
-    ( $SYNTAX_OPT{syntax_type} || $SYNTAX_OPT{syntax_wc} )
-	and return { map { $_ => 1 } $class->__handles_syntax() };
-    return {};
+    return $SYNTAX_OPT{syntax};
 }
 
 use constant SYNTAX_FILTER_LAYER =>
@@ -307,20 +237,13 @@ sub __get_syntax_filter {
     return undef;	## no critic (ProhibitExplicitReturnUndef)
 }
 
+## FIXME I don't think I need to stash the $config. Is it used? Yes,
+# I need a local copy because __new() gets called by PUSHED(), which has
+# no access to $config. The data are used by FILLm which also has no
+# access. OTOH why not just stash the config locally and eliminate the
+# middle man?
 sub __setup {
     my ( $class, $config, $fh, $file ) = @_;	# Invocant unused
-
-    # If the caller is a resource or a filter we're not opening for
-    # the main scan. Just use the normal machinery.
-    my ( $caller ) = caller 1;	# We want our caller's caller
-    # NOTE that the only known way for $caller to be undefined is during
-    # testing.
-    if ( defined $caller ) {
-	foreach my $c ( ACK_FILE_CLASS, qw{ App::Ack::Filter } ) {
-	    $caller->isa( $c )
-		and return;
-	}
-    }
 
     # Figure out which syntax filter we are using. If none, just return.
     # NOTE that the only known way to call this on an actual syntax
@@ -346,9 +269,9 @@ sub __setup {
     }
 
     # Stash the configuration
-    %WANT_SYNTAX = map { $_ => 1 } @{ $config->{syntax} || [] };
+    my %want_syntax = map { $_ => 1 } @{ $config->{syntax} || [] };
     %SYNTAX_OPT = %{ $config };
-    $SYNTAX_OPT{syntax} = \%WANT_SYNTAX;
+    $SYNTAX_OPT{syntax} = \%want_syntax;
 
     # If we want everything and we're not reporting syntax types or
     # word count we don't need the filter.
@@ -356,13 +279,13 @@ sub __setup {
 
     WANT_SYNTAX: {
 	if ( $config->{syntax_type} || $config->{syntax_wc} ) {
-	    keys %WANT_SYNTAX
-		or %WANT_SYNTAX = map { $_ => 1 } $syntax->__handles_syntax();
+	    keys %want_syntax
+		or %want_syntax = map { $_ => 1 } $syntax->__handles_syntax();
 	} else {
-	    keys %WANT_SYNTAX
+	    keys %want_syntax
 		or return;
 	    foreach my $type ( $syntax->__handles_syntax() ) {
-		$WANT_SYNTAX{$type}
+		$want_syntax{$type}
 		    or last WANT_SYNTAX;
 	    }
 	    return;
@@ -375,11 +298,11 @@ sub __setup {
 	or return;
 
     # Check to see if we're already on the PerlIO stack. If so, just
-    # return the file handle. The original open() is idempotent, and
-    # ack makes use of this, so we have to be idempotent also.
+    # return. The original open() is idempotent, and ack makes use of
+    # this, so we have to be idempotent also.
     foreach my $layer ( PerlIO::get_layers( $fh ) ) {
 	$layer =~ SYNTAX_FILTER_LAYER
-	    and return $fh;
+	    and return;
     }
 
     # Insert the correct syntax filter into the PerlIO stack.

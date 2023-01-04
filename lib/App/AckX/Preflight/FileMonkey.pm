@@ -58,6 +58,16 @@ sub __hot_patch {
 
 	my $fh = $open->( $self );
 
+	# If the caller is a resource or a filter we're not opening for
+	# the main scan. Just use the normal machinery.
+	my $caller = caller;
+	if ( defined $caller ) {
+	    foreach my $cls ( ACK_FILE_CLASS, qw{ App::Ack::Filter } ) {
+		$caller->isa( $cls )
+		    and return $fh;
+	    }
+	}
+
 	foreach my $item ( @{ $SPEC } ) {
 	    $item->[0]->__setup( $item->[1], $fh, $self );
 	}

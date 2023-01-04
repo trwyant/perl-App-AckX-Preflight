@@ -5,18 +5,26 @@ use 5.010001;
 use strict;
 use warnings;
 
-use Getopt::Long 2.33 qw{ :config auto_version };
+use Getopt::Long 2.33 qw{ :config auto_version pass_through };
 use App::AckX::Preflight::Syntax ();	# DO NOT run import()
-use App::AckX::Preflight::Util qw{ :json __load_module ACK_FILE_CLASS };
+use App::AckX::Preflight::Util qw{
+    :json
+    :syntax
+    __interpret_plugins
+    __load_module
+    ACK_FILE_CLASS
+};
 
 our $VERSION = '0.000_044';
 
+use constant SYNTAX_PLUGIN	=> 'App::AckX::Preflight::Plugin::Syntax';
+
 __load_module( ACK_FILE_CLASS );
+__load_module( SYNTAX_PLUGIN );
 
 my %opt;
 
 GetOptions( \%opt,
-    App::AckX::Preflight::Syntax->__main_parser_options(),
     help => sub {
 	require Pod::Usage;
 	Pod::Usage::pod2usage( { -verbose => 2 } );
@@ -26,10 +34,11 @@ GetOptions( \%opt,
     Pod::Usage::pod2usage( { -verbose => 0 } );
 };
 
-keys %opt
-    or %opt = ( syntax => [ 'code' ] );
+my ( $plugin_info ) = __interpret_plugins( SYNTAX_PLUGIN );
+my $config = $plugin_info ? $plugin_info->{opt} : {};
 
-App::AckX::Preflight::Syntax->__normalize_options( \%opt );
+keys %{ $config }
+    or $config->{syntax} = [ SYNTAX_CODE ];
 
 my $path = @ARGV ? $ARGV[0] : 't/data/perl_file.PL';
 
@@ -37,7 +46,7 @@ my $path = @ARGV ? $ARGV[0] : 't/data/perl_file.PL';
 require App::AckX::Preflight::FileMonkey;
 
 my $arg = __json_encode( [
-	[ 'App::AckX::Preflight::Syntax' => \%opt ],
+	[ 'App::AckX::Preflight::Syntax' => $config ],
     ],
 );
 
@@ -50,6 +59,8 @@ my $fh = $file->open();
 while ( <$fh> ) {
     print;
 }
+
+$file->close();
 
 __END__
 

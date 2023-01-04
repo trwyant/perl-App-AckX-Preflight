@@ -16,8 +16,6 @@ __load_module( ACK_FILE_CLASS );
 sub run {
     ( undef, local @ARGV ) = @_;
 
-    $DB::single = 1;
-
     # Ack parses everything I want, and some more besides. So I can just
     # pick it out of Ack's options hash.
     my $opt = __load_ack_config();
