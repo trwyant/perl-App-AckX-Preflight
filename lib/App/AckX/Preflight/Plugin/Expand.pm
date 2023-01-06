@@ -10,7 +10,7 @@ use parent qw{ App::AckX::Preflight::Plugin };
 use App::AckX::Preflight::Util qw{ :all };
 use Text::ParseWords ();
 
-our $VERSION = '0.000_044';
+our $VERSION = '0.000_045';
 
 sub __options {
     return( qw{ expand=s% } );

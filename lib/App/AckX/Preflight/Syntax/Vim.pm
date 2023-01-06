@@ -9,7 +9,7 @@ use parent qw{ App::AckX::Preflight::Syntax::_single_line_comments };
 
 use App::AckX::Preflight::Util qw{ :syntax @CARP_NOT };
 
-our $VERSION = '0.000_044';
+our $VERSION = '0.000_045';
 
 __PACKAGE__->__handles_type_mod( qw{ set vim } );
 

@@ -32,7 +32,7 @@ use constant FILE_ID_IS_INODE	=> ! { map { $_ => 1 }
 
 use constant ACK_FILE_CLASS	=> 'App::Ack::File';
 
-our $VERSION = '0.000_044';
+our $VERSION = '0.000_045';
 
 our @EXPORT_OK = qw{
     __die

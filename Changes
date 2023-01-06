@@ -1,3 +1,33 @@
+0.000_045	2023-01-06	T. R. Wyant
+    Add --encode-type and --encode-file to specify file encodings.
+
+    Rename -o to -OUT, because it turns out ack uses -o as well as --output.
+
+    Replace --exec with --dispatch=exec, none, or system The 'none'
+    option dispatches to App::AckX::Preflight::MiniAck, which is a
+    restricted-functionality implementation of ack. All it really
+    implements is enough that testcover can find the functionality that
+    is hot-patched into ack. It is known to lack syntax highlighting,
+    and maybe other stuff as well. Caveat user.
+
+    Refactor actual ack interface info App::AckX::Preflight::FileMonkey.
+    The idea was to centralize the monkey-patching of the App::Ack::File
+    open() method so that multiple plug-ins could tie in to it.
+
+    Use Module::Load for ad-hoc module loading.
+
+    Add syntax filter for Raku.
+
+    Add scriptdirexp to directories searched by --perldoc.
+
+    Sort out Perl 5.10.1 under Linux.
+
+    Fix Perl parse error under old Perls.
+
+    Harden plugin testing against exceptions.
+
+    Perl 5.10-ize the Perldoc plugin.
+
 0.000_044	2022-12-21	T. R. Wyant
     Add --help-syntax to the Syntax plug-in.  This lists all the
     languages covered by the syntax filters, and the short name of the

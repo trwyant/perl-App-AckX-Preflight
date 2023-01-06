@@ -8,7 +8,7 @@ use parent qw{ App::AckX::Preflight::Plugin };
 
 use App::AckX::Preflight::Util qw{ @CARP_NOT };
 
-our $VERSION = '0.000_044';
+our $VERSION = '0.000_045';
 
 use constant DISPATCH_PRIORITY	=> 100;
 

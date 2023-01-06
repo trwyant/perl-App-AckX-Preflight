@@ -11,7 +11,7 @@ use App::AckX::Preflight::FileMonkey ();
 use App::AckX::Preflight::Util qw{ __load_module ACK_FILE_CLASS };
 use Scalar::Util qw{ blessed openhandle };
 
-our $VERSION = '0.000_044';
+our $VERSION = '0.000_045';
 
 our @EXPORT = qw{
     setup_syntax

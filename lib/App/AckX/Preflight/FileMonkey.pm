@@ -15,7 +15,7 @@ use App::AckX::Preflight::Util qw{
 };
 use JSON;
 
-our $VERSION = '0.000_044';
+our $VERSION = '0.000_045';
 
 my $SPEC;
 

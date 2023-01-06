@@ -10,7 +10,7 @@ use App::AckX::Preflight::Util qw{
     @CARP_NOT
 };
 
-our $VERSION = '0.000_044';
+our $VERSION = '0.000_045';
 
 use constant ENCODING_LAYER => qr{ \A encoding\( }smx;
 
