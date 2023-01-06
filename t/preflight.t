@@ -29,6 +29,7 @@ my $got;
 
 is [ My::Module::Preflight->__plugins() ],
     [ qw{
+	    App::AckX::Preflight::Plugin::Encode
 	    App::AckX::Preflight::Plugin::Expand
 	    App::AckX::Preflight::Plugin::File
 	    App::AckX::Preflight::Plugin::Perldoc

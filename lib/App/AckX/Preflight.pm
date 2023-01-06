@@ -491,6 +491,10 @@ sub _trace {
     $self->verbose()
 	or return;
     warn scalar _shell_quote( '$', @arg ), "\n";
+    if ( $self->{file_monkey} ) {
+	state $json = JSON->new()->utf8()->pretty()->canonical();
+	warn '$# File monkey: ', $json->encode( $self->{file_monkey} );
+    }
     return;
 }
 

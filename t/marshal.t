@@ -17,6 +17,7 @@ use constant PACKAGE	=> 'My::Module::Preflight';
 
 is [ sort My::Module::Preflight->__plugins() ],
     [ qw{
+	App::AckX::Preflight::Plugin::Encode
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Perldoc
@@ -33,6 +34,7 @@ is [ sort My::Module::Preflight->__plugins() ],
     }, PACKAGE;
     is [ sort $aapx->__plugins() ],
 	[ qw{
+	    App::AckX::Preflight::Plugin::Encode
 	    App::AckX::Preflight::Plugin::Expand
 	    App::AckX::Preflight::Plugin::Perldoc
 	    App::AckX::Preflight::Plugin::Syntax
@@ -42,6 +44,7 @@ is [ sort My::Module::Preflight->__plugins() ],
 
 is marshal( qw{ A B C } ),
     [ qw{
+	App::AckX::Preflight::Plugin::Encode
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Perldoc
@@ -85,6 +88,7 @@ is marshal( qw{ --manifest --file x A B C } ),	# FilesFrom
 
 is marshal( qw{ --file x --manifest A B C } ),
     [ qw{
+	App::AckX::Preflight::Plugin::Encode
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::Perldoc
@@ -94,6 +98,7 @@ is marshal( qw{ --file x --manifest A B C } ),
 
 is marshal( qw{ --manifest --file x --no-manifest A B C } ),
     [ qw{
+	App::AckX::Preflight::Plugin::Encode
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::Perldoc
@@ -103,6 +108,7 @@ is marshal( qw{ --manifest --file x --no-manifest A B C } ),
 
 is marshal( qw{ --syntax=code A B C } ),
     [ qw{
+	App::AckX::Preflight::Plugin::Encode
 	App::AckX::Preflight::Plugin::Syntax
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File

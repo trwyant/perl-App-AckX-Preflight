@@ -29,6 +29,7 @@ note 'Plugins';
 
 foreach ( qw{
 	App::AckX::Preflight::Plugin
+	App::AckX::Preflight::Plugin::Encode
 	App::AckX::Preflight::Plugin::Expand
 	App::AckX::Preflight::Plugin::File
 	App::AckX::Preflight::Plugin::Perldoc
@@ -52,6 +53,14 @@ foreach ( qw{
     cmp_ok $class->IN_SERVICE, '==', $in_service,
 	"$class is@{[ $in_service ? ' ' : ' not ' ]}in service";
 
+}
+
+note 'Encoding';
+
+{
+    my $class = 'App::AckX::Preflight::Encode';
+
+    load_module_ok $class;
 }
 
 note 'Syntax filters';

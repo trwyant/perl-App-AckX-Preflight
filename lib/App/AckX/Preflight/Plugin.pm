@@ -10,6 +10,7 @@ use App::AckX::Preflight::Util qw{ :croak @CARP_NOT };
 our $VERSION = '0.000_044';
 
 use constant IN_SERVICE	=> 1;
+use constant DISPATCH_PRIORITY	=> 0;
 
 sub __normalize_options {
     return;
@@ -93,6 +94,13 @@ interface.
 =head1 METHODS
 
 This class supports the following package-private methods:
+
+=head2 DISPATCH_PRIORITY
+
+This method can be a manifest constant. It is an integer specifying
+priority in processing, with higher priorities taken first.
+
+The default is C<0>, but subclasses can override this.
 
 =head2 IN_SERVICE
 

@@ -38,7 +38,7 @@ $ENV{MY_IS_GITHUB_ACTION}
 foreach (
     sub {
 	$ENV{MY_IS_GITHUB_ACTION}
-	    and skip 'Skipping until I figure out why this doesnt run', 3;
+	    and skip 'Skipping until I figure out why this doesnt run', 4;
 	## return( $^X, qw{ -Mblib blib/script/ackxp } );
 	return;
     },
@@ -53,6 +53,30 @@ foreach (
 
 	diag '';
 	diag "Testing @app";
+
+	my $no = "N\N{U+F8}gne \N{U+D8} is a brewery in Grimstad, Agder, Norway";
+
+	# The point of the following test is that, although the two
+	# files contain the same text, they are encoded differently.
+	# Ack applies no encoding, and therefore reads them as bytes.
+	# Perl's internal encoding is usually UTF-8, though this is
+	# officially undocumented. So a UTF-8-only test might pass even
+	# without the Encode plug-in. But the internal encoding can't
+	# possibly be both UTF-8 and Latin-1, and the "O with slash"
+	# characters encode differently in the two encodings.
+	xqt( @app, qw{
+	    --noenv
+	    --type-set=text:ext:txt
+	    --type=text
+	    --encode-type=text=utf-8
+	    --encode-file=t/data/latin1.txt=latin-1
+	    --sort-files
+	    brewery
+	    t/data
+	    }, <<"EOD" );
+t/data/latin1.txt:1:$no
+t/data/utf8.txt:1:$no
+EOD
 
 	xqt( @app, qw{ --noenv --syntax cod -w Wyant lib/ }, COPYRIGHT );
 

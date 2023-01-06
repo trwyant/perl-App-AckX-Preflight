@@ -81,9 +81,11 @@ our %EXPORT_TAGS = (
 
 our @CARP_NOT = qw{
     App::AckX::Preflight
+    App::AckX::Preflight::Encode
     App::AckX::Preflight::FileMonkey
     App::AckX::Preflight::MiniAck
     App::AckX::Preflight::Plugin
+    App::AckX::Preflight::Plugin::Encode
     App::AckX::Preflight::Plugin::Expand
     App::AckX::Preflight::Plugin::File
     App::AckX::Preflight::Plugin::Perldoc
@@ -190,6 +192,7 @@ sub __interpret_plugins {
 	$plugin_info{$plugin} = my $info = {
 	    class	=> $plugin,
 	    order	=> @ARGV + 1,
+	    priority	=> $plugin->DISPATCH_PRIORITY(),
 	};
 	if ( my @spec = $plugin->__peek_opt() ) {
 	    my %opt;
@@ -260,7 +263,11 @@ sub __interpret_plugins {
 
     return(
 	sort
-	    { $a->{order} <=> $b->{order} || $a->{class} cmp $b->{class} }
+	    {
+		$b->{priority} <=> $a->{priority} ||
+		$a->{order} <=> $b->{order} ||
+		$a->{class} cmp $b->{class}
+	    }
 	    values %plugin_info
     );
 }
