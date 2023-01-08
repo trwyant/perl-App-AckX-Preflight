@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use parent qw{ App::AckX::Preflight::Plugin };
 
-use App::AckX::Preflight::Util qw{ @CARP_NOT };
+use App::AckX::Preflight::Util qw{ :croak @CARP_NOT };
 
 our $VERSION = '0.000_045';
 
@@ -16,16 +16,42 @@ sub __options {
     return( qw{
 	encode_file|encode-file=s%
 	encode_type|encode-type=s%
+	encoding=s@
 	} );
 }
 
 sub __process {
     my ( undef, $aaxp, $opt ) = @_;
 
+    $DB::single = 1;
+
     defined $opt->{$_} or delete $opt->{$_} for keys %{ $opt };
 
     keys %{ $opt }
 	or return;
+
+    $opt->{encoding} ||= [];
+
+    foreach ( @{ $opt->{encoding} } ) {
+	my ( $encoding, $filter, $arg ) = split /:/, $_, 3;
+	defined $filter
+	    or __die( 'No --encoding filter specified' );
+	defined $arg
+	    or ( $filter, $arg ) = ( is => $filter );
+	$_ = [ $encoding, $filter, $arg ];
+    }
+
+    foreach my $old ( qw{ file type } ) {
+	state $filter_map = { file => 'is' };
+	my $filter = $filter_map->{ $old } // $old;
+	if ( my $old_filter = delete $opt->{ "encode_$old" } ) {
+	    # Sort is for the benefit of testing.
+	    foreach my $name ( sort keys %{ $old_filter } ) {
+		push @{ $opt->{encoding} },
+		[ $old_filter->{$name}, $filter, $name ];
+	    }
+	}
+    }
 
     $aaxp->__file_monkey( 'App::AckX::Preflight::Encode', $opt );
 
@@ -35,7 +61,8 @@ sub __process {
 
 sub __wants_to_run {
     my ( undef, $opt ) = @_;
-    return !! ( $opt->{encode_file} || $opt->{encode_type} );
+    return !! ( $opt->{encode_file} || $opt->{encode_type} ||
+	$opt->{encoding} );
 }
 
 1;
@@ -57,10 +84,26 @@ ability to specify the encoding for a specific F<ack> file type.
 
 This plug-in recognizes and processes the following options:
 
+=head2 --encode-file
+
+ --encode-file=foo.bar=utf-8
+
+This B<deprecated> argument is a synonym for
+L<--encoding=encoding:is:file-path|/--encoding>. Its arguments are the
+path to the file and the encoding of that file.
+
+=head2 --encode-file
+
+ --encode-type=perl=utf-8
+
+This B<deprecated> argument is a synonym for
+L<--encoding=encoding:type:ack-file-type|/--encoding>. Its arguments are
+the file type as configured in F<ack> and the encoding of those files.
+
 =head2 --encoding
 
  --encoding utf-8:type:perl
- --encoding cp1252:file:windows.bat
+ --encoding cp1252:is:windows.bat
 
 This option specifies the encoding to be applied to a specific file or
 class of files. The value is three colon-delimited values: the encoding,
@@ -75,12 +118,16 @@ Valid rules are:
 This rule specifies an F<ack> file type. The argument is the specific
 type.
 
-=item file
+=item is
 
 This rule specifies an individual file. The argument is the path to the
 file.
 
 =back
+
+B<Note> that although the syntax looks like that of an F<ack> filter
+rule, L<App::Ack::Filter|App::Ack::Filter> objects are B<not> used to
+match encodings to files.
 
 =head1 METHODS
 

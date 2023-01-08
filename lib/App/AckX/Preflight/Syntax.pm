@@ -237,11 +237,6 @@ sub __get_syntax_filter {
     return undef;	## no critic (ProhibitExplicitReturnUndef)
 }
 
-## FIXME I don't think I need to stash the $config. Is it used? Yes,
-# I need a local copy because __new() gets called by PUSHED(), which has
-# no access to $config. The data are used by FILLm which also has no
-# access. OTOH why not just stash the config locally and eliminate the
-# middle man?
 sub __setup {
     my ( $class, $config, $fh, $file ) = @_;	# Invocant unused
 
@@ -306,9 +301,7 @@ sub __setup {
     }
 
     # Insert the correct syntax filter into the PerlIO stack.
-    binmode $fh, ":via($syntax)";
-
-    return;
+    return ":via($syntax)";
 }
 
 # FIXME this is a bit clunky. What I think I really want is return a

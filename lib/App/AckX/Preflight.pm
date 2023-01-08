@@ -123,8 +123,13 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 
 sub __file_monkey {
     my ( $self, $class, $config ) = @_;
-    push @{ $self->{file_monkey} }, [ $class => $config ];
-    return;
+    defined $class
+	and $config
+	and push @{ $self->{file_monkey} }, [ $class => $config ];
+    # Coded this way because we want to return nothing in list context
+    $self->{file_monkey}
+	or return;
+    return $self->{file_monkey};
 }
 
 sub run {
@@ -270,6 +275,10 @@ sub _build_ack_command {
 
 sub __execute {
     my ( $self, @arg ) = @_;
+
+    $self->verbose()
+	and splice @{ $self->{file_monkey} }, 0, 0, [
+	'App::AckX::Preflight::FileMonkey', { verbose => 1 } ];
 
     $self->_trace( @arg );
 
@@ -695,6 +704,11 @@ L<App::AckX::Preflight::Plugin::Syntax|App::AckX::Preflight::Plugin::Syntax>
 for an example of how to use this, and
 L<App::AckX::Preflight::FileMonkey|App::AckX::Preflight::FileMonkey> for
 implementation details.
+
+The current C<FileMonkey> request list (a reference to an array of array
+references) is returned. You can also call this with no arguments to
+query the current contents of the C<FileMonkey> request list. If there
+is none, nothing is returned.
 
 =head2 global
 

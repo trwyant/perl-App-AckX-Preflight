@@ -17,6 +17,8 @@ use JSON;
 
 our $VERSION = '0.000_045';
 
+my @LAYERS;
+my $OPT;
 my $SPEC;
 
 sub import {
@@ -54,6 +56,8 @@ sub __hot_patch {
 	or __die_hard( sprintf '%s does not implement open()', ACK_FILE_CLASS );
 
     my $code = sub {
+	# NOTE that $self is an App::Ack::File object, which we patched
+	# over that class' open() method.
 	my ( $self ) = @_;
 
 	my $fh = $open->( $self );
@@ -68,8 +72,30 @@ sub __hot_patch {
 	    }
 	}
 
+	my @binmode;
 	foreach my $item ( @{ $SPEC } ) {
-	    $item->[0]->__setup( $item->[1], $fh, $self );
+	    push @binmode, $item->[0]->__setup( $item->[1], $fh, $self );
+	}
+
+	# We have to defer the binmode calls until all __setup() calls
+	# have been made because:
+	# * If one of them wants :encoding(...) and another uses a
+	#   filter that calls ->firstliney() the call will fail because
+	#   it uses sysread().
+	# * If one of them wants :via(...) it has to come after
+	#   :encoding(...) (if any) or the :via(...) code sees
+	#   un-decoded data.
+	foreach ( @binmode ) {
+	    binmode $fh, $_
+		or __die( "Failed to do binmode \$fh, $_ on ",
+		$self->name(), ": $!" );
+	}
+
+	@LAYERS = PerlIO::get_layers( $fh );
+
+	if ( $OPT->{verbose} ) {
+	    warn "#\$ PerlIO layers:\n";
+	    warn "#\$   $_\n" for @LAYERS;
 	}
 
 	# Return the handle
@@ -84,6 +110,16 @@ sub __hot_patch {
 
     *$repl = __set_sub_name( open => $code );
 
+    return;
+}
+
+sub __layers {
+    return @LAYERS;
+}
+
+sub __setup {
+    my ( undef, $opt ) = @_;
+    $OPT = $opt;
     return;
 }
 
@@ -119,9 +155,9 @@ This class supports the following package-private methods:
 =head2 import
 
 This static method is called when the module is loaded. It takes one
-argument, which is a JSON-encoded string containing configuration
-information for C<App::Ack::Preflight::*>. This must decode to an array
-reference with the following structure:
+argument, which is either an C<ARRAY> reference or the equivalent
+JSON-encoded string containing configuration information for
+C<App::Ack::Preflight::*>. This array reference must look like this:
 
  [
    [ <module-name>, <configuration-data> ],
@@ -133,39 +169,33 @@ module that provides the requested functionality. The
 C<< <configuration-data> >> are a hash reference which is (eventually)
 passed to the module's C<__configure()> method.
 
-Once the argument is decoded, this method loads all the modules
-specified (failing on a load error), and then calls the
-L<__hot_patch()|/__hot_patch> method, passing it the configuration as a
-hash reference.
+This method stashes the configuration data, then calls
+L<__hot_patch()|/__hot_patch>, and returns.
 
 This method returns nothing.
 
 =head2 __hot_patch
 
-This static method is passed a reference to the configuration data
-described above under L<import()|/import>.
-
-If this method has already been called, it does nothing.
-
 On the first call this method saves a reference to the
 L<App::Ack::File|App::Ack::File> C<open()> method, and replaces it with
 its own.
 
-The new method calls C<open()> on its argument, retaining the file
-handle. It then iterates over the configuration data, calling
-C<__configure()> on the classes specified.  It then returns the file
-handle.
+The new method calls the original C<open()> on its argument, retaining
+the file handle. It then iterates over the configuration data, calling
+C<__configure()> on the classes specified.
 
 The call to C<__configure()> receives two arguments besides the
 invocant: the configuration hash, the file handle, and the
-L<App::Ack::File|App::Ack::File> object. The method can recover the
-handle by calling C<open()> on the file object, since C<open()> is
-idempotent.
+L<App::Ack::File|App::Ack::File> object.
 
 It is expected that the C<__configure()> methods will provide their
-functionality by calling C<binmode()> on the file handle. Mostly these
-will install themselves using the C<:via:> interface, though encoding
-support would obviously provide an C<:encoding()> layer.
+functionality via an I/O layer. But the methods B<must not> install this
+layer themselves. Instead, they B<must> return the desired second
+C<binmode()> arguments they want. If none is wanted, they B<must> return
+nothing (i.e. simply return -- B<not> return C<undef>).
+
+Last, the new method calls C<binmode()> as required, and returns the
+file handle.
 
 =head1 SEE ALSO
 

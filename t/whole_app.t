@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight;
+use App::AckX::Preflight::Util qw{ __load_module };
 use File::Temp;
 use IPC::Cmd ();
 use Test2::V0;
@@ -40,7 +41,7 @@ foreach (
 	$ENV{MY_IS_GITHUB_ACTION}
 	    and skip 'Skipping until I figure out why this doesnt run', 4;
 	## return( $^X, qw{ -Mblib blib/script/ackxp } );
-	return;
+	return( qw{ --dispatch=system } );
     },
     sub {
 	## return( $^X, qw{ -Mblib blib/script/ackxp --dispatch=none } );
@@ -73,14 +74,15 @@ foreach (
 	    --sort-files
 	    brewery
 	    t/data
-	    }, <<"EOD" );
+	    }, <<"EOD" ) or dump_layers();
 t/data/latin1.txt:1:$no
 t/data/utf8.txt:1:$no
 EOD
 
-	xqt( @app, qw{ --noenv --syntax cod -w Wyant lib/ }, COPYRIGHT );
+	xqt( @app, qw{ --noenv --syntax cod -w Wyant lib/ }, COPYRIGHT )
+	    or dump_layers();
 
-	xqt( @app, qw{ --noenv --syntax-match --syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' );
+	xqt( @app, qw{ --noenv --syntax-match --syntax-type --syntax-wc t/data/perl_file.PL }, <<'EOD' ) or dump_layers();
 meta:#!/usr/bin/env perl
 code:
 code:use strict;
@@ -105,11 +107,23 @@ docu:	5	8	67
 meta:	2	3	38
 EOD
 
-	xqt( @app, qw{ --noenv --syntax code --file t/data/file lib/ }, COPYRIGHT );
+	xqt( @app, qw{ --noenv --syntax code --file t/data/file lib/ },
+	    COPYRIGHT )
+	    or dump_layers();
     }
 }
 
 done_testing;
+
+sub dump_layers {
+    state $loaded = __load_module( 'App::AckX::Preflight::FileMonkey' );
+    if ( my @layers = App::AckX::Preflight::FileMonkey->__layers() ) {
+	diag 'PerlIO layers:';
+	diag "  $_" for @layers;
+    } else {
+	diag 'PerlIO layers not available';
+    }
+}
 
 sub xqt {
     my ( @arg ) = @_;

@@ -14,29 +14,35 @@ our $VERSION = '0.000_045';
 
 use constant ENCODING_LAYER => qr{ \A encoding\( }smx;
 
-sub __get_type_encoding {
-    my ( undef, $config, $file ) = @_;	# Invocant unused
-
-    state $ack_config_loaded = __load_ack_config();	# Only call once
-
-    foreach my $type ( keys %App::Ack::mappings ) {
-	foreach my $filter ( @{ $App::Ack::mappings{$type} || [] } ) {
-	    $filter->filter( $file )
-		or next;
-	    return $config->{encode_type}{$type};
-	}
+sub _get_file_encoding {
+    my ( undef, $config, $file ) = @_;
+    foreach my $filter_data ( @{ $config->{encoding} } ) {
+	state $filter_def = {
+	    is	=> sub {
+		my ( $file, $arg ) = @_;
+		return $file->name() eq $arg;
+	    },
+	    type	=> sub {
+		my ( $file, $arg ) = @_;
+		$App::Ack::mappings{$arg}
+		    or __die( "Invalid --encoding file type '$arg'" );
+		foreach my $filter ( @{ $App::Ack::mappings{$arg} } ) {
+		    $filter->filter( $file )
+			and return 1;
+		}
+		return 0;
+	    },
+	};
+	my $code = $filter_def->{ $filter_data->[1] }
+	    or __die ( "Invalid --encoding filter type '$filter_data->[1]'" );
+	$code->( $file, @{ $filter_data }[ 2 .. $#$filter_data ] )
+	    and return $filter_data->[0];
     }
-
     return undef;	## no critic (ProhibitExplicitReturnUndef)
 }
 
 sub __setup {
     my ( $class, $config, $fh, $file ) = @_;	# Invocant unused
-
-    my $encoding = $config->{encode_file}{$file->name()} //
-	$class->__get_type_encoding( $config, $file ) //
-	return;
-
 
     # NOTE that the only known way $fh can be undefined is during
     # testing.
@@ -51,13 +57,10 @@ sub __setup {
 	    and return;
     }
 
-    # Insert the correct encoding into the PerlIO stack.
-    binmode $fh, ":encoding($encoding)"
-	or __die( sprintf 'Failed to set encoding %s on file %s: %s',
-	$encoding, $file->name(), $!,
-    );
+    my $encoding = $class->_get_file_encoding( $config, $file )
+	// return;
 
-    return;
+    return ":encoding($encoding)";
 }
 
 

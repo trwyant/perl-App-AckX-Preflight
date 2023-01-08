@@ -21,6 +21,7 @@ is \@got,
 [ qw{
     encode_file|encode-file=s%
     encode_type|encode-type=s%
+    encoding=s@
     } ],
 'Options';
 
@@ -34,7 +35,10 @@ is \@got, \@want,
 q<Parse '--encode-type=perl=utf-8'>;
 
 @got = xqt( @want );
-is \@got, [ qw{ } ],
+is \@got, [
+    [ [ 'App::AckX::Preflight::Encode',
+	    { encoding => [ [ qw{ utf-8 type perl } ] ] } ] ]
+],
 q<Process '--encode-type=perl=utf-8'>;
 
 
@@ -55,6 +59,17 @@ q<Process '--encode-type=perl=utf-8'>;
 is \@got, \@want,
 q<Parse '--encode-type=raku=utf-8 --encode-type python=latin-1 --encode-file=windows.bat=cp1252'>;
 
+@got = xqt( @want );
+is \@got, [
+    [ [ 'App::AckX::Preflight::Encode',
+	    { encoding => [
+		    [ qw{ cp1252  is   windows.bat } ],
+		    [ qw{ latin-1 type python } ],
+		    [ qw{ utf-8   type raku } ],
+		]
+	    } ] ]
+],
+q<Process '--encode-type=perl=utf-8'>;
 
 
 done_testing;

@@ -64,8 +64,13 @@ sub _xqt {
 	shift @ARGV :
 	App::AckX::Preflight->new();
     my $opt = HASH_REF eq ref $ARGV[0] ? shift @ARGV : {};
-    $caller->CLASS()->__wants_to_run( $opt )
-	and $callback->( $caller, $aaxp, $opt );
+    if ( $caller->CLASS()->__wants_to_run( $opt ) ) {
+	$callback->( $caller, $aaxp, $opt );
+	## NOTE that the following does not modify @ARGV unless the
+	## callback (a.k.a. __process()) actually called
+	## $aaxp->__file_monkey( ... ).
+	unshift @ARGV, $aaxp->__file_monkey();
+    }
     return @ARGV;
 }
 
@@ -124,9 +129,12 @@ This subroutine loads C<@argv> into a localized C<@ARGV>, and then calls
 
  $plugin_class_name->__process( $aaxp, $opt );
 
-on the plugin. It returns whatever was left in C<@ARGV> after the call.
-Any exceptions are caught, and C<$@> is appended to C<@ARGV> as it
-stands at the time of the exception.
+on the plugin. It returns whatever was left in C<@ARGV> after the call,
+with the
+L<App::AckX::Preflight::FileMonkey|App::AckX::Preflight::FileMonkey>
+request list (an array reference) if any prepended.  Any exceptions are
+caught, and C<$@> is appended to C<@ARGV> as it stands at the time of
+the exception.
 
 The plugin class name is obtained from manifest constant C<CLASS>,
 
