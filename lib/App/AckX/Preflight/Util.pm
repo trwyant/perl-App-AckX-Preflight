@@ -20,6 +20,9 @@ use constant HASH_REF	=> ref {};
 use constant REGEXP_REF	=> ref qr{};
 use constant SCALAR_REF	=> ref \0;
 
+use constant IS_VMS	=> 'VMS' eq $^O;
+use constant IS_WINDOWS	=> { map { $_ => 1 } qw{ dos MSWin32 } }->{$^O};
+
 use constant SYNTAX_CODE		=> 'code';
 use constant SYNTAX_COMMENT		=> 'comment';
 use constant SYNTAX_DATA		=> 'data';
@@ -61,6 +64,9 @@ our @EXPORT_OK = qw{
     REGEXP_REF
     SCALAR_REF
 
+    IS_VMS
+    IS_WINDOWS
+
     SYNTAX_CODE
     SYNTAX_COMMENT
     SYNTAX_DATA
@@ -75,6 +81,7 @@ our %EXPORT_TAGS = (
     all		=> \@EXPORT_OK,
     croak	=> [ qw{ __die __die_hard __warn } ],
     json	=> [ grep { m/ \A __json_ /smx } @EXPORT_OK ],
+    os		=> [ qw{ IS_VMS IS_WINDOWS } ],
     ref		=> [ grep { m/ _REF \z /smx } @EXPORT_OK ],
     syntax	=> [ grep { m/ \A SYNTAX_ /smx } @EXPORT_OK ],
 );
@@ -587,6 +594,15 @@ This is set to C<ref qr{}>.
 
 This is set to C<ref \0>.
 
+=head2 IS_VMS
+
+This is set to a true value if and only if the operating system is VMS.
+
+=head2 IS_WINDOWS
+
+This is set to a true value if and only if the operating system is
+Windows.
+
 =head2 SYNTAX_CODE
 
 This is the recommended syntax filter specification for code, and is set
@@ -624,6 +640,10 @@ This tag exports everything that can be exported.
 
 This tag exports L<__die|/__die>, L<__die_hard|/__die_hard>, and
 L<__warn|/__warn>.
+
+=head2 os
+
+This tag exports L<IS_VMS|/IS_VMS> and L<IS_WINDOWS|/IS_WINDOWS>.
 
 =head2 ref
 

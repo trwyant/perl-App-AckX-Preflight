@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight::Util qw{
+    :os
     __load_ack_config
     @CARP_NOT
 };
@@ -60,7 +61,8 @@ sub __setup {
     my $encoding = $class->_get_file_encoding( $config, $file )
 	// return;
 
-    return ":encoding($encoding)";
+    my $crlf = IS_WINDOWS ? ':crlf' : '';
+    return ":encoding($encoding)$crlf";
 }
 
 

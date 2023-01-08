@@ -30,6 +30,7 @@ hocery
 Javadoc
 Lua
 merchantability
+os
 perlcore
 preflight
 raku

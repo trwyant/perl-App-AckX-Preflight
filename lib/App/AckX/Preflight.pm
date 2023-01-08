@@ -25,9 +25,6 @@ use constant DISPATCH_EXEC	=> 'exec';
 use constant DISPATCH_NONE	=> 'none';
 use constant DISPATCH_SYSTEM	=> 'system';
 
-use constant IS_VMS	=> 'VMS' eq $^O;
-use constant IS_WINDOWS	=> { map { $_ => 1 } qw{ dos MSWin32 } }->{$^O};
-
 use if IS_WINDOWS, 'Win32';
 
 use constant PLUGIN_SEARCH_PATH	=> join '::', __PACKAGE__, 'Plugin';
