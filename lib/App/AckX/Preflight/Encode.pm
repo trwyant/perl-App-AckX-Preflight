@@ -61,8 +61,7 @@ sub __setup {
     my $encoding = $class->_get_file_encoding( $config, $file )
 	// return;
 
-    my $crlf = IS_WINDOWS ? ':crlf' : '';
-    return ":encoding($encoding)$crlf";
+    return ":encoding($encoding)";
 }
 
 
