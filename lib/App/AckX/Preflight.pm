@@ -694,9 +694,33 @@ statically, it returns the default value of the C<{dispatch}> attribute.
 
 A plug-in would call this method to request
 L<App::AckX::Preflight::FileMonkey|App::AckX::Preflight::FileMonkey> to
-add the given class as a C<:via:> I/O layer in
-L<App::Ack::File|App::Ack::File>. The C<%config> hash contains
-configuration data for the I/O layer. See
+process the given class using the given configuration data. The class
+must implement static methods C<__setup()> and C<__post_open()>.
+
+The C<__setup()> method is called in void context when
+L<App::AckX::Preflight::FileMonkey|App::AckX::Preflight::FileMonkey> is
+imported. It is passed a reference to the C<%config> hash.
+
+The C<__post_open()> method is called in list context when a file is
+opened for F<ack> to search. It is passed a reference to the C<%config>
+hash, the file handle, and the L<App::Ack::File|App::Ack::File> object.
+It B<must not> alter the file handle, but it B<may> return I/O layers to
+be applied to the file handle after all C<__post_open()> methods are
+called. These layers B<must> be returned without leading colons, and
+B<must> be returned individually (i.e.
+
+ return qw{ crlf encoding(utf-8) }
+
+not
+
+ return ':crlf:encoding(utf-8)'
+
+).
+
+The C<__post_open()> method B<must not> return I/O layers unless
+it has checked to see that these have not already been applied.
+
+See
 L<App::AckX::Preflight::Plugin::Syntax|App::AckX::Preflight::Plugin::Syntax>
 for an example of how to use this, and
 L<App::AckX::Preflight::FileMonkey|App::AckX::Preflight::FileMonkey> for

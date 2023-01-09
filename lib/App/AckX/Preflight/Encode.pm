@@ -42,7 +42,7 @@ sub _get_file_encoding {
     return undef;	## no critic (ProhibitExplicitReturnUndef)
 }
 
-sub __setup {
+sub __post_open {
     my ( $class, $config, $fh, $file ) = @_;	# Invocant unused
 
     # NOTE that the only known way $fh can be undefined is during
@@ -61,8 +61,10 @@ sub __setup {
     my $encoding = $class->_get_file_encoding( $config, $file )
 	// return;
 
-    return ":encoding($encoding)";
+    return "encoding($encoding)";
 }
+
+sub __setup {}
 
 
 1;

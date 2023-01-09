@@ -40,7 +40,7 @@ sub setup_syntax {
     my ( %config ) = @_;
     my $caller = caller;
     my $syntax = $caller->SYNTAX_FILTER();
-    $syntax->__setup( \%config );
+    $syntax->__post_open( \%config );
     FILE_MONKEY->import( [ [ $syntax, \%config ] ] );
     return;
 }

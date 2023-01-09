@@ -14,6 +14,8 @@ use Text::ParseWords ();
 
 use constant DEFAULT_OUTPUT	=> '-';
 
+use constant EMPTY_STRING	=> q<''>;
+
 use constant ARRAY_REF	=> ref [];
 use constant CODE_REF	=> ref sub {};
 use constant HASH_REF	=> ref {};
@@ -57,6 +59,8 @@ our @EXPORT_OK = qw{
     ACK_FILE_CLASS
 
     DEFAULT_OUTPUT
+
+    EMPTY_STRING
 
     ARRAY_REF
     CODE_REF
@@ -573,6 +577,10 @@ C<2.999>; otherwise it is C<'App::Ack::Resource'>.
 
 This is the string that the C<--OUT> option uses to indicate default
 output. Its value is C<'-'>;
+
+=head2 EMPTY_STRING
+
+This is just an empty string.
 
 =head2 ARRAY_REF
 

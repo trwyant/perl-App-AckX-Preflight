@@ -237,7 +237,7 @@ sub __get_syntax_filter {
     return undef;	## no critic (ProhibitExplicitReturnUndef)
 }
 
-sub __setup {
+sub __post_open {
     my ( $class, $config, $fh, $file ) = @_;	# Invocant unused
 
     # Figure out which syntax filter we are using. If none, just return.
@@ -301,8 +301,10 @@ sub __setup {
     }
 
     # Insert the correct syntax filter into the PerlIO stack.
-    return ":via($syntax)";
+    return "via($syntax)";
 }
+
+sub __setup {}
 
 # FIXME this is a bit clunky. What I think I really want is return a
 # handle that triggers the cleanup when it goes out of scope. That seems

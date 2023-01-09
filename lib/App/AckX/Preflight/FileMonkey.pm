@@ -32,6 +32,7 @@ sub import {
     foreach my $item ( @{ $spec } ) {
 	__load_module( $item->[0] )
 	    or __die( "Failed to load $item->[0]: $@" );
+	$item->[0]->__setup( $item->[1] );
     }
 
     $SPEC = $spec;
@@ -74,10 +75,10 @@ sub __hot_patch {
 
 	my @binmode;
 	foreach my $item ( @{ $SPEC } ) {
-	    push @binmode, $item->[0]->__setup( $item->[1], $fh, $self );
+	    push @binmode, $item->[0]->__post_open( $item->[1], $fh, $self );
 	}
 
-	# We have to defer the binmode calls until all __setup() calls
+	# We have to defer the binmode calls until all __post_open() calls
 	# have been made because:
 	# * If one of them wants :encoding(...) and another uses a
 	#   filter that calls ->firstliney() the call will fail because
@@ -116,6 +117,8 @@ sub __hot_patch {
 sub __layers {
     return @LAYERS;
 }
+
+sub __post_open {}
 
 sub __setup {
     my ( undef, $opt ) = @_;
