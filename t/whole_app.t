@@ -115,11 +115,12 @@ EOD
 
 done_testing;
 
+my @LAYERS;
+
 sub dump_layers {
-    state $loaded = __load_module( 'App::AckX::Preflight::FileMonkey' );
-    if ( my @layers = App::AckX::Preflight::FileMonkey->__layers() ) {
+    if ( @LAYERS ) {
 	diag 'PerlIO layers:';
-	diag "  $_" for @layers;
+	diag "  $_" for @LAYERS;
     } else {
 	diag 'PerlIO layers not available';
     }
@@ -142,12 +143,16 @@ sub xqt {
 	goto &fail;
     };
 
-    seek $out, 0, 0;
+    # NOTE that if I just read <$out> I get the \r\n line endings under
+    # Windows. No idea why -- I verified the presence of :crlf.
+    my $got = do {
+	open my $fh, '<', $out->filename()
+	    or die 'Failed to open ', $out->filename(), ": $!";
+	local $/ = undef;
+	<$fh>;
+    };
 
-    local $/ = undef;
-
-    local $/ = undef;	# Slurp
-    @_ = ( scalar( <$out> ), $want, $title );
+    @_ = ( $got, $want, $title );
     goto &is;
 }
 
