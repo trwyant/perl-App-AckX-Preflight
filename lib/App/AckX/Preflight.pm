@@ -12,7 +12,6 @@ use File::Spec;
 use IPC::Cmd ();	# for can_run
 use List::Util 1.45 ();	# For uniqstr, which this module does not use
 use Pod::Usage ();
-use Scope::Guard ();
 use Text::Abbrev ();
 use Text::ParseWords ();
 
@@ -235,8 +234,8 @@ EOD
 	$p->{class}->__process( $self, $p->{opt} );
     }
 
-    local $self->{dry_run} = $opt{dry_run};
     local $self->{dispatch} = $opt{dispatch} // $self->{dispatch};
+    local $self->{dry_run} = $opt{dry_run};
     local $self->{output}  = $opt{output} // $self->{output};
     local $self->{verbose} = $opt{verbose} // $self->{verbose};
 
@@ -273,40 +272,17 @@ sub _build_ack_command {
 sub __execute {
     my ( $self, @arg ) = @_;
 
-    $self->verbose()
-	and splice @{ $self->{file_monkey} }, 0, 0, [
-	'App::AckX::Preflight::FileMonkey', { verbose => 1 } ];
+    my %file_monkey_config = (
+	output	=> $self->output(),
+	verbose	=> $self->verbose(),
+    );
+    splice @{ $self->{file_monkey} }, 0, 0, [
+	MODULE_FILE_MONKEY, \%file_monkey_config ];
 
     $self->_trace( @arg );
 
-    ref $self
-	and $self->{dry_run}
+    $self->{dry_run}
 	and return;
-
-    # Redirect STDOUT to a file if needed. We make no direct use of the
-    # returned object, but hold it because its destructor undoes the
-    # redirect on scope exit.
-    # NOTE that we rely on the fact that destructors are NOT run when an
-    # exec() is done.
-    my $redirect;
-    {
-	my $output = $self->output();
-	if ( defined( $output ) && $output ne DEFAULT_OUTPUT ) {
-	    open my $from, '>&', \*STDOUT	## no critic (RequireBriefOpen)
-		or __die( "Failed to dup STDOUT: $!" );
-	    $redirect = Scope::Guard->new( sub {
-		    close STDOUT;
-		    open STDOUT, '>&', $from
-			or __die( "Failed to restore STDOUT: $!" );
-		    return;
-		},
-	    );
-	    close STDOUT;
-	    open STDOUT, '>', $output
-		or __die( "Failed to re-open STDOUT to $output: $!" );
-	}
-    }
-
 
     state $dispatch = {
 	DISPATCH_EXEC,	sub {
@@ -318,10 +294,11 @@ sub __execute {
 	},
 	DISPATCH_NONE,	sub {
 	    my ( $self, @arg ) = @_;
+	    my %rslt;
 	    if ( $self->{file_monkey} && @{ $self->{file_monkey} } ) {
-		__load_module( 'App::AckX::Preflight::FileMonkey' )
+		__load_module( MODULE_FILE_MONKEY )
 		    or die( "Failed to load FileMonkey: $@" );
-		App::AckX::Preflight::FileMonkey->import(
+		%rslt = MODULE_FILE_MONKEY->import(
 		    $self->{file_monkey} );
 	    }
 	    __load_module( 'App::AckX::Preflight::MiniAck' )
@@ -339,7 +316,8 @@ sub __execute {
 	},
     };
 
-    return $dispatch->{ $self->dispatch() }->( $self, @arg );
+    return $dispatch->{ $self->dispatch() }->(
+	$self, @arg );
 }
 
 sub __find_config_files {

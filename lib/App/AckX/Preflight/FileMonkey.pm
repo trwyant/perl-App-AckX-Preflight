@@ -11,9 +11,11 @@ use App::AckX::Preflight::Util qw{
     __load_module
     __set_sub_name
     ACK_FILE_CLASS
+    DEFAULT_OUTPUT
     @CARP_NOT
 };
 use JSON;
+use Scope::Guard ();
 
 our $VERSION = '0.000_045';
 
@@ -29,17 +31,21 @@ sub import {
 	    __json_decode( $arg );
 	}
 	|| __die_hard( "Failed to parse '$arg' as JSON" );
+    my %rslt;
     foreach my $item ( @{ $spec } ) {
 	__load_module( $item->[0] )
 	    or __die( "Failed to load $item->[0]: $@" );
-	$item->[0]->__setup( $item->[1] );
+	$rslt{$item->[0]} = $item->[0]->__setup( $item->[1] );
     }
 
     $SPEC = $spec;
 
     $class->__hot_patch();
 
-    return;
+    defined wantarray
+	or return;
+
+    return %rslt;
 
 }
 
@@ -123,7 +129,35 @@ sub __post_open {}
 sub __setup {
     my ( undef, $opt ) = @_;
     $OPT = $opt;
-    return;
+
+    my $wantarray = ( caller 1 )[5];
+
+    # Redirect STDOUT to a file if needed. We make no direct use of the
+    # returned object, but hold it because its destructor undoes the
+    # redirect on scope exit.
+    # NOTE that we rely on the fact that destructors are NOT run when an
+    # exec() is done.
+    my %rslt;
+    {
+	my $output = $opt->{output};
+	if ( defined( $output ) && $output ne DEFAULT_OUTPUT ) {
+	    open my $from, '>&', \*STDOUT	## no critic (RequireBriefOpen)
+		or __die( "Failed to dup STDOUT: $!" );
+	    $wantarray
+		and $rslt{output} = Scope::Guard->new( sub {
+			close STDOUT;
+			open STDOUT, '>&', $from
+			    or __die( "Failed to restore STDOUT: $!" );
+			return;
+		    },
+		);
+	    close STDOUT;
+	    open STDOUT, '>', $output
+		or __die( "Failed to re-open STDOUT to $output: $!" );
+	}
+    }
+
+    return \%rslt;
 }
 
 1;

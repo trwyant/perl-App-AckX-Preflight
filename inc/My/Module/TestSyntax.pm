@@ -7,8 +7,7 @@ use warnings;
 
 use Carp;
 use Exporter qw{ import };
-use App::AckX::Preflight::FileMonkey ();
-use App::AckX::Preflight::Util qw{ __load_module ACK_FILE_CLASS };
+use App::AckX::Preflight::Util qw{ :module __load_module ACK_FILE_CLASS };
 use Scalar::Util qw{ blessed openhandle };
 
 our $VERSION = '0.000_045';
@@ -17,14 +16,14 @@ our @EXPORT = qw{
     setup_syntax
     slurp
 
-    FILE_MONKEY
     TEXT_FILE
     TEXT_CONTENT
 };
 
+__load_module( MODULE_FILE_MONKEY );
 __load_module( ACK_FILE_CLASS );
 
-use constant FILE_MONKEY   => 'App::AckX::Preflight::FileMonkey';
+use constant MODULE_FILE_MONKEY   => 'App::AckX::Preflight::FileMonkey';
 
 use constant TEXT_FILE	=> 't/data/text_file.txt';
 
@@ -41,7 +40,7 @@ sub setup_syntax {
     my $caller = caller;
     my $syntax = $caller->SYNTAX_FILTER();
     $syntax->__post_open( \%config );
-    FILE_MONKEY->import( [ [ $syntax, \%config ] ] );
+    MODULE_FILE_MONKEY->import( [ [ $syntax, \%config ] ] );
     return;
 }
 
@@ -131,10 +130,6 @@ The \%option hash is itself optional. The supported keys are:
 =head1 MANIFEST CONSTANTS
 
 This module exports the following manifest constants:
-
-=head2 FILE_MONKEY
-
-This is just the module name C<'App::AckX::Preflight::FileMonkey'>.
 
 =head2 TEXT_FILE
 

@@ -12,7 +12,7 @@ use IPC::Cmd ();
 use Test2::V0;
 
 use constant COPYRIGHT	=> <<'EOD';
-lib/App/AckX/Preflight.pm:20:our $COPYRIGHT = 'Copyright (C) 2018-2023 by Thomas R. Wyant, III';
+lib/App/AckX/Preflight.pm:19:our $COPYRIGHT = 'Copyright (C) 2018-2023 by Thomas R. Wyant, III';
 EOD
 
 {
