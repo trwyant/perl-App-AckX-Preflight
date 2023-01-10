@@ -42,6 +42,7 @@ use constant ACK_FILE_CLASS	=> 'App::Ack::File';
 our $VERSION = '0.000_045';
 
 our @EXPORT_OK = qw{
+    __check_encoding
     __die
     __die_hard
     __err_exclusive
@@ -136,6 +137,17 @@ our @CARP_NOT = qw{
     App::AckX::Preflight::Syntax::_single_line_comments
     App::AckX::Preflight::Util
 };
+
+sub __check_encoding {
+    my ( $encoding ) = @_;
+    defined $encoding
+	or return undef;	## no critic (ProhibitExplicitReturnUndef)
+    $encoding eq EMPTY_STRING
+	and return undef;	## no critic (ProhibitExplicitReturnUndef)
+    my $enc = Encode::find_encoding( $encoding )
+	or __die( "Encoding '$encoding' not found" );
+    return $enc->name();
+}
 
 sub __die {
     $Carp::Verbose

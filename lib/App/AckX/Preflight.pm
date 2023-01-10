@@ -8,6 +8,7 @@ use warnings;
 use App::Ack ();
 use App::AckX::Preflight::Util qw{ :all };
 use Cwd ();
+use Encode ();
 use File::Spec;
 use IPC::Cmd ();	# for can_run
 use List::Util 1.45 ();	# For uniqstr, which this module does not use
@@ -39,6 +40,7 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 	    IS_WINDOWS ? Win32::CSIDL_APPDATA() :
 	    $ENV{HOME},
 	output	=> DEFAULT_OUTPUT,
+	output_encoding	=> undef,
 	verbose	=> 0,
     );
 
@@ -76,6 +78,8 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 	    __warn( '--dispatch=exec ignored under Windows' );
 	}
 
+	$arg{output_encoding} = __check_encoding( $arg{output_encoding} );
+
 	$arg{disable}	= {};
 
 	return bless \%arg, ref $class || $class;
@@ -107,6 +111,13 @@ use constant PLUGIN_MATCH	=> qr< \A @{[ PLUGIN_SEARCH_PATH ]} :: >smx;
 	ref $self
 	    or $self = \%default;
 	return $self->{output};
+    }
+
+    sub output_encoding {
+	my ( $self ) = @_;
+	ref $self
+	    or $self = \%default;
+	return $self->{output_encoding};
     }
 
     sub verbose {
@@ -146,7 +157,8 @@ sub run {
     my @argv = @ARGV;
 
     __getopt( \%opt,
-	qw{ default=s% dry_run|dry-run! verbose! },
+	qw{ default=s% dry_run|dry-run!
+	output_encoding|output-encoding=s verbose! },
 	'dispatch=s'	=> sub {
 	    my ( $name, $value ) = @_;
 	    state $expand = Text::Abbrev::abbrev(
@@ -237,6 +249,8 @@ EOD
     local $self->{dispatch} = $opt{dispatch} // $self->{dispatch};
     local $self->{dry_run} = $opt{dry_run};
     local $self->{output}  = $opt{output} // $self->{output};
+    local $self->{output_encoding} = __check_encoding(
+	$opt{output_encoding} ) // $self->{output_encoding};
     local $self->{verbose} = $opt{verbose} // $self->{verbose};
 
     my @rslt = $self->__execute( @ARGV );
@@ -273,8 +287,9 @@ sub __execute {
     my ( $self, @arg ) = @_;
 
     my %file_monkey_config = (
-	output	=> $self->output(),
-	verbose	=> $self->verbose(),
+	output		=> $self->output(),
+	output_encoding	=> $self->output_encoding(),
+	verbose		=> $self->verbose(),
     );
     splice @{ $self->{file_monkey} }, 0, 0, [
 	MODULE_FILE_MONKEY, \%file_monkey_config ];
@@ -610,6 +625,9 @@ F<ack> to be run using the same-named system built-in. The C<'none'>
 value runs no external executable, but provides minimal functionality
 specific to F<ack>.
 
+See L<App::AckX::Preflight::MiniAck|App::AckX::Preflight::MiniAck> for
+more details on the functionality provided when C<'none'> is specified.
+
 =item global
 
 This is the name of the directory in which the global configuration file
@@ -647,6 +665,17 @@ and chosen to be compatible with L<App::Ack|App::Ack>:
 This is the default output file name. The default is C<'-'>, which
 specifies standard output.
 
+This option applies only to the actual F<ack> run. If C<dispatch> is
+C<'none'>, the old C<STDOUT> will be restored.
+
+=item output_encoding
+
+This is the encoding to be applied to the output. The default is
+C<undef>, which specifies no explicit encoding.
+
+This option applies only to the actual F<ack> run. If C<dispatch> is
+C<'none'>, the old C<STDOUT> encoding will be restored.
+
 =item verbose
 
 This Boolean is the default verbosity setting. The default is C<0> (i.e.
@@ -670,14 +699,27 @@ statically, it returns the default value of the C<{dispatch}> attribute.
 
  $self->__file_monkey( $class => \%config );
 
+This method is B<private> to the C<App-AckX-Preflight> package. Its
+documentation is solely for the benefit of the author and does not
+constitute a commitment to the user. It can be changed or revoked at any
+time. I<Caveat user.>
+
 A plug-in would call this method to request
 L<App::AckX::Preflight::FileMonkey|App::AckX::Preflight::FileMonkey> to
 process the given class using the given configuration data. The class
-must implement static methods C<__setup()> and C<__post_open()>.
+B<must> implement static methods C<__setup()> and C<__post_open()>.
 
-The C<__setup()> method is called in void context when
-L<App::AckX::Preflight::FileMonkey|App::AckX::Preflight::FileMonkey> is
-imported. It is passed a reference to the C<%config> hash.
+The C<__setup()> method is called by
+L<App::AckX::Preflight::FileMonkey|App::AckX::Preflight::FileMonkey>'s
+C<init()> method. It is passed a reference to the C<%config> hash. The
+C<__setup()> method B<may> return a hash reference, which will
+(ultimately) be returned to whoever called C<init()>, B<provided>, of
+course, that this was not done in void context.  You almost certainly do
+not want to return anything if C<init()> was called in void context.
+Especially if you are returning L<Scope::Guard|Scope::Guard> objects to
+do clean-up when
+L<App::AckX::Preflight::MiniAck|App::AckX::Preflight::MiniAck>
+completes.
 
 The C<__post_open()> method is called in list context when a file is
 opened for F<ack> to search. It is passed a reference to the C<%config>
@@ -736,8 +778,15 @@ If called on an object, this method returns the value of the C<{output}>
 attribute, whether explicit or defaulted. If called statically, it
 returns the default value of the C<{output}> attribute.
 
-B<Note> that the L<run()|/run> method may override this if C<--OUT>
-was specified on the command line.
+=head2 output_encoding
+
+ say App::Ack::Preflight->output_encoding();
+ say $aaxp->output_encoding();
+
+If called on an object, this method returns the value of the
+C<{output_encoding}> attribute, whether explicit or defaulted. If called
+statically, it returns the default value of the C<{output_encoding}>
+attribute.
 
 =head2 verbose
 
@@ -747,9 +796,6 @@ was specified on the command line.
 If called on an object, this method returns the value of the
 C<{verbose}> attribute, whether explicit or defaulted. If called
 statically, it returns the default value of the C<{verbose}> attribute.
-
-B<Note> that the L<run()|/run> method may override this if C<--verbose>
-or C<--no-verbose> was specified on the command line.
 
 =head2 run
 

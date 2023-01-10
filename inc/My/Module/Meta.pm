@@ -164,6 +164,7 @@ sub requires {
 	'Carp'				=> 0,
 	'Config'			=> 0,
 	'Cwd'				=> 0,
+	'Encode'			=> 0,
 	'Exporter'			=> 0,
 	'ExtUtils::Manifest'		=> 0,
 	'Fcntl'				=> 0,

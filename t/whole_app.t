@@ -12,7 +12,7 @@ use IPC::Cmd ();
 use Test2::V0;
 
 use constant COPYRIGHT	=> <<'EOD';
-lib/App/AckX/Preflight.pm:19:our $COPYRIGHT = 'Copyright (C) 2018-2023 by Thomas R. Wyant, III';
+lib/App/AckX/Preflight.pm:20:our $COPYRIGHT = 'Copyright (C) 2018-2023 by Thomas R. Wyant, III';
 EOD
 
 {
@@ -131,7 +131,11 @@ sub xqt {
     my $want = pop @arg;
 
     my $out = File::Temp->new();
-    local @ARGV = ( qw{ --OUT }, $out->filename(), @arg );
+    local @ARGV = (
+	qw{ --OUT }, $out->filename(),
+	qw{ --output-encoding utf-8 },
+	@arg,
+    );
     my $title = "@ARGV";
 
     local $@ = undef;
@@ -146,7 +150,7 @@ sub xqt {
     # NOTE that if I just read <$out> I get the \r\n line endings under
     # Windows. No idea why -- I verified the presence of :crlf.
     my $got = do {
-	open my $fh, '<', $out->filename()
+	open my $fh, '<:encoding(utf-8)', $out->filename()
 	    or die 'Failed to open ', $out->filename(), ": $!";
 	local $/ = undef;
 	<$fh>;

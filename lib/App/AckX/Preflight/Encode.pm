@@ -8,6 +8,7 @@ use warnings;
 use App::AckX::Preflight::Util qw{
     :os
     __load_ack_config
+    EMPTY_STRING
     @CARP_NOT
 };
 
@@ -60,6 +61,8 @@ sub __post_open {
 
     my $encoding = $class->_get_file_encoding( $config, $file )
 	// return;
+    $encoding eq EMPTY_STRING
+	and return;
 
     return "encoding($encoding)";
 }

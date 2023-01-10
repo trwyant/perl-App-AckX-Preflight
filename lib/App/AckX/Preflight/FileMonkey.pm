@@ -140,24 +140,39 @@ sub __setup {
     my %rslt;
     {
 	my $output = $opt->{output};
-	if ( defined( $output ) && $output ne DEFAULT_OUTPUT ) {
-	    open my $from, '>&', \*STDOUT	## no critic (RequireBriefOpen)
-		or __die( "Failed to dup STDOUT: $!" );
+	my $output_encoding = $opt->{output_encoding};
+	if ( $output ne DEFAULT_OUTPUT ) {
 	    $wantarray
-		and $rslt{output} = Scope::Guard->new( sub {
-			close STDOUT;
-			open STDOUT, '>&', $from
-			    or __die( "Failed to restore STDOUT: $!" );
-			return;
-		    },
-		);
+		and $rslt{output} = _restore_stdout_when_done();
 	    close STDOUT;
-	    open STDOUT, '>', $output
+	    my $mode = defined $output_encoding ?
+		">:encoding($output_encoding)" : '>';
+	    open STDOUT, $mode, $output
 		or __die( "Failed to re-open STDOUT to $output: $!" );
+	} elsif ( defined $output_encoding ) {
+	    $wantarray
+		and $rslt{output} = _restore_stdout_when_done();
+	    # FIXME does this work in Windows?
+	    # :raw to ditch any previous encodings.
+	    binmode STDOUT, ":raw:encoding($output_encoding)"
+		or __die(
+		"Failed to set STDOUT encoding to '$output_encoding': $!" );
 	}
     }
 
     return \%rslt;
+}
+
+sub _restore_stdout_when_done {
+    open my $clone, '>&', \*STDOUT	## no critic (RequireBriefOpen)
+	or __die( "Failed to dup STDOUT: $!" );
+    return Scope::Guard->new( sub {
+	    close STDOUT;
+	    open STDOUT, '>&', $clone
+		or __die( "Failed to restore STDOUT: $!" );
+	    return;
+	},
+    );
 }
 
 1;

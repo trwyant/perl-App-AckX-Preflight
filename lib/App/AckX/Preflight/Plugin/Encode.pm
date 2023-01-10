@@ -6,7 +6,11 @@ use strict;
 use warnings;
 use parent qw{ App::AckX::Preflight::Plugin };
 
-use App::AckX::Preflight::Util qw{ :croak @CARP_NOT };
+use App::AckX::Preflight::Util qw{
+    __check_encoding
+    :croak
+    @CARP_NOT
+};
 
 our $VERSION = '0.000_045';
 
@@ -23,8 +27,6 @@ sub __options {
 sub __process {
     my ( undef, $aaxp, $opt ) = @_;
 
-    $DB::single = 1;
-
     defined $opt->{$_} or delete $opt->{$_} for keys %{ $opt };
 
     keys %{ $opt }
@@ -34,6 +36,7 @@ sub __process {
 
     foreach ( @{ $opt->{encoding} } ) {
 	my ( $encoding, $filter, $arg ) = split /:/, $_, 3;
+	__check_encoding( $encoding );
 	defined $filter
 	    or __die( 'No --encoding filter specified' );
 	defined $arg
