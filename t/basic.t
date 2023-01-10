@@ -7,6 +7,22 @@ use Test2::V0;
 use Test2::Plugin::BailOnFail;
 use Test2::Tools::LoadModule 0.002;	# For all_modules_tried_ok
 
+use lib 'inc';
+require My::Module::Meta;
+
+diag 'Prerequisites:';
+foreach my $module ( sort keys %{ My::Module::Meta->all_prereq() } ) {
+    local $@ = undef;
+    if ( eval "require $module; 1" ) {
+	my $ver = $module->VERSION;
+	defined $ver
+	    or $ver = 'undef';
+	diag "$module\t=> $ver";
+    } else {
+	diag "$module can not be loaded";
+    }
+}
+
 load_module_ok 'App::AckX::Preflight::Util';
 
 can_ok 'App::AckX::Preflight::Util', [ qw{

@@ -25,6 +25,17 @@ sub add_to_cleanup {
     return [ qw{ cover_db xt/author/optionals } ];
 }
 
+sub all_prereq {
+    my %prereq;
+    foreach my $method ( qw{ configure_requires build_requires requires } ) {
+	my $req = __PACKAGE__->$method();
+	foreach my $key ( keys %{ $req } ) {
+	    $prereq{$key} = $req->{$key};
+	}
+    }
+    return \%prereq;
+}
+
 sub author {
     return 'Thomas R. Wyant, III F<wyant at cpan dot org>';
 }
@@ -243,6 +254,14 @@ This subroutine returns the distribution's abstract.
 
 This method returns a reference to an array of files to be added to the
 cleanup.
+
+=head2 all_prereq
+
+This method returns the results of
+L<configure_requires()|/configure_requires>,
+L<build_requires()|/build_requires>, and L<requires()|/requires>, merged
+in that order, with the last-specified winning if modules are specified
+more than once.
 
 =head2 author
 
