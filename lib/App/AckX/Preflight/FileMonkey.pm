@@ -27,10 +27,16 @@ sub import {
     my ( $class, $arg ) = @_;
     $arg //= [];
 
-    my $spec = ref $arg ? $arg : eval {
-	    __json_decode( $arg );
-	}
-	|| __die_hard( "Failed to parse '$arg' as JSON" );
+    my $spec;
+    if ( ref $arg ) {
+	$spec = $arg;
+    } else {
+	local $@ = undef;
+	eval {
+	    $spec = __json_decode( $arg );
+	    1;
+	} or __die_hard( "Failed to parse '$arg' as JSON" );
+    }
     my %rslt;
     foreach my $item ( @{ $spec } ) {
 	__load_module( $item->[0] )

@@ -311,7 +311,7 @@ sub __json_encode {
     my ( $data ) = @_;
     state $json = JSON->new()->utf8()->canonical();
     my $string = $json->encode( $data );
-    $string =~ s/ ( [%,] ) / sprintf '%%%x;', ord $1 /smxge;
+    $string =~ s/ ( [^\w:-] ) / sprintf '%%%x;', ord $1 /smxge;
     return $string;
 }
 
