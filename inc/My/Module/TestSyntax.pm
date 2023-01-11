@@ -10,7 +10,7 @@ use Exporter qw{ import };
 use App::AckX::Preflight::Util qw{ :module __load_module ACK_FILE_CLASS };
 use Scalar::Util qw{ blessed openhandle };
 
-our $VERSION = '0.000_045';
+our $VERSION = '0.000_046';
 
 our @EXPORT = qw{
     setup_syntax

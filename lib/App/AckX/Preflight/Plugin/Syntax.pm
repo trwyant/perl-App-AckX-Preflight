@@ -14,7 +14,7 @@ use App::AckX::Preflight::Util qw{
 };
 use List::Util 1.45 ();	# for uniqstr
 
-our $VERSION = '0.000_045';
+our $VERSION = '0.000_046';
 
 my $ARG_SEP_RE = qr{ \s* [:;,] \s* }smx;
 

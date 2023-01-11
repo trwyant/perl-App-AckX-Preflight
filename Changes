@@ -1,3 +1,18 @@
+0.000_046	2023-01-10	T. R. Wyant
+    Add --outout-encoding
+
+    Make FileMonkey responsible for redirecting STDOUT.  This means I do
+    not need to rely on what system() or exec() do with STDOUT, but it
+    also means I need to restore stdout only when running
+    --dispatch=none. So FileMonkey needs to be told about this, and
+    __setup() needs to return the guard to import(), which must field it
+    and return it in turn.
+
+    Refactor FileMonkey interface.  Rename __setup() to __post_open().
+    Add new __setup() called when FileMonkey is imported.
+
+    Re-engineer Encode options to be more like Ack type definitions
+
 0.000_045	2023-01-06	T. R. Wyant
     Add --encode-type and --encode-file to specify file encodings.
 

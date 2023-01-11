@@ -15,7 +15,7 @@ use App::AckX::Preflight::Util qw{
     ACK_FILE_CLASS
 };
 
-our $VERSION = '0.000_045';
+our $VERSION = '0.000_046';
 
 use constant SYNTAX_PLUGIN	=> 'App::AckX::Preflight::Plugin::Syntax';
 
