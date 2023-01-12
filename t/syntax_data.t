@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Data;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Data' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Data';
 
 use constant DATA_FILE	=> 't/data/json_file.json';
 
@@ -39,9 +36,11 @@ use constant DATA_DATA_COMMENT => <<'EOD';
    7: ]
 EOD
 
-$App::Ack::mappings{json} = [
-    App::Ack::Filter::Extension->new( qw{ json } ),
-];
+setup_slurp(
+    type	=> 'json',
+    extension	=> 'json',
+    # encoding	=> 'utf-8',
+);
 
 my $resource = ACK_FILE_CLASS->new( DATA_FILE );
 

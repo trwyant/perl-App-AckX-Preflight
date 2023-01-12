@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Lua;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Lua' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Lua';
 
 use constant LUA_FILE	=> 't/data/lua_file.lua';
 
@@ -70,9 +67,11 @@ use constant LUA_METADATA	=> <<'EOD';
    1: #!/usr/bin/env lua
 EOD
 
-$App::Ack::mappings{lua} = [
-    App::Ack::Filter::Extension->new( qw{ lua } ),
-];
+setup_slurp(
+    type	=> 'lua',
+    extension	=> 'lua',
+    # encoding	=> 'utf-8',
+);
 
 my $resource = ACK_FILE_CLASS->new( LUA_FILE );
 

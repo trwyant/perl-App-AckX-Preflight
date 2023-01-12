@@ -13,8 +13,10 @@ eval {
 } or plan skip_all => 'Test::Prereq::Meta not available';
 
 my $tpm = Test::Prereq::Meta->new(
-    accept	=> IS_WINDOWS ? [] :
-	[ qw{ Win32 Win32::ShellQuote } ],
+    accept	=> [
+	IS_WINDOWS ? () : qw{ Win32 Win32::ShellQuote },
+    ],
+    uses	=> [ qw{ App::Ack::Filter::Extension Scalar::Util } ],
 );
 
 $tpm->all_prereq_ok();

@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Java;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Java' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Java';
 
 use constant JAVA_FILE	=> 't/data/java_file.java';
 
@@ -93,9 +90,11 @@ use constant JAVA_CODE_DOC => <<'EOD';
   32:
 EOD
 
-$App::Ack::mappings{java} = [
-    App::Ack::Filter::Extension->new( qw{ java } ),
-];
+setup_slurp(
+    type	=> 'java',
+    extension	=> 'java',
+    # encoding	=> 'utf-8',
+);
 
 my $resource = ACK_FILE_CLASS->new( JAVA_FILE );
 

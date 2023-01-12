@@ -85,9 +85,9 @@ sub __hot_patch {
 	    }
 	}
 
-	my @binmode;
+	@LAYERS = ();
 	foreach my $item ( @{ $SPEC } ) {
-	    push @binmode, $item->[0]->__post_open( $item->[1], $fh, $self );
+	    push @LAYERS, $item->[0]->__post_open( $item->[1], $fh, $self );
 	}
 
 	# We have to defer the binmode calls until all __post_open() calls
@@ -98,7 +98,7 @@ sub __hot_patch {
 	# * If one of them wants :via(...) it has to come after
 	#   :encoding(...) (if any) or the :via(...) code sees
 	#   un-decoded data.
-	foreach ( @binmode ) {
+	foreach ( @LAYERS ) {
 	    binmode $fh, $_
 		or __die( "Failed to do binmode \$fh, $_ on ",
 		$self->name(), ": $!" );
@@ -145,7 +145,7 @@ sub __setup {
     # exec() is done.
     my %rslt;
     {
-	my $output = $opt->{output};
+	my $output = $opt->{output} // DEFAULT_OUTPUT;
 	my $output_encoding = $opt->{output_encoding};
 	if ( $output ne DEFAULT_OUTPUT ) {
 	    $wantarray

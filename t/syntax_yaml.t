@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::YAML;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::YAML' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::YAML';
 
 use constant DATA_FILE	=> 't/data/yaml_file.yml';
 
@@ -39,9 +36,11 @@ use constant DATA_DATA_COMMENT_META => <<'EOD';
    7: - And returned the previous night.
 EOD
 
-$App::Ack::mappings{yaml} = [
-    App::Ack::Filter::Extension->new( qw{ yml yaml } ),
-];
+setup_slurp(
+    type	=> 'yaml',
+    extension	=> [ qw{ yml yaml } ],
+    # encoding	=> 'utf-8',
+);
 
 my $resource = ACK_FILE_CLASS->new( DATA_FILE );
 

@@ -18,7 +18,7 @@ This is documentation
 sub MAIN( $name='world' ) {
     say "Hello $name!";
 }
-#=<
+#=«
     This is a multi-line declarator block, and also documentation
->
+»
 # But this is just a comment.

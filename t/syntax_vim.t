@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Vim;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Vim' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Vim';
 
 use constant VIM_FILE	=> 't/data/vim_file.vim';
 
@@ -32,9 +29,11 @@ use constant VIM_CODE_COMMENT => <<'EOD';
    3: echo "Hello " . name . "!"
 EOD
 
-$App::Ack::mappings{vim} = [
-    App::Ack::Filter::Extension->new( qw{ vim } ),
-];
+setup_slurp(
+    type	=> 'vim',
+    extension	=> 'vim',
+    # encoding	=> 'utf-8',
+);
 
 my $resource = ACK_FILE_CLASS->new( VIM_FILE );
 

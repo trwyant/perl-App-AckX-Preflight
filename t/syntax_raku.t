@@ -5,16 +5,15 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Raku;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Scalar::Util qw{ blessed openhandle };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER	=> 'App::AckX::Preflight::Syntax::Raku' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
 
-use constant SYNTAX_FILTER	=> 'App::AckX::Preflight::Syntax::Raku';
+use constant LFQ => "\N{U+AB}";	# LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+use constant RFQ => "\N{U+BB}";	# RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
 
 use constant RAKU_FILE	=> 't/data/raku_file.raku';
 
@@ -50,19 +49,19 @@ EOD
 
 =cut
 
-use constant RAKU_DOC	=> <<'EOD';
+use constant RAKU_DOC	=> sprintf <<'EOD', LFQ, RFQ;
   11: =begin pod
   12:
   13: This is documentation
   14:
   15: =end pod
   17: #| This is a single-line declarator block, and therefore documentation
-  21: #=<
+  21: #=%s
   22:     This is a multi-line declarator block, and also documentation
-  23: >
+  23: %s
 EOD
 
-use constant RAKU_CODE_DOC => <<'EOD';
+use constant RAKU_CODE_DOC => sprintf <<'EOD', LFQ, RFQ;
    2:
    3: use v6;
    4:
@@ -78,16 +77,18 @@ use constant RAKU_CODE_DOC => <<'EOD';
   18: sub MAIN( $name='world' ) {
   19:     say "Hello $name!";
   20: }
-  21: #=<
+  21: #=%s
   22:     This is a multi-line declarator block, and also documentation
-  23: >
+  23: %s
 EOD
 
-$App::Ack::mappings{raku} = [
-    App::Ack::Filter::Extension->new( qw{ raku } ),
-];
+setup_slurp(
+    type	=> 'raku',
+    extension	=> 'raku',
+    encoding	=> 'utf-8',
+);
 
-my $perl_resource = ACK_FILE_CLASS->new( RAKU_FILE );
+my $resource = ACK_FILE_CLASS->new( RAKU_FILE );
 
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ raku } ],
     sprintf '%s handles raku', SYNTAX_FILTER;
@@ -105,7 +106,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( RAKU_FILE ), RAKU_CODE, 'Only code, reading directly';
 
-is slurp( $perl_resource ), RAKU_CODE, 'Only code, reading resource';
+is slurp( $resource ), RAKU_CODE, 'Only code, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_METADATA ] );
 
@@ -114,7 +115,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( RAKU_FILE ), RAKU_METADATA, 'Only metadata, reading directly';
 
-is slurp( $perl_resource ), RAKU_METADATA, 'Only metadata, reading resource';
+is slurp( $resource ), RAKU_METADATA, 'Only metadata, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_DATA ] );
 
@@ -125,7 +126,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( RAKU_FILE ), PERL_DATA, 'Only data, reading directly';
 
-is slurp( $perl_resource ), PERL_DATA, 'Only data, reading resource';
+is slurp( $resource ), PERL_DATA, 'Only data, reading resource';
 
 =end comment
 
@@ -139,7 +140,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( RAKU_FILE ), RAKU_DOC, 'Only documentation, reading directly';
 
-is slurp( $perl_resource ), RAKU_DOC, 'Only documentation, reading resource';
+is slurp( $resource ), RAKU_DOC, 'Only documentation, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_DOCUMENTATION ] );
 
@@ -149,7 +150,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 is slurp( RAKU_FILE ), RAKU_CODE_DOC,
     'Code and documentation, reading directly';
 
-is slurp( $perl_resource ), RAKU_CODE_DOC,
+is slurp( $resource ), RAKU_CODE_DOC,
     'Code and documentation, reading resource';
 
 

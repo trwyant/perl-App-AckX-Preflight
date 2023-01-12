@@ -33,6 +33,8 @@ use constant IS_EXHAUSTIVE	=> 1;
 
 use constant PLUGIN_MATCH	=> qr< \A @{[ __PACKAGE__ ]} :: [A-Z] >smxi;
 
+use constant SYNTAX_FILTER_LAYER => "via(@{[ __PACKAGE__ ]})";
+
 my %SYNTAX_OPT;
 
 sub __handles_file {
@@ -172,6 +174,14 @@ sub PUSHED {
     return $self;
 }
 
+# This is optional, but it is the best way to tell PerlIO::via to set
+# the UTF8 flag on the data we passed it if there is an :encoding(...)
+# layer below us.
+sub UTF8 {
+    my ( undef, $belowflag ) = @_;
+    return $belowflag;
+}
+
 sub SEEK {
     my ( undef, $posn, $whence, $fh ) = @_;
     return seek $fh, $posn, $whence;
@@ -217,9 +227,6 @@ sub __want_everything {
 sub __want_syntax {
     return $SYNTAX_OPT{syntax};
 }
-
-use constant SYNTAX_FILTER_LAYER =>
-    qr{ \A via\(App::AckX::Preflight::Syntax \b }smx;
 
 sub __get_syntax_filter {
     my ( undef, $file ) = @_;
@@ -296,7 +303,7 @@ sub __post_open {
     # return. The original open() is idempotent, and ack makes use of
     # this, so we have to be idempotent also.
     foreach my $layer ( PerlIO::get_layers( $fh ) ) {
-	$layer =~ SYNTAX_FILTER_LAYER
+	$layer eq SYNTAX_FILTER_LAYER
 	    and return;
     }
 

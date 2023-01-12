@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Shell;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Shell' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Shell';
 
 use constant SHELL_FILE	=> 't/data/shell_file.sh';
 
@@ -53,11 +50,13 @@ use constant SHELL_CODE_COMMENT_METADATA => <<'EOD';
   14: # ex: set textwidth=72 :
 EOD
 
-$App::Ack::mappings{shell} = [
-    App::Ack::Filter::Extension->new( qw{ sh } ),
-];
+setup_slurp(
+    type	=> 'shell',
+    extension	=> 'sh',
+    # encoding	=> 'utf-8',
+);
 
-my $shell_resource = ACK_FILE_CLASS->new( SHELL_FILE );
+my $resource = ACK_FILE_CLASS->new( SHELL_FILE );
 
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ shell } ],
     sprintf '%s handles python, shell', SYNTAX_FILTER;
@@ -69,7 +68,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( SHELL_FILE ), SHELL_CODE, 'Only code, reading directly';
 
-is slurp( $shell_resource ), SHELL_CODE, 'Only code, reading resource';
+is slurp( $resource ), SHELL_CODE, 'Only code, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_COMMENT ] );
 
@@ -78,7 +77,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( SHELL_FILE ), SHELL_COMMENTS, 'Only comments, reading directly';
 
-is slurp( $shell_resource ), SHELL_COMMENTS, 'Only comments, reading resource';
+is slurp( $resource ), SHELL_COMMENTS, 'Only comments, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_METADATA ] );
 
@@ -89,7 +88,7 @@ ok SYNTAX_FILTER->__want_everything(),
 is slurp( SHELL_FILE ), SHELL_CODE_COMMENT_METADATA,
     'Code and comments, reading directly';
 
-is slurp( $shell_resource ), SHELL_CODE_COMMENT_METADATA,
+is slurp( $resource ), SHELL_CODE_COMMENT_METADATA,
     'Code and comments, reading resource';
 
 done_testing;

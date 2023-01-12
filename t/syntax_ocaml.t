@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Ocaml;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Ocaml' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Ocaml';
 
 use constant OCAML_FILE	=> 't/data/ocaml_file.ml';
 
@@ -57,9 +54,11 @@ use constant OCAML_CODE_DOC => <<'EOD';
   17: printf "Hello %s!\n" name;;
 EOD
 
-$App::Ack::mappings{ocaml} = [
-    App::Ack::Filter::Extension->new( qw{ ml } ),
-];
+setup_slurp(
+    type	=> 'ocaml',
+    extension	=> 'ml',
+    # encoding	=> 'utf-8',
+);
 
 my $resource = ACK_FILE_CLASS->new( OCAML_FILE );
 

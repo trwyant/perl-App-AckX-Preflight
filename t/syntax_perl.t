@@ -5,16 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Perl;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Scalar::Util qw{ blessed openhandle };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER	=> 'App::AckX::Preflight::Syntax::Perl' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER	=> 'App::AckX::Preflight::Syntax::Perl';
 
 use constant PERL_FILE	=> 't/data/perl_file.PL';
 
@@ -50,11 +46,13 @@ EOD
 
 use constant PERL_CODE_DOC => PERL_CODE . PERL_DOC;
 
-$App::Ack::mappings{perl} = [
-    App::Ack::Filter::Extension->new( qw{ PL } ),
-];
+setup_slurp(
+    type	=> 'perl',
+    extension	=> 'PL',
+    # encoding	=> 'utf-8',
+);
 
-my $perl_resource = ACK_FILE_CLASS->new( PERL_FILE );
+my $resource = ACK_FILE_CLASS->new( PERL_FILE );
 
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ parrot perl perltest } ],
     sprintf '%s handles parrot, perl, perltest', SYNTAX_FILTER;
@@ -72,7 +70,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( PERL_FILE ), PERL_CODE, 'Only code, reading directly';
 
-is slurp( $perl_resource ), PERL_CODE, 'Only code, reading resource';
+is slurp( $resource ), PERL_CODE, 'Only code, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_METADATA ] );
 
@@ -81,7 +79,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( PERL_FILE ), PERL_METADATA, 'Only metadata, reading directly';
 
-is slurp( $perl_resource ), PERL_METADATA, 'Only metadata, reading resource';
+is slurp( $resource ), PERL_METADATA, 'Only metadata, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_DATA ] );
 
@@ -90,7 +88,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( PERL_FILE ), PERL_DATA, 'Only data, reading directly';
 
-is slurp( $perl_resource ), PERL_DATA, 'Only data, reading resource';
+is slurp( $resource ), PERL_DATA, 'Only data, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_DOCUMENTATION ] );
 
@@ -99,7 +97,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( PERL_FILE ), PERL_DOC, 'Only documentation, reading directly';
 
-is slurp( $perl_resource ), PERL_DOC, 'Only documentation, reading resource';
+is slurp( $resource ), PERL_DOC, 'Only documentation, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_DOCUMENTATION ] );
 
@@ -109,7 +107,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 is slurp( PERL_FILE ), PERL_CODE_DOC,
     'Code and documentation, reading directly';
 
-is slurp( $perl_resource ), PERL_CODE_DOC,
+is slurp( $resource ), PERL_CODE_DOC,
     'Code and documentation, reading resource';
 
 

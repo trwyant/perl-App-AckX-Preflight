@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Crystal;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Crystal' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Crystal';
 
 use constant CRYSTAL_FILE	=> 't/data/crystal_file.cr';
 
@@ -47,11 +44,13 @@ use constant CRYSTAL_DOCUMENTATION => <<'EOD';
   15: # This is documentation because it precedes a language element.
 EOD
 
-$App::Ack::mappings{crystal} = [
-    App::Ack::Filter::Extension->new( qw{ cr } ),
-];
+setup_slurp(
+    type	=> 'crystal',
+    extension	=> 'cr',
+    # encoding	=> 'utf-8',
+);
 
-my $crystal_resource = ACK_FILE_CLASS->new( CRYSTAL_FILE );
+my $resource = ACK_FILE_CLASS->new( CRYSTAL_FILE );
 
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ crystal } ],
     sprintf '%s handles crysta;', SYNTAX_FILTER;
@@ -63,7 +62,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( CRYSTAL_FILE ), CRYSTAL_CODE, 'Only code, reading directly';
 
-is slurp( $crystal_resource ), CRYSTAL_CODE, 'Only code, reading resource';
+is slurp( $resource ), CRYSTAL_CODE, 'Only code, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_COMMENT ] );
 
@@ -72,7 +71,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( CRYSTAL_FILE ), CRYSTAL_COMMENTS, 'Only comments, reading directly';
 
-is slurp( $crystal_resource ), CRYSTAL_COMMENTS, 'Only comments, reading resource';
+is slurp( $resource ), CRYSTAL_COMMENTS, 'Only comments, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_METADATA ] );
 
@@ -82,7 +81,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 is slurp( CRYSTAL_FILE ), CRYSTAL_METADATA,
     'Metadata, reading directly';
 
-is slurp( $crystal_resource ), CRYSTAL_METADATA,
+is slurp( $resource ), CRYSTAL_METADATA,
     'Metadata, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_DOCUMENTATION ] );
@@ -93,7 +92,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 is slurp( CRYSTAL_FILE ), CRYSTAL_DOCUMENTATION,
     'Documentation, reading directly';
 
-is slurp( $crystal_resource ), CRYSTAL_DOCUMENTATION,
+is slurp( $resource ), CRYSTAL_DOCUMENTATION,
     'Documentation, reading resource';
 
 done_testing;

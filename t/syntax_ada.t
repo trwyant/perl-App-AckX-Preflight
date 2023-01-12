@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Ada;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Ada' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Ada';
 
 use constant ADA_FILE	=> 't/data/ada_file.adb';
 
@@ -58,11 +55,13 @@ use constant ADA_CODE_COMMENT => <<'EOD';
   16: end ada_file;
 EOD
 
-$App::Ack::mappings{ada} = [
-    App::Ack::Filter::Extension->new( qw{ adb } ),
-];
+setup_slurp(
+    type	=> 'ada',
+    extension	=> 'adb',
+    # encoding	=> 'utf-8',
+);
 
-my $shell_resource = ACK_FILE_CLASS->new( ADA_FILE );
+my $resource = ACK_FILE_CLASS->new( ADA_FILE );
 
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ ada } ],
     sprintf '%s handles ada', SYNTAX_FILTER;
@@ -74,7 +73,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( ADA_FILE ), SHELL_CODE, 'Only code, reading directly';
 
-is slurp( $shell_resource ), SHELL_CODE, 'Only code, reading resource';
+is slurp( $resource ), SHELL_CODE, 'Only code, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_COMMENT ] );
 
@@ -83,7 +82,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( ADA_FILE ), ADA_COMMENT, 'Only comments, reading directly';
 
-is slurp( $shell_resource ), ADA_COMMENT, 'Only comments, reading resource';
+is slurp( $resource ), ADA_COMMENT, 'Only comments, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_COMMENT ] );
 
@@ -93,7 +92,7 @@ ok SYNTAX_FILTER->__want_everything(),
 is slurp( ADA_FILE ), ADA_CODE_COMMENT,
     'Code and comments, reading directly';
 
-is slurp( $shell_resource ), ADA_CODE_COMMENT,
+is slurp( $resource ), ADA_CODE_COMMENT,
     'Code and comments, reading resource';
 
 done_testing;

@@ -14,7 +14,7 @@ use Text::ParseWords ();
 
 use constant DEFAULT_OUTPUT	=> '-';
 
-use constant EMPTY_STRING	=> q<''>;
+use constant EMPTY_STRING	=> q<>;
 
 use constant ARRAY_REF	=> ref [];
 use constant CODE_REF	=> ref sub {};

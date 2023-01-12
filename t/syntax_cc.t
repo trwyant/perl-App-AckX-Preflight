@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Cc;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Cc' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Cc';
 
 use constant CC_FILE	=> 't/data/cc_file.c';
 
@@ -64,11 +61,13 @@ use constant CC_CODE_COMMENTS => <<'EOD';
   19:  */
 EOD
 
-$App::Ack::mappings{cc} = [
-    App::Ack::Filter::Extension->new( qw{ c } ),
-];
+setup_slurp(
+    type	=> 'cc',
+    extension	=> 'c',
+    # encoding	=> 'utf-8',
+);
 
-my $cc_resource = ACK_FILE_CLASS->new( CC_FILE );
+my $resource = ACK_FILE_CLASS->new( CC_FILE );
 
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ cc css less } ],
     sprintf '%s handles cc, css, less', SYNTAX_FILTER;
@@ -80,7 +79,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( CC_FILE ), CC_CODE, 'Only code, reading directly';
 
-is slurp( $cc_resource ), CC_CODE, 'Only code, reading resource';
+is slurp( $resource ), CC_CODE, 'Only code, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_COMMENT ] );
 
@@ -89,7 +88,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( CC_FILE ), CC_COMMENTS, 'Only comments, reading directly';
 
-is slurp( $cc_resource ), CC_COMMENTS, 'Only comments, reading resource';
+is slurp( $resource ), CC_COMMENTS, 'Only comments, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_COMMENT ] );
 
@@ -99,7 +98,7 @@ ok SYNTAX_FILTER->__want_everything(),
 is slurp( CC_FILE ), CC_CODE_COMMENTS,
     'Code and comments, reading directly';
 
-is slurp( $cc_resource ), CC_CODE_COMMENTS,
+is slurp( $resource ), CC_CODE_COMMENTS,
     'Code and comments, reading resource';
 
 done_testing;

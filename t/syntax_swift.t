@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Swift;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Swift' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Swift';
 
 use constant SWIFT_FILE	=> 't/data/swift_file.swift';
 
@@ -67,9 +64,11 @@ use constant SWIFT_META	=> <<'EOD';
    1: #!/usr/bin/env swift
 EOD
 
-$App::Ack::mappings{swift} = [
-    App::Ack::Filter::Extension->new( qw{ swift } ),
-];
+setup_slurp(
+    type	=> 'swift',
+    extension	=> 'swift',
+    # encoding	=> 'utf-8',
+);
 
 my $resource = ACK_FILE_CLASS->new( SWIFT_FILE );
 

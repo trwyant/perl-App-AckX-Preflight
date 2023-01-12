@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Batch;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Batch' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Batch';
 
 use constant BATCH_FILE	=> 't/data/batch_file.bat';
 
@@ -44,11 +41,13 @@ use constant BATCH_CODE_COMMENT => <<'EOD';
    9: echo Hello %name%!
 EOD
 
-$App::Ack::mappings{batch} = [
-    App::Ack::Filter::Extension->new( qw{ bat } ),
-];
+setup_slurp(
+    type	=> 'batch',
+    extension	=> 'bat',
+    # encoding	=> 'utf-8',
+);
 
-my $shell_resource = ACK_FILE_CLASS->new( BATCH_FILE );
+my $resource = ACK_FILE_CLASS->new( BATCH_FILE );
 
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ batch } ],
     sprintf '%s handles batch', SYNTAX_FILTER;
@@ -61,7 +60,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( BATCH_FILE ), BATCH_CODE, 'Only code, reading directly';
 
-is slurp( $shell_resource ), BATCH_CODE, 'Only code, reading resource';
+is slurp( $resource ), BATCH_CODE, 'Only code, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_COMMENT ] );
 
@@ -70,7 +69,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( BATCH_FILE ), BATCH_COMMENTS, 'Only comments, reading directly';
 
-is slurp( $shell_resource ), BATCH_COMMENTS, 'Only comments, reading resource';
+is slurp( $resource ), BATCH_COMMENTS, 'Only comments, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_COMMENT ] );
 
@@ -81,7 +80,7 @@ ok SYNTAX_FILTER->__want_everything(),
 is slurp( BATCH_FILE ), BATCH_CODE_COMMENT,
     'Code and comments, reading directly';
 
-is slurp( $shell_resource ), BATCH_CODE_COMMENT,
+is slurp( $resource ), BATCH_CODE_COMMENT,
     'Code and comments, reading resource';
 
 done_testing;

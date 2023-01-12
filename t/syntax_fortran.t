@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Fortran;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Fortran' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Fortran';
 
 use constant FORTRAN_FILE	=> 't/data/fortran_file.for';
 
@@ -66,11 +63,13 @@ use constant FORTRAN_CODE_COMMENT => <<'EOD';
   20: C ex: set textwidth=72 :
 EOD
 
-$App::Ack::mappings{fortran} = [
-    App::Ack::Filter::Extension->new( qw{ for } ),
-];
+setup_slurp(
+    type	=> 'fortran',
+    extension	=> 'for',
+    # encoding	=> 'utf-8',
+);
 
-my $shell_resource = ACK_FILE_CLASS->new( FORTRAN_FILE );
+my $resource = ACK_FILE_CLASS->new( FORTRAN_FILE );
 
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ fortran } ],
     sprintf '%s handles fortran', SYNTAX_FILTER;
@@ -82,7 +81,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( FORTRAN_FILE ), FORTRAN_CODE, 'Only code, reading directly';
 
-is slurp( $shell_resource ), FORTRAN_CODE, 'Only code, reading resource';
+is slurp( $resource ), FORTRAN_CODE, 'Only code, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_COMMENT ] );
 
@@ -91,7 +90,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( FORTRAN_FILE ), FORTRAN_COMMENT, 'Only comments, reading directly';
 
-is slurp( $shell_resource ), FORTRAN_COMMENT, 'Only comments, reading resource';
+is slurp( $resource ), FORTRAN_COMMENT, 'Only comments, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_COMMENT ] );
 
@@ -101,7 +100,7 @@ ok SYNTAX_FILTER->__want_everything(),
 is slurp( FORTRAN_FILE ), FORTRAN_CODE_COMMENT,
     'Code and comments, reading directly';
 
-is slurp( $shell_resource ), FORTRAN_CODE_COMMENT,
+is slurp( $resource ), FORTRAN_CODE_COMMENT,
     'Code and comments, reading resource';
 
 done_testing;

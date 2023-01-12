@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Csharp;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Csharp' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Csharp';
 
 use constant CSHARP_FILE	=> 't/data/csharp_file.cs';
 
@@ -73,9 +70,11 @@ use constant CSHARP_CODE_COMMENT_DOC => <<'EOD';
   22:  */
 EOD
 
-$App::Ack::mappings{csharp} = [
-    App::Ack::Filter::Extension->new( qw{ cs } ),
-];
+setup_slurp(
+    type	=> 'csharp',
+    extension	=> 'cs',
+    # encoding	=> 'utf-8',
+);
 
 my $resource = ACK_FILE_CLASS->new( CSHARP_FILE );
 

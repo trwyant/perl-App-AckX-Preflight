@@ -5,16 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Python;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Scalar::Util qw{ blessed openhandle };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER	=> 'App::AckX::Preflight::Syntax::Python' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER	=> 'App::AckX::Preflight::Syntax::Python';
 
 use constant PYTHON_FILE	=> 't/data/python_file.py';
 
@@ -85,11 +81,13 @@ use constant PYTHON_CODE_DOC => <<'EOD';
   16:
 EOD
 
-$App::Ack::mappings{python} = [
-    App::Ack::Filter::Extension->new( qw{ py } ),
-];
+setup_slurp(
+    type	=> 'python',
+    extension	=> 'py',
+    # encoding	=> 'utf-8',
+);
 
-my $python_resource = ACK_FILE_CLASS->new( PYTHON_FILE );
+my $resource = ACK_FILE_CLASS->new( PYTHON_FILE );
 
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ python } ],
     sprintf '%s handles python', SYNTAX_FILTER;
@@ -101,7 +99,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( PYTHON_FILE ), PYTHON_CODE, 'Only code, reading directly';
 
-is slurp( $python_resource ), PYTHON_CODE, 'Only code, reading resource';
+is slurp( $resource ), PYTHON_CODE, 'Only code, reading resource';
 
 
 setup_syntax( syntax => [ SYNTAX_COMMENT ] );
@@ -111,7 +109,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( PYTHON_FILE ), PYTHON_COMMENT, 'Only comments, reading directly';
 
-is slurp( $python_resource ), PYTHON_COMMENT, 'Only comments, reading resource';
+is slurp( $resource ), PYTHON_COMMENT, 'Only comments, reading resource';
 
 
 setup_syntax( syntax => [ SYNTAX_METADATA ] );
@@ -121,7 +119,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( PYTHON_FILE ), PYTHON_METADATA, 'Only metadata, reading directly';
 
-is slurp( $python_resource ), PYTHON_METADATA, 'Only metadata, reading resource';
+is slurp( $resource ), PYTHON_METADATA, 'Only metadata, reading resource';
 
 
 setup_syntax( syntax => [ SYNTAX_DATA ] );
@@ -137,7 +135,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( PYTHON_FILE ), PYTHON_DOC, 'Only documentation, reading directly';
 
-is slurp( $python_resource ), PYTHON_DOC, 'Only documentation, reading resource';
+is slurp( $resource ), PYTHON_DOC, 'Only documentation, reading resource';
 
 
 setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_DOCUMENTATION ] );

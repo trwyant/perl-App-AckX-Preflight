@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Lisp;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Lisp' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Lisp';
 
 use constant LISP_FILE	=> 't/data/lisp_file.lisp';
 
@@ -47,9 +44,11 @@ use constant LISP_CODE_DOC => <<'EOD';
   13: )
 EOD
 
-$App::Ack::mappings{lisp} = [
-    App::Ack::Filter::Extension->new( qw{ lisp } ),
-];
+setup_slurp(
+    type	=> 'lisp',
+    extension	=> 'lisp',
+    # encoding	=> 'utf-8',
+);
 
 my $resource = ACK_FILE_CLASS->new( LISP_FILE );
 

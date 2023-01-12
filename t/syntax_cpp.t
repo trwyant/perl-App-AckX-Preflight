@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Cpp;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Cpp' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Cpp';
 
 use constant CPP_FILE	=> 't/data/cpp_file.cpp';
 
@@ -74,9 +71,11 @@ use constant CPP_CODE_DOC => <<'EOD';
   18:
 EOD
 
-$App::Ack::mappings{cpp} = [
-    App::Ack::Filter::Extension->new( qw{ cpp } ),
-];
+setup_slurp(
+    type	=> 'cpp',
+    extension	=> 'cpp',
+    # encoding	=> 'utf-8',
+);
 
 my $resource = ACK_FILE_CLASS->new( CPP_FILE );
 

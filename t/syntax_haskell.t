@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Haskell;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Haskell' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Haskell';
 
 use constant HASKELL_FILE	=> 't/data/haskell_file.hs';
 
@@ -68,9 +65,11 @@ use constant HASKELL_CODE_DOC => <<'EOD';
   21:
 EOD
 
-$App::Ack::mappings{haskell} = [
-    App::Ack::Filter::Extension->new( qw{ hs } ),
-];
+setup_slurp(
+    type	=> 'haskell',
+    extension	=> 'hs',
+    # encoding	=> 'utf-8',
+);
 
 my $resource = ACK_FILE_CLASS->new( HASKELL_FILE );
 

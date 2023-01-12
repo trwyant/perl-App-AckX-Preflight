@@ -5,6 +5,8 @@ use 5.010001;
 use strict;
 use warnings;
 
+use open qw{ :std encoding(utf-8) };
+
 use App::AckX::Preflight::Plugin::Syntax;
 use App::AckX::Preflight::Syntax ();
 use App::AckX::Preflight::Util qw{
@@ -27,7 +29,7 @@ use constant SYNTAX_PLUGIN	=> 'App::AckX::Preflight::Plugin::Syntax';
 my %opt;
 
 GetOptions( \%opt,
-    qw{ tell! },
+    qw{ encoding=s tell! },
     help => sub { pod2usage( { -verbose => 2 } ) },
 ) and @ARGV >= 1 or pod2usage( { -verbose => 0 } );
 
@@ -43,8 +45,10 @@ __load_module( ACK_FILE_CLASS )
     or die "File $path not found\n";
 
 my %slurp_opt;
-exists $opt{tell}
-    and $slurp_opt{tell} = delete $opt{tell};
+foreach my $key ( qw{ encoding tell } ) {
+    exists $opt{$key}
+	and $slurp_opt{$key} = delete $opt{$key};
+}
 
 my $file = ACK_FILE_CLASS->new( $path );
 
@@ -54,7 +58,7 @@ sub SYNTAX_FILTER {
 
 setup_syntax( %{ $config } );
 
-print slurp( $file, \%slurp_opt );
+print slurp( $path, \%slurp_opt );
 
 __END__
 
@@ -75,6 +79,11 @@ All options supported by
 L<App::AckX::Preflight::Plugin::Syntax|App::AckX::Preflight::Plugin::Syntax>
 are accepted, though not all actually do something. The following
 options specific to this script are also supported:
+
+=head2 --encoding
+
+This option specifies the encoding of the file. The default is the
+system encoding.
 
 =head2 --help
 

@@ -5,15 +5,12 @@ use 5.010001;
 use strict;
 use warnings;
 
-use App::Ack::Filter::Extension;
 use App::AckX::Preflight::Syntax::Asm;
-use App::AckX::Preflight::Util qw{ :syntax ACK_FILE_CLASS };
-use Test2::V0;
+use Test2::V0 -target => {
+    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Asm' };
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
-
-use constant SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Asm';
 
 use constant ASM_FILE	=> 't/data/asm_file.s';
 
@@ -110,11 +107,13 @@ use constant ASM_CODE_COMMENT => <<'EOD';
   42: # ex: set textwidth=72 autoindent :
 EOD
 
-$App::Ack::mappings{asm} = [
-    App::Ack::Filter::Extension->new( qw{ s } ),
-];
+setup_slurp(
+    type	=> 'asm',
+    extension	=> 'asm',
+    # encoding	=> 'utf-8',
+);
 
-my $shell_resource = ACK_FILE_CLASS->new( ASM_FILE );
+my $resource = ACK_FILE_CLASS->new( ASM_FILE );
 
 is [ SYNTAX_FILTER->__handles_type() ], [ qw{ asm } ],
     sprintf '%s handles asm', SYNTAX_FILTER;
@@ -126,7 +125,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( ASM_FILE ), ASM_CODE, 'Only code, reading directly';
 
-is slurp( $shell_resource ), ASM_CODE, 'Only code, reading resource';
+is slurp( $resource ), ASM_CODE, 'Only code, reading resource';
 
 setup_syntax( syntax => [SYNTAX_COMMENT ] );
 
@@ -135,7 +134,7 @@ ok ! SYNTAX_FILTER->__want_everything(),
 
 is slurp( ASM_FILE ), ASM_COMMENTS, 'Only comments, reading directly';
 
-is slurp( $shell_resource ), ASM_COMMENTS, 'Only comments, reading resource';
+is slurp( $resource ), ASM_COMMENTS, 'Only comments, reading resource';
 
 setup_syntax( syntax => [ SYNTAX_CODE, SYNTAX_COMMENT, SYNTAX_METADATA ] );
 
@@ -145,7 +144,7 @@ ok SYNTAX_FILTER->__want_everything(),
 is slurp( ASM_FILE ), ASM_CODE_COMMENT,
     'Code and comments, reading directly';
 
-is slurp( $shell_resource ), ASM_CODE_COMMENT,
+is slurp( $resource ), ASM_CODE_COMMENT,
     'Code and comments, reading resource';
 
 done_testing;
