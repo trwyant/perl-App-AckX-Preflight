@@ -16,31 +16,14 @@ our $VERSION = '0.000_046';
 
 use constant ENCODING_LAYER => qr{ \A encoding\( }smx;
 
+use constant ITEM_ENCODING	=> 0;
+use constant ITEM_FILTER_TYPE	=> 1;
+use constant ITEM_FILTER_ARG	=> 2;
+
 sub _get_file_encoding {
     my ( undef, $config, $file ) = @_;
-    foreach my $filter_data ( @{ $config->{encoding} } ) {
-	state $filter_def = {
-	    is	=> sub {
-		my ( $file, $arg ) = @_;
-		return $file->name() eq $arg;
-	    },
-	    type	=> sub {
-		my ( $file, $arg ) = @_;
-		$App::Ack::mappings{$arg}
-		    or __die( "Invalid --encoding file type '$arg'" );
-		foreach my $filter ( @{ $App::Ack::mappings{$arg} } ) {
-		    $filter->filter( $file )
-			and return 1;
-		}
-		return 0;
-	    },
-	};
-	my $code = $filter_def->{ $filter_data->[1] }
-	    or __die ( "Invalid --encoding filter type '$filter_data->[1]'" );
-	$code->( $file, @{ $filter_data }[ 2 .. $#$filter_data ] )
-	    and return $filter_data->[0];
-    }
-    return undef;	## no critic (ProhibitExplicitReturnUndef)
+
+    return $config->{_encoding}->( $file ) // undef;
 }
 
 sub __post_open {
@@ -67,8 +50,65 @@ sub __post_open {
     return "encoding($encoding)";
 }
 
-sub __setup {}
+sub __setup {
+    my ( undef, $config ) = @_;
+    my %cfg = (
+	is	=> {},
+	match	=> [],
+	type	=> [],
+    );
+    foreach my $item ( @{ $config->{encoding} || [] } ) {
+	state $transform = {
+	    is		=> \&_config_encoding_is,
+	    match	=> \&_config_encoding_match,
+	    type	=> \&_config_encoding_type,
+	};
+	my $code = $transform->{ $item->[1] }
+	    or __die_hard( "Invalid encoding filter '$item->[1]'" );
+	$code->( \%cfg, $item );
+    }
+    $config->{_encoding} = sub {
+	my ( $file ) = @_;
+	local $_ = $file->name();
+	defined( $cfg{is}{$_} )
+	    and return $cfg{is}{$_};
+	foreach my $item ( @{ $cfg{match} } ) {
+	    $_ =~ $item->[ITEM_FILTER_ARG]
+		and return $item->[ITEM_ENCODING];
+	}
+	foreach my $item ( @{ $cfg{type} } ) {
+	    $App::Ack::mappings{$item->[ITEM_FILTER_ARG]}
+		or __die(
+		"Invalid --encoding file type '$item->[ITEM_FILTER_ARG]'" );
+	    foreach my $filter ( @{
+		$App::Ack::mappings{$item->[ITEM_FILTER_ARG]} } ) {
+		$filter->filter( $file )
+		    and return $item->[ITEM_ENCODING];
+	    }
+	}
+	return;
+    };
+    return;
+}
 
+sub _config_encoding_is {
+    my ( $config, $item ) = @_;
+    $config->{is}{$item->[ITEM_FILTER_ARG]} = $item->[ITEM_ENCODING];
+    return;
+}
+
+sub _config_encoding_match {
+    my ( $config, $item ) = @_;
+    $item->[ITEM_FILTER_ARG] = qr/$item->[ITEM_FILTER_ARG]/;
+    push @{ $config->{match} }, $item;
+    return;
+}
+
+sub _config_encoding_type {
+    my ( $config, $item ) = @_;
+    push @{ $config->{type} }, $item;
+    return;
+}
 
 1;
 

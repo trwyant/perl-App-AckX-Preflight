@@ -90,6 +90,7 @@ t/data/sql_file.sql
 t/data/swift_file.swift
 t/data/text_file.txt
 t/data/utf8.txt
+t/data/utf16le.txt
 t/data/vim_file.vim
 t/data/yaml_file.yml
 t/execute.PL

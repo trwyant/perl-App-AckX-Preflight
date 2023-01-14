@@ -41,43 +41,52 @@ foreach (
 	$ENV{MY_IS_GITHUB_ACTION}
 	    and skip 'Skipping until I figure out why this doesnt run', 4;
 	## return( $^X, qw{ -Mblib blib/script/ackxp } );
-	return( qw{ --dispatch=system } );
+	return( qw{ system } );
     },
     sub {
 	## return( $^X, qw{ -Mblib blib/script/ackxp --dispatch=none } );
-	return( qw{ --dispatch=none } );
+	return( qw{ none } );
     },
 ) {
 
     SKIP: {
-	my @app = $_->();
+	my ( $dispatch, @app ) = $_->();
+	unshift @app, "--dispatch=$dispatch";
+
+	my $dispatch_none = $dispatch eq 'none';
 
 	diag '';
 	diag "Testing @app";
 
-	my $no = "N\N{U+F8}gne \N{U+D8} is a brewery in Grimstad, Agder, Norway";
+	{
+	    # NOTE I can't seem to convince ack to accept a UTF-16 file.
+	    # Fortunately MiniAck is more docile.
+	    my $no = "N\N{U+F8}gne \N{U+D8} is a brewery in Grimstad, Agder, Norway";
+	    my @files = sort( qw{ t/data/latin1.txt t/data/utf8.txt },
+		$dispatch_none ? ( 't/data/utf16le.txt' ) : ()
+	    );
+	    my $want = join '', map { "$_:1:$no\n" } @files;
 
-	# The point of the following test is that, although the two
-	# files contain the same text, they are encoded differently.
-	# Ack applies no encoding, and therefore reads them as bytes.
-	# Perl's internal encoding is usually UTF-8, though this is
-	# officially undocumented. So a UTF-8-only test might pass even
-	# without the Encode plug-in. But the internal encoding can't
-	# possibly be both UTF-8 and Latin-1, and the "O with slash"
-	# characters encode differently in the two encodings.
-	xqt( @app, qw{
-	    --noenv
-	    --type-set=text:ext:txt
-	    --type=text
-	    --encode-type=text=utf-8
-	    --encode-file=t/data/latin1.txt=latin-1
-	    --sort-files
-	    brewery
-	    t/data
-	    }, <<"EOD" ) or dump_layers();
-t/data/latin1.txt:1:$no
-t/data/utf8.txt:1:$no
-EOD
+	    # The point of the following test is that, although the
+	    # files contain the same text, they are encoded differently.
+	    # Ack applies no encoding, and therefore reads them as
+	    # bytes.  Perl's internal encoding is usually UTF-8, though
+	    # this is officially undocumented. So a UTF-8-only test
+	    # might pass even without the Encode plug-in. But the
+	    # internal encoding can't possibly be both UTF-8 and
+	    # Latin-1, and the "O with slash" characters encode
+	    # differently in the encodings.
+	    xqt( @app, qw{
+		--noenv
+		--type-set=text:ext:txt
+		--type=text
+		--encoding=utf-8:type:text
+		--encoding=latin-1:is:t/data/latin1.txt
+		--encoding=utf16le:match:/utf16le.txt
+		--sort-files
+		brewery
+		}, @files, $want ) or dump_layers();
+	}
 
 	xqt( @app, qw{ --noenv --syntax cod -w Wyant lib/ }, COPYRIGHT )
 	    or dump_layers();
