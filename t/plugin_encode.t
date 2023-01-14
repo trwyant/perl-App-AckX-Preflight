@@ -17,59 +17,46 @@ my @want;
 
 
 @got = CLASS->__options();
-is \@got,
-[ qw{
-    encode_file|encode-file=s%
-    encode_type|encode-type=s%
-    encoding=s@
-    } ],
-'Options';
+is \@got, [ qw{ encoding=s@ } ], 'Options';
 
 @got = CLASS->__peek_opt();
 is \@got, [], 'Peek options';
 
 
-@got = prs( qw{ --encode-type=perl=utf-8 } );
-@want = ( { encode_type => { perl => 'utf-8' } } );
+@got = prs( qw{ --encoding=utf-8:type:perl } );
+@want = ( { encoding => [ 'utf-8:type:perl' ] } );
 is \@got, \@want,
-q<Parse '--encode-type=perl=utf-8'>;
+    q<Parse --encoding=utf-8:type:perl'>;
 
 @got = xqt( @want );
 is \@got, [
     [ [ 'App::AckX::Preflight::Encode',
 	    { encoding => [ [ qw{ utf-8 type perl } ] ] } ] ]
 ],
-q<Process '--encode-type=perl=utf-8'>;
+    q<Process --encoding=utf-8:type:perl'>;
 
 
 @got = prs( qw{
-    --encode-type=raku=utf-8
-    --encode-type python=latin-1
-    --encode-file=windows.bat=cp1252
+    --encoding=utf-8:type:raku
+    --encoding=latin-1:type:python
+    --encoding=cp1252:is:windows.bat
     } );
-@want = ( {
-	encode_file	=> {
-	    'windows.bat', 'cp1252',
-	},
-	encode_type	=> {
-	    raku	=> 'utf-8',
-	    python	=> 'latin-1',
-	},
-    } );
+@want = ( { encoding => [ qw{ utf-8:type:raku latin-1:type:python
+	    cp1252:is:windows.bat } ] } );
 is \@got, \@want,
-q<Parse '--encode-type=raku=utf-8 --encode-type python=latin-1 --encode-file=windows.bat=cp1252'>;
+    q<Parse '--encoding=utf-8:type:raku --encoding=latin-1:type:python --encoding=cp1252:is:windows.bat'>;
 
 @got = xqt( @want );
 is \@got, [
     [ [ 'App::AckX::Preflight::Encode',
 	    { encoding => [
-		    [ qw{ cp1252  is   windows.bat } ],
-		    [ qw{ latin-1 type python } ],
 		    [ qw{ utf-8   type raku } ],
+		    [ qw{ latin-1 type python } ],
+		    [ qw{ cp1252  is   windows.bat } ],
 		]
 	    } ] ]
 ],
-q<Process '--encode-type=perl=utf-8'>;
+    q<Process '--encoding=utf-8:type:raku --encoding=latin-1:type:python --encoding=cp1252:is:windows.bat'>;
 
 
 done_testing;
