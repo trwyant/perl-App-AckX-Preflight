@@ -216,51 +216,31 @@ sub __interpret_plugins {
 
     my %plugin_info;
 
+    # Parse the "Peek" options, but leave them in @ARGV.
     foreach my $plugin ( @plugin_list ) {
 	$plugin_info{$plugin} = my $info = {
 	    class	=> $plugin,
+	    opt		=> {},
 	    order	=> @ARGV + 1,
 	    priority	=> $plugin->DISPATCH_PRIORITY(),
 	};
-	if ( my @spec = $plugin->__peek_opt() ) {
-	    my %opt;
-	    __getopt( [ @ARGV ], \%opt, @spec );
-	    $info->{opt} = \%opt;
+
+	if ( my @spec = _mung_options( $info, $plugin->__peek_opt() ) ) {
+	    __getopt( [ @ARGV ], $info->{opt}, @spec );
 	}
     }
 
+    # Parse the main options, determining plug-in order based on option
+    # position in @ARGV.
     foreach my $plugin ( @plugin_list ) {
-	if ( my @spec = $plugin->__options() ) {
-	    my %opt;
-	    my @s;
-	    my $info = $plugin_info{$plugin};
-	    foreach my $os ( @spec ) {
-		if ( ref $os ) {
-		    my $old = pop @s;
-		    push @s, sub { $old->( @_ ); $os->( @_ ); };
-		} else {
-		    push @s, $os, index( $os, '%' ) >= 0 ?
-			sub {	# Hash option 
-			    $opt{$_[0]}{$_[1]} = $_[2];
-			    $info->{order} = @ARGV;
-			} : index( $os, '@' ) >= 0 ?
-			sub {	# Array option
-			    push @{ $opt{$_[0]} }, $_[1];
-			    $info->{order} = @ARGV;
-			} :
-			sub {	# Scalar option
-			    $opt{$_[0]} = $_[1];
-			    $info->{order} = @ARGV;
-			};
-		}
-	    }
-	    __getopt( \%opt, @s );
-	    foreach my $key ( keys %opt ) {
-		$info->{opt}{$key} = $opt{$key};
-	    }
+	my $info = $plugin_info{$plugin};
+	local $info->{compute_order} = 1;
+	if ( my @spec = _mung_options( $info, $plugin->__options() ) ) {
+	    __getopt( $info->{opt}, @spec );
 	}
     }
 
+    # Supply default values from other plug-ins.
     {
 	my @arg;
 	foreach ( @plugin_list ) {
@@ -269,16 +249,17 @@ sub __interpret_plugins {
 		and $_->__wants_to_run( $plugin_info{$_}{opt} )
 		and push @arg, Text::ParseWords::shellwords( $default->{$name} );
 	}
+
 	if ( @arg ) {
 	    local @ARGV = @arg;
 	    foreach my $plugin ( @plugin_list ) {
-		if ( my @spec = $plugin->__options() ) {
-		    my %opt;
-		    __getopt( \%opt, @spec );
-		    my $info = $plugin_info{$plugin};
-		    foreach my $key ( keys %opt ) {
+		my $info = $plugin_info{$plugin};
+		my $i2 = { opt => {} };
+		if ( my @spec = _mung_options( $i2, $plugin->__options() ) ) {
+		    __getopt( $i2->{opt}, @spec );
+		    foreach my $key ( keys %{ $i2->{opt} } ) {
 			exists $info->{opt}{$key}
-			    or $info->{opt}{$key} = $opt{$key};
+			    or $info->{opt}{$key} = $i2->{opt}{$key};
 		    }
 		}
 	    }
@@ -298,6 +279,48 @@ sub __interpret_plugins {
 	    }
 	    values %plugin_info
     );
+}
+
+sub _mung_options {
+    my ( $info, @spec ) = @_;
+    @spec
+	or return;
+    my $opt = $info->{opt} ||= {};
+    my @s;
+    foreach my $os ( @spec ) {
+	my $ref = ref $os;
+	if ( $ref eq CODE_REF ) {
+	    if ( $info->{compute_order} ) {
+		pop @s;
+		push @s, sub {
+		    $info->{order} = @ARGV;
+		    $os->( @_, $opt );
+		    return;
+		};
+	    } else {
+		push @s, sub { $os->( @_, $opt ) };
+	    }
+	} elsif ( $ref ) {
+	    __die_hard( "$ref reference bod supported" );
+	} elsif ( $info->{compute_order} ) {
+	    push @s, $os, index( $os, '%' ) >= 0 ?
+		sub {	# Hash option 
+		    $opt->{$_[0]}{$_[1]} = $_[2];
+		    $info->{order} = @ARGV;
+		} : index( $os, '@' ) >= 0 ?
+		sub {	# Array option
+		    push @{ $opt->{$_[0]} }, $_[1];
+		    $info->{order} = @ARGV;
+		} :
+		sub {	# Scalar option
+		    $opt->{$_[0]} = $_[1];
+		    $info->{order} = @ARGV;
+		};
+	} else {
+	    push @s, $os;
+	}
+    }
+    return @s;
 }
 
 sub __json_decode {
@@ -511,16 +534,27 @@ This is the class name of the plugin.
 
 =item opt
 
-These are the command-line options for the plugin.
+These are the command-line options for the plugin. These come from
+either the plugin's C<__options()> method or its C<__peek_opt()> method.
+Only in the former case are options removed from C<@ARGV>.
+
+B<Note> that options can specify code references as handlers, These are
+called per the L<Getopt::Long|Getopt::Long> documentation, but a
+reference to the options hash is appended to the argument list.
 
 =item order
 
 This is the processing order for the plugin, determined from the order
 the options were encountered in the command line.
 
+=item priority
+
+This is just a copy of the plugin's C<DISPATCH_PRIORITY>.
+
 =back
 
-The plugins are returned in ascending order of the C<{order}> key.
+The plugins are returned in descending order of the C<{priority}> key,
+and within a priority in ascending order of the C<{order}> key.
 
 Optionally, the first argument can be a reference to a hash of default
 arguments, keyed by plugin name (as returned by C<__name()>). For each

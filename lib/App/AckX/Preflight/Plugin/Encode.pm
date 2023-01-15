@@ -7,8 +7,9 @@ use warnings;
 use parent qw{ App::AckX::Preflight::Plugin };
 
 use App::AckX::Preflight::Util qw{
-    __check_encoding
     :croak
+    :ref
+    __check_encoding
     @CARP_NOT
 };
 
@@ -17,7 +18,56 @@ our $VERSION = '0.000_046';
 use constant DISPATCH_PRIORITY	=> 100;
 
 sub __options {
-    return( qw{ encoding=s@ } );
+    return(
+	'encoding=s', \&_option_encoding,
+	'encoding_del|encoding-del=s', \&_option_encoding_del,
+    );
+}
+
+sub _option_encoding {
+    my ( undef, $val, $opt ) = @_;	# Name not used
+
+    $opt = $opt->{encoding} ||= {};
+    my ( $encoding, $filter, $arg ) = split /:/, $val, 3;
+    state $handler = {
+	ext	=> sub {
+	    my ( $config, $arg, $encoding ) = @_;
+	    foreach my $ext ( split /,/, $arg ) {
+		$config->{ext}{$ext} = $encoding;
+	    }
+	    return;
+	},
+	is	=> sub {
+	    my ( $config, $arg, $encoding ) = @_;
+	    $config->{is}{$arg} = $encoding;
+	    return;
+	},
+	match => sub {
+	    my ( $config, $arg, $encoding ) = @_;
+	    # Note we can't make a regex yet because this
+	    # (potentially) has to be JSON-encoded.
+	    state $order = 0;
+	    $config->{match}{$arg} = [ $arg, $encoding, $order++ ];
+	    return;
+	},
+	type	=> sub {
+	    my ( $config, $arg, $encoding ) = @_;
+	    $config->{type}{$arg} = $encoding;
+	    return;
+	},
+    };
+    my $code = $handler->{$filter}
+	or __die( "Unknown filter '$filter'" );
+    $code->( $opt, $arg, $encoding );
+    return;
+}
+
+sub _option_encoding_del {
+    my ( undef, $val, $opt ) = @_;	# Name not used
+    $opt = $opt->{encoding} ||= {};
+    my ( $filter, $arg ) = split /:/, $val, 2;
+    delete $opt->{$filter}{$arg};
+    return;
 }
 
 sub __process {
@@ -25,20 +75,33 @@ sub __process {
 
     defined $opt->{$_} or delete $opt->{$_} for keys %{ $opt };
 
+    foreach my $key ( keys %{ $opt->{encoding} } ) {
+	my $ref = ref $opt->{encoding}{$key}
+	    or next;
+	state $handler = {
+	    ARRAY_REF, sub {
+		my ( $elem ) = @_;
+		return !! @{ $elem };
+	    },
+	    HASH_REF, sub {
+		my ( $elem ) = @_;
+		return !! keys %{ $elem };
+	    },
+	};
+	my $code = $handler->{$ref} || sub { 1 };
+	$code->( $opt->{encoding}{$key} )
+	    or delete $opt->{encoding}{$key};
+    }
+
+    keys %{ $opt->{encoding} }
+	or delete $opt->{encoding};
+
     keys %{ $opt }
 	or return;
 
-    $opt->{encoding} ||= [];
-
-    foreach ( @{ $opt->{encoding} } ) {
-	my ( $encoding, $filter, $arg ) = split /:/, $_, 3;
-	__check_encoding( $encoding );
-	defined $filter
-	    or __die( 'No --encoding filter specified' );
-	defined $arg
-	    or ( $filter, $arg ) = ( is => $filter );
-	$_ = [ $encoding, $filter, $arg ];
-    }
+    keys %{ $opt->{encoding}{match} || {} }
+	and $opt->{encoding}{match} = [ sort { $a->[2] <=> $b->[2] }
+	values %{ $opt->{encoding}{match} } ];
 
     $aaxp->__file_monkey( 'App::AckX::Preflight::Encode', $opt );
 
@@ -68,36 +131,67 @@ None. The user has no direct interaction with this module.
 This L<App::AckX::Preflight|App::AckX::Preflight> plug-in provides the
 ability to specify the encoding for a specific F<ack> file type.
 
+=head1 OPTIONS
+
 This plug-in recognizes and processes the following options:
 
 =head2 --encoding
 
+ --encoding cp1252:is:c:/windows.bat
+ --encodomg latin-1:match:\.py$
  --encoding utf-8:type:perl
- --encoding cp1252:is:windows.bat
 
 This option specifies the encoding to be applied to a specific file or
 class of files. The value is three colon-delimited values: the encoding,
-the rule, and the argument for the rule, which varies based on the rule.
+the rule, and the argument for the rule (which varies based on the rule).
+
+The parse allows colons in the argument.
+
+If there is only one colon, the rule is assumed to be C<'is'>, and the
+value of the option specifies the encoding and the argument. So
+C<--encoding=utf-8:fubar.PL> is equivalent to
+C<--encoding=utf-8:is:fubar.PL>.
 
 Valid rules are:
 
 =over
 
-=item type
+=item ext
 
-This rule specifies an F<ack> file type. The argument is the specific
-type.
+This rule specifies all files having a given file name extension.
+Multiple comma-delimited extensions can be specified. For example, a
+possible way to specify most Perl files would be
+
+ --encoding=utf-8:ext:pl,PL,pm,t
 
 =item is
 
 This rule specifies an individual file. The argument is the path to the
 file.
 
+=item match
+
+The argument to this rule is a regular expression. The rule specifies
+any file whose name matches the regular expression.
+
+=item type
+
+This rule specifies an F<ack> file type. The argument is the specific
+type.
+
 =back
 
 B<Note> that although the syntax looks like that of an F<ack> filter
 rule, L<App::Ack::Filter|App::Ack::Filter> objects are B<not> used to
 match encodings to files.
+
+=head2 --encoding-del
+
+ --encoding-del match:\.py$
+
+This option deletes the encoding associated with the specified rule and
+argument. No error or warning is generated if the rule and argument have
+not been specified.
 
 =head1 METHODS
 

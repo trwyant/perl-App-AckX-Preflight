@@ -16,14 +16,40 @@ our $VERSION = '0.000_046';
 
 use constant ENCODING_LAYER => qr{ \A encoding\( }smx;
 
-use constant ITEM_ENCODING	=> 0;
-use constant ITEM_FILTER_TYPE	=> 1;
-use constant ITEM_FILTER_ARG	=> 2;
+use constant ITEM_ENCODING	=> 1;
+use constant ITEM_FILTER_ARG	=> 0;
 
 sub _get_file_encoding {
     my ( undef, $config, $file ) = @_;
+    my $cfg = $config->{encoding};
 
-    return $config->{_encoding}->( $file ) // undef;
+    ### return $config->{_encoding}->( $file ) // undef;
+
+    my $path = $file->name();
+
+    if ( defined( my $encoding = $cfg->{is}{$path} ) ) {
+	return $encoding;
+    }
+
+    if ( my ( $ext ) = $path =~ m/ [.] ( [^.]+ ) \z /smx ) {
+	if ( defined( my $encoding = $cfg->{ext}{$ext} ) ) {
+	    return $encoding;
+	}
+    }
+
+    foreach my $item ( @{ $cfg->{match} } ) {
+	$path =~ $item->[ITEM_FILTER_ARG]
+	    and return $item->[ITEM_ENCODING];
+    }
+
+    foreach my $type ( keys %{ $cfg->{type} } ) {
+	foreach my $filter ( @{ $App::Ack::mappings{$type} } ) {
+	    $filter->filter( $file )
+		and return $cfg->{type}{$type};
+	}
+    }
+
+    return undef;	## no critic (ProhibitExplicitReturnUndef)
 }
 
 sub __post_open {
@@ -52,61 +78,11 @@ sub __post_open {
 
 sub __setup {
     my ( undef, $config ) = @_;
-    my %cfg = (
-	is	=> {},
-	match	=> [],
-	type	=> [],
-    );
-    foreach my $item ( @{ $config->{encoding} || [] } ) {
-	state $transform = {
-	    is		=> \&_config_encoding_is,
-	    match	=> \&_config_encoding_match,
-	    type	=> \&_config_encoding_type,
-	};
-	my $code = $transform->{ $item->[1] }
-	    or __die_hard( "Invalid encoding filter '$item->[1]'" );
-	$code->( \%cfg, $item );
+
+    foreach my $item ( @{ $config->{match} } ) {
+	$item->[ITEM_FILTER_ARG] = qr/$item->[ITEM_FILTER_ARG]/;
     }
-    $config->{_encoding} = sub {
-	my ( $file ) = @_;
-	local $_ = $file->name();
-	defined( $cfg{is}{$_} )
-	    and return $cfg{is}{$_};
-	foreach my $item ( @{ $cfg{match} } ) {
-	    $_ =~ $item->[ITEM_FILTER_ARG]
-		and return $item->[ITEM_ENCODING];
-	}
-	foreach my $item ( @{ $cfg{type} } ) {
-	    $App::Ack::mappings{$item->[ITEM_FILTER_ARG]}
-		or __die(
-		"Invalid --encoding file type '$item->[ITEM_FILTER_ARG]'" );
-	    foreach my $filter ( @{
-		$App::Ack::mappings{$item->[ITEM_FILTER_ARG]} } ) {
-		$filter->filter( $file )
-		    and return $item->[ITEM_ENCODING];
-	    }
-	}
-	return;
-    };
-    return;
-}
 
-sub _config_encoding_is {
-    my ( $config, $item ) = @_;
-    $config->{is}{$item->[ITEM_FILTER_ARG]} = $item->[ITEM_ENCODING];
-    return;
-}
-
-sub _config_encoding_match {
-    my ( $config, $item ) = @_;
-    $item->[ITEM_FILTER_ARG] = qr/$item->[ITEM_FILTER_ARG]/;
-    push @{ $config->{match} }, $item;
-    return;
-}
-
-sub _config_encoding_type {
-    my ( $config, $item ) = @_;
-    push @{ $config->{type} }, $item;
     return;
 }
 
@@ -116,19 +92,21 @@ __END__
 
 =head1 NAME
 
-App::AckX::Preflight::Encode - <<< replace boilerplate >>>
+App::AckX::Preflight::Encode - Set the encoding of an input file.
 
 =head1 SYNOPSIS
 
-<<< replace boilerplate >>>
+None. The user has no direct interaction with this module.
 
 =head1 DESCRIPTION
 
-<<< replace boilerplate >>>
+This module supplies the encoding layer (if any) for a file.
 
 =head1 METHODS
 
-This class supports the following public methods:
+This class supports no public methods over and above those needed to
+supply an optional C<:encoding(...)> layer to the
+L<App::AckX::Preflight|App::AckX::Preflight> system.
 
 =head1 ATTRIBUTES
 

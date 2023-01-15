@@ -12,8 +12,12 @@ require My::Module::Meta;
 
 diag 'Prerequisites:';
 foreach my $module ( sort keys %{ My::Module::Meta->all_prereq() } ) {
+    # NOTE we have to require the path rather than the module because
+    # 'require if;' is a parse error. But, looking on the bright sixe,
+    # this lets me get away from the dreaded stringy eval).
+    ( my $path = "$module.pm" ) =~ s| :: |/|smxg;
     local $@ = undef;
-    if ( eval "require $module; 1" ) {
+    if ( eval { require $path; 1 } ) {
 	my $ver = $module->VERSION;
 	defined $ver
 	    or $ver = 'undef';

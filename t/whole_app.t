@@ -34,7 +34,7 @@ $ENV{MY_IS_GITHUB_ACTION}
 -x $^X
     or plan skip_all => "Somethig strange is going on. \$^X ($^X) is not executable.";
 
-# FIXME only skip first iteration if on GitHub
+# FIXME don't want to skip first iteration on GitHub
 
 foreach (
     sub {

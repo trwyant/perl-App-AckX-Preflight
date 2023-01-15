@@ -15,7 +15,7 @@ use App::AckX::Preflight::Util qw{
     EMPTY_STRING
 };
 use Exporter qw{ import };
-use Scalar::Util qw{ blessed openhandle };
+use Scalar::Util qw{ blessed };
 use Test2::V0;
 
 our $VERSION = '0.000_046';
@@ -79,9 +79,11 @@ sub setup_syntax {
 	    },
 	],
 	[ 'App::AckX::Preflight::Encode', {
-		encoding	=> [
-		    [ $enc, type	=> $default_slurp_opt{type} ],
-		],
+		encoding	=> {
+		    type	=> {
+			$default_slurp_opt{type} => $enc,
+		    },
+		},
 	    }
 	],
     }
@@ -97,7 +99,9 @@ sub setup_syntax {
 sub slurp {
     my ( $file, $opt ) = @_;
     $opt ||= {};
-    my $encoding = $opt->{encoding} // $default_slurp_opt{encoding} // EMPTY_STRING;
+    my $encoding = $opt->{encoding} //
+	$default_slurp_opt{encoding} //
+	EMPTY_STRING;
     my $tell = $opt->{tell} // $default_slurp_opt{tell} // 0;
     $encoding ne EMPTY_STRING
 	and $encoding = ":encoding($encoding)";
@@ -106,8 +110,6 @@ sub slurp {
     if ( blessed( $file ) ) {
 	$fh = $file->open()
 	    or die "@{[ ref $file ]}->open() failed: $!\n";
-    } elsif ( openhandle( $file ) ) {
-	$fh = $file;
     } else {
 	my $syntax = $caller->SYNTAX_FILTER;
 	open $fh, "<$encoding", $file
@@ -125,7 +127,6 @@ sub slurp {
     my $rslt;
     local $_;	# while (<>) does not localize $_
     while ( <$fh> ) {
-	$encoding and utf8::upgrade( $_ );
 	s/ \s+ \z //smx;
 	my @leader;
 	push @leader, sprintf '%4d', $.;

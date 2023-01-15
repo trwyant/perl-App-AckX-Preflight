@@ -234,8 +234,6 @@ EOD
     $opt{verbose}
 	and warn scalar _shell_quote( '$', $0, @argv ), "\n";
 
-    use App::AckX::Preflight::Util qw{ __interpret_plugins };
-
     $self->{file_monkey} = [];
 
     my @plugins = __interpret_plugins( $opt{default}, $self->__plugins() );

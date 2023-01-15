@@ -27,7 +27,6 @@ is \@got,
     [ qw{ match=s } ],
     'Peek options';
 
-
 @got = prs( qw{ --file fu --match bar } );
 @want = ( { file => 'fu', match => 'bar' }, qw{ --match bar } );
 is \@got, \@want,
