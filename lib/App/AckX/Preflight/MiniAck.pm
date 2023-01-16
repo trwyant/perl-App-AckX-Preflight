@@ -9,7 +9,7 @@ use App::AckX::Preflight::Util qw{ :all };
 use File::Find ();
 use File::Spec;
 
-our $VERSION = '0.000_046';
+our $VERSION = '0.000_047';
 
 __load_module( ACK_FILE_CLASS );
 

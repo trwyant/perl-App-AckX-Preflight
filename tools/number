@@ -21,7 +21,7 @@ use Text::Abbrev;
 use lib qw{ inc };
 use My::Module::TestSyntax;
 
-our $VERSION = '0.000_046';
+our $VERSION = '0.000_047';
 
 use constant SYNTAX_CLASS	=> 'App::AckX::Preflight::Syntax';
 use constant SYNTAX_PLUGIN	=> 'App::AckX::Preflight::Plugin::Syntax';

@@ -1,3 +1,17 @@
+0.000_047	2023-01-16	T. R. Wyant
+    Rework processing of --encoding.
+
+    Add --encoding=encoding:ext:<file name extensions/suffixes>
+
+    Eliminate --encode-file and --encode-type in favor of --encoding.
+
+    Add --encoding=utf-8:match:regexp
+
+    Have Syntax filters return decoded data where appropriate.
+
+    Enhance inc/My/Module/TestSyntax.pm to support testing non-ASCII source.
+    At this point only t/data/raku_file.raku is non-ASCII (French quotes).
+
 0.000_046	2023-01-10	T. R. Wyant
     Add --outout-encoding
 

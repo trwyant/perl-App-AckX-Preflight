@@ -9,7 +9,7 @@ use parent qw{ App::AckX::Preflight::Syntax };
 
 use App::AckX::Preflight::Util qw{ :syntax @CARP_NOT };
 
-our $VERSION = '0.000_046';
+our $VERSION = '0.000_047';
 
 __PACKAGE__->__handles_type_mod( qw{ set parrot perl perltest } );
 
