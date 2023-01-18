@@ -6,8 +6,8 @@ use strict;
 use warnings;
 
 use App::AckX::Preflight::Syntax::Csharp;
-use Test2::V0 -target => {
-    SYNTAX_FILTER => 'App::AckX::Preflight::Syntax::Csharp' };
+use Test2::V0 -target => 'App::AckX::Preflight::Syntax::Csharp';
+use constant SYNTAX_FILTER => CLASS;
 
 use lib qw{ inc };
 use My::Module::TestSyntax;
