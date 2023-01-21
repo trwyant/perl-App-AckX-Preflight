@@ -67,7 +67,7 @@ severity	= harsh
 [Perl::Critic::Policy::Variables::ProhibitUnusedVarsStricter]
 
 add_themes	= core
-allow_if_computed_by	= Scope::Guard __load_ack_config
+allow_if_computed_by	= Scope::Guard __load_ack_config __load_module
 allow_state_in_expression	= 1
 allow_unused_subroutine_arguments	= 0
 severity	= stern

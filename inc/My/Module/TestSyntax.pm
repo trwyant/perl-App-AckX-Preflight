@@ -11,6 +11,7 @@ use App::AckX::Preflight::Util qw{
     :module
     :syntax
     __load_module
+    __guess_encoding
     ACK_FILE_CLASS
     EMPTY_STRING
 };
@@ -73,9 +74,10 @@ sub setup_syntax {
     my $syntax = $caller->SYNTAX_FILTER();
     my @monkey_work;
     if ( defined( my $enc = $default_slurp_opt{encoding} ) ) {
+	my $out_enc = $enc =~ m/ \A guess \z /smxi ? 'utf-8' : $enc;
 	push @monkey_work,
 	[ MODULE_FILE_MONKEY, {
-		output_encoding	=> $enc,
+		output_encoding	=> $out_enc,
 	    },
 	],
 	[ 'App::AckX::Preflight::Encode', {
@@ -103,14 +105,19 @@ sub slurp {
 	$default_slurp_opt{encoding} //
 	EMPTY_STRING;
     my $tell = $opt->{tell} // $default_slurp_opt{tell} // 0;
-    $encoding ne EMPTY_STRING
-	and $encoding = ":encoding($encoding)";
     my $caller = caller;
     my $fh;
     if ( blessed( $file ) ) {
 	$fh = $file->open()
 	    or die "@{[ ref $file ]}->open() failed: $!\n";
     } else {
+	if ( $encoding =~ m/ \A guess \z /smxi ) {
+	    open my $fh, '<', $file
+		or die "Failed to open file: $!\n";
+	    $encoding = __guess_encoding( $fh );
+	}
+	$encoding ne EMPTY_STRING
+	    and $encoding = ":encoding($encoding)";
 	my $syntax = $caller->SYNTAX_FILTER;
 	open $fh, "<$encoding", $file
 	    or die "Failed to open file: $!\n";

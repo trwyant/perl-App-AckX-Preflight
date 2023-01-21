@@ -7,6 +7,7 @@ use warnings;
 
 use App::AckX::Preflight::Util qw{
     :os
+    __guess_encoding
     __load_ack_config
     EMPTY_STRING
     @CARP_NOT
@@ -18,6 +19,8 @@ use constant ENCODING_LAYER => qr{ \A encoding\( }smx;
 
 use constant ITEM_ENCODING	=> 1;
 use constant ITEM_FILTER_ARG	=> 0;
+
+use constant SAMPLE_SIZE	=> 2048;
 
 sub _get_file_encoding {
     my ( undef, $config, $file ) = @_;
@@ -72,6 +75,11 @@ sub __post_open {
 	// return;
     $encoding eq EMPTY_STRING
 	and return;
+
+    if ( $encoding =~ m/ \A guess \z /smxi ) {
+	$encoding = __guess_encoding( $fh )
+	    or return;
+    }
 
     return "encoding($encoding)";
 }

@@ -7,9 +7,11 @@ use warnings;
 
 use Carp ();
 use Exporter qw{ import };
+use Fcntl qw{ :seek };
 use Getopt::Long 2.39;	# For Getopt::Long::Parser->getoptionsfromarray()
 use JSON;
 use Module::Load ();
+use Scope::Guard ();
 use Text::ParseWords ();
 
 use constant DEFAULT_OUTPUT	=> '-';
@@ -48,6 +50,7 @@ our @EXPORT_OK = qw{
     __err_exclusive
     __file_id
     __getopt
+    __guess_encoding
     __interpret_plugins
     __interpret_exit_code
     __json_decode
@@ -198,6 +201,26 @@ sub _get_option_parser {
 	},
     );
     return $psr;
+}
+
+sub __guess_encoding {
+    my ( $fh ) = @_;
+    state $loaded = __load_module( 'Encode::Guess')
+	or return EMPTY_STRING;
+    ( my $loc = tell $fh ) < 0
+	and __die( "Failed to get location on file handle: $!" );
+    my $scope_guard = Scope::Guard->new( sub {
+	    seek $fh, $loc, SEEK_SET
+		or __die( "Failed to reset file handle location: $!" );
+	    return;
+	},
+    );
+    use constant SAMPLE_SIZE	=> 2048;
+    sysread $fh, my $data, SAMPLE_SIZE
+	or __die( sprintf "sysread() on file handle failed: $!" );
+    my $decoder = Encode::Guess->guess( $data )
+	or return EMPTY_STRING;
+    return $decoder->name();
 }
 
 sub __interpret_exit_code {
@@ -509,6 +532,18 @@ L<__options()|App::AckX::Preflight::Plugin/__options> and
 L<__peek_opt()|App::AckX::Preflight::Plugin/__peek_opt> methods to
 determine which options to parse, and returns a reference to the options
 hash.
+
+=head2 __guess_encoding
+
+ my $decoder = __guess_encoding( $handle );
+
+This subroutine loads L<Encode::Guess|Encode::Guess>, which is B<not> a
+declared dependency of this package. If the load succeeds it reads some
+data from the given file handle and attempts to determine its encoding,
+The return is either the name of the encoding or an empty string.
+
+If L<Encode::Guess|Encode::Guess> can not be loaded, the return is
+always an empty string.
 
 =head2 __interpret_exit_code
 
