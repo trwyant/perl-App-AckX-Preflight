@@ -175,6 +175,13 @@ C<'-'>, output is unaffected.
 This option would have been called C<--output>, but F<ack> had already
 claimed both that and C<-o> for something else.
 
+=head2 --output-encoding
+
+ --output-encoding=utf-8
+
+Specify the output encoding. You can use C<--output-encoding=> to
+explicitly specify no encoding.
+
 =head2 --verbose
 
 This causes C<App::AckX::Preflight> to write certain information to
