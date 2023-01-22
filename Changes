@@ -1,3 +1,11 @@
+0.000_048	2023-01-22	T. R. Wyant
+    Allow --encoding=encoding-name to specify default input encoding.
+
+    Allow 'guess' as an encoding, if Encode::Guess is installed.
+    Encode::Guess is not a prerequisite for this distro.
+
+    Document --output-encoding=...
+
 0.000_047	2023-01-16	T. R. Wyant
     Rework processing of --encoding.
 

@@ -9,7 +9,7 @@ use parent qw{ App::AckX::Preflight::Syntax };
 
 use App::AckX::Preflight::Util qw{ :croak :syntax @CARP_NOT };
 
-our $VERSION = '0.000_047';
+our $VERSION = '0.000_048';
 
 {
     my $classifier = {

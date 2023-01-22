@@ -17,7 +17,7 @@ use App::AckX::Preflight::Util qw{
 use JSON;
 use Scope::Guard ();
 
-our $VERSION = '0.000_047';
+our $VERSION = '0.000_048';
 
 my @LAYERS;
 my $OPT;

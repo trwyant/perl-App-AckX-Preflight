@@ -9,7 +9,7 @@ use parent qw{ App::AckX::Preflight::Syntax::_cc_like };
 
 use App::AckX::Preflight::Util qw{ :syntax @CARP_NOT };
 
-our $VERSION = '0.000_047';
+our $VERSION = '0.000_048';
 
 __PACKAGE__->__handles_type_mod( qw{ set csharp } );
 
