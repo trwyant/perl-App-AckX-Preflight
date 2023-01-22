@@ -29,6 +29,15 @@ sub _option_encoding {
 
     $opt = $opt->{encoding} ||= {};
     my ( $encoding, $filter, $arg ) = split /:/, $val, 3;
+
+    unless( defined $filter ) {
+	$opt->{default} = $encoding;
+	return;
+    }
+
+    defined $arg
+	or __die( "'$val' does not specify filter argument" );
+
     state $handler = {
 	ext	=> sub {
 	    my ( $config, $arg, $encoding ) = @_;
@@ -145,12 +154,21 @@ This option specifies the encoding to be applied to a specific file or
 class of files. The value is three colon-delimited values: the encoding,
 the rule, and the argument for the rule (which varies based on the rule).
 
+The encoding must be the name or alias of an encoding installed in Perl,
+or the special-case encoding C<'guess'> (case-insensitive). If
+C<'guess'> is specified an attempt will be made to load
+L<Encode::Guess|Encode::Guess> and use it to determine the encoding from
+among C<ASCII>, C<UTF-8> or C<UTF-16> (either endian).
+
 The parse allows colons in the argument.
 
 If there is only one colon, the rule is assumed to be C<'is'>, and the
 value of the option specifies the encoding and the argument. So
 C<--encoding=utf-8:fubar.PL> is equivalent to
 C<--encoding=utf-8:is:fubar.PL>.
+
+If there are no colons, the argument is the default encoding, to be used
+when no other encoding applies.
 
 Valid rules are:
 

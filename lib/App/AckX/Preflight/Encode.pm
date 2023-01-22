@@ -52,7 +52,7 @@ sub _get_file_encoding {
 	}
     }
 
-    return undef;	## no critic (ProhibitExplicitReturnUndef)
+    return $cfg->{default};
 }
 
 sub __post_open {

@@ -218,7 +218,9 @@ sub __guess_encoding {
     use constant SAMPLE_SIZE	=> 2048;
     sysread $fh, my $data, SAMPLE_SIZE
 	or __die( sprintf "sysread() on file handle failed: $!" );
-    my $decoder = Encode::Guess->guess( $data )
+    my $decoder;
+    $decoder = Encode::Guess->guess( $data )
+	and ref $decoder
 	or return EMPTY_STRING;
     return $decoder->name();
 }
