@@ -9,7 +9,7 @@ use parent qw{ App::AckX::Preflight::Plugin };
 
 use App::AckX::Preflight::Util qw{ :all };
 
-our $VERSION = '0.000_048';
+our $VERSION = '0.000_049';
 
 sub __options {
     return( qw{ file=s file-extended! } );
