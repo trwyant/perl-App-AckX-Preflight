@@ -48,8 +48,8 @@ lib/App/AckX/Preflight/Syntax/Swift.pm
 lib/App/AckX/Preflight/Syntax/Vim.pm
 lib/App/AckX/Preflight/Syntax/YAML.pm
 lib/App/AckX/Preflight/Util.pm
-LICENSES/Artistic
-LICENSES/Copying
+LICENSE-Artistic
+LICENSE-GPL
 Makefile.PL
 MANIFEST
 META.json
