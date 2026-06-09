@@ -8,7 +8,6 @@ use File::Spec ();
 # ABSTRACT: Perl implementation of the which utility as an API
 our $VERSION = '1.23'; # VERSION
 
-
 our @ISA       = 'Exporter';
 our @EXPORT    = 'which';
 our @EXPORT_OK = 'where';
@@ -41,7 +40,6 @@ if ( IS_WIN ) {
   # http://cygwin.com/cygwin-ug-net/using-specialnames.html#pathnames-exe
   push @PATHEXT, qw{.exe .com};
 }
-
 
 sub which {
   my ($exec) = @_;
@@ -138,7 +136,6 @@ sub which {
     return undef;
   }
 }
-
 
 sub where {
   # force wantarray
@@ -322,7 +319,9 @@ report of how it went.
 
 =head1 SUPPORT
 
-Bugs should be reported via the GitHub issue tracker
+Support is by the author. Please file bug reports at
+L<https://github.com/trwyant/perl-App-AckX-Preflight/issues> or in
+electronic mail to the author.
 
 L<https://github.com/plicease/File-Which/issues>
 

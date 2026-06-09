@@ -11,7 +11,6 @@ use Config;
 use Exporter qw{ import };
 use File::Spec;
 
-
 our @EXPORT_OK = qw{ inc perlpod prs xqt xqt_unsafe };
 
 our @EXPORT = qw{ prs xqt xqt_unsafe };
@@ -164,8 +163,7 @@ Exported by default, and by tags C<:all> and C<:test>.
 =head1 SUPPORT
 
 Support is by the author. Please file bug reports at
-L<https://rt.cpan.org/Public/Dist/Display.html?Name=App-AckX-Preflight>,
-L<https://github.com/trwyant/perl-App-AckX-Preflight/issues>, or in
+L<https://github.com/trwyant/perl-App-AckX-Preflight/issues> or in
 electronic mail to the author.
 
 =head1 AUTHOR

@@ -120,7 +120,6 @@ L<App::AckX::Preflight|App::AckX::Preflight> system.
 
 This class has the following attributes:
 
-
 =head1 SEE ALSO
 
 <<< replace or remove boilerplate >>>
@@ -128,8 +127,7 @@ This class has the following attributes:
 =head1 SUPPORT
 
 Support is by the author. Please file bug reports at
-L<https://rt.cpan.org/Public/Dist/Display.html?Name=App-AckX-Preflight>,
-L<https://github.com/trwyant/perl-App-AckX-Preflight/issues/>, or in
+L<https://github.com/trwyant/perl-App-AckX-Preflight/issues> or in
 electronic mail to the author.
 
 =head1 AUTHOR
