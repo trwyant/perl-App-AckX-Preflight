@@ -56,6 +56,7 @@ META.json
 META.yml
 README
 script/ackxp
+SECURITY
 t/basic.t
 t/data/ackxprc
 t/data/ada_file.adb
