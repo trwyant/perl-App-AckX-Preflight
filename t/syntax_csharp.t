@@ -28,7 +28,7 @@ use constant CSHARP_COMMENT	=> <<'EOD';
    3: // This is single-line comment
    6: /* This is a single-line block comment */
   12: /*
-  13:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+  13:  * Author: Thomas R. Wyant, III F<harryfmudd at comcast dot net>
   14:  *
   15:  * Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III
   16:  *
@@ -58,7 +58,7 @@ use constant CSHARP_CODE_COMMENT_DOC => <<'EOD';
   10: }
   11:
   12: /*
-  13:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+  13:  * Author: Thomas R. Wyant, III F<harryfmudd at comcast dot net>
   14:  *
   15:  * Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III
   16:  *

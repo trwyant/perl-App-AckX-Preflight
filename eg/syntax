@@ -48,7 +48,7 @@ perl $blib -MApp::AckX::Preflight::Syntax=-syntax-type \
 # The equivalent ackx invocation is
 # ackx --verbose --syntax-type '' "$@" 
 
-# Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+# Author: Thomas R. Wyant, III F<harryfmudd at comcast dot net>
 #
 # Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III
 #

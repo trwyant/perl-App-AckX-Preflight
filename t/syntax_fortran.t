@@ -30,7 +30,7 @@ use constant FORTRAN_CODE	=> <<'EOD';
 EOD
 
 use constant FORTRAN_COMMENT	=> <<'EOD';
-  12: C Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+  12: C Author: Thomas R. Wyant, III F<harryfmudd at comcast dot net>
   13: C
   14: C Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III
   15: C
@@ -52,7 +52,7 @@ use constant FORTRAN_CODE_COMMENT => <<'EOD';
    9:       call exit()
   10:       end
   11:
-  12: C Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+  12: C Author: Thomas R. Wyant, III F<harryfmudd at comcast dot net>
   13: C
   14: C Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III
   15: C

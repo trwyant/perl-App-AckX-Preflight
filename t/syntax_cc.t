@@ -27,7 +27,7 @@ EOD
 use constant CC_COMMENTS	=> <<'EOD';
    3: /* This is a single-line block comment */
    9: /*
-  10:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+  10:  * Author: Thomas R. Wyant, III F<harryfmudd at comcast dot net>
   11:  *
   12:  * Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III
   13:  *
@@ -49,7 +49,7 @@ use constant CC_CODE_COMMENTS => <<'EOD';
    7: }
    8:
    9: /*
-  10:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+  10:  * Author: Thomas R. Wyant, III F<harryfmudd at comcast dot net>
   11:  *
   12:  * Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III
   13:  *

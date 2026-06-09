@@ -37,7 +37,7 @@ sub all_prereq {
 }
 
 sub author {
-    return 'Thomas R. Wyant, III F<wyant at cpan dot org>';
+    return 'Thomas R. Wyant, III F<harryfmudd at comcast dot net>';
 }
 
 sub build_requires {
@@ -92,7 +92,7 @@ sub meta_merge {
 	    bugtracker	=> {
 		web	=> 'https://rt.cpan.org/Public/Dist/Display.html?Name=App-AckX-Preflight',
 		# web	=> 'https://github.com/trwyant/perl-App-AckX-Preflight/issues',
-		mailto  => 'wyant@cpan.org',
+		mailto  => 'harryfmudd@comcast.net',
 	    },
 	    license	=> 'http://dev.perl.org/licenses/',
 	    repository	=> {
@@ -400,7 +400,7 @@ electronic mail to the author.
 
 =head1 AUTHOR
 
-Thomas R. Wyant, III F<wyant at cpan dot org>
+Thomas R. Wyant, III F<harryfmudd at comcast dot net>
 
 =head1 COPYRIGHT AND LICENSE
 

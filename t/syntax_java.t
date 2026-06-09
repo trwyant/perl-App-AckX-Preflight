@@ -42,7 +42,7 @@ use constant JAVA_DOC	=> <<'EOD';
   10: /**
   11:  * Implement a greeting in Java
   12:  *
-  13:  * @author      Thomas R. Wyant, III F<wyant at cpan dot org>
+  13:  * @author      Thomas R. Wyant, III F<harryfmudd at comcast dot net>
   14:  * @version     0.000_001
   15:  */
   19:     /**
@@ -68,7 +68,7 @@ use constant JAVA_CODE_DOC => <<'EOD';
   10: /**
   11:  * Implement a greeting in Java
   12:  *
-  13:  * @author      Thomas R. Wyant, III F<wyant at cpan dot org>
+  13:  * @author      Thomas R. Wyant, III F<harryfmudd at comcast dot net>
   14:  * @version     0.000_001
   15:  */
   16:

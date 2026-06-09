@@ -33,7 +33,7 @@ use constant CPP_COMMENT	=> <<'EOD';
   12:     /* Old-school printf still works. */
   13:     // As do new-school C++ comments
   19: /*
-  20:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+  20:  * Author: Thomas R. Wyant, III F<harryfmudd at comcast dot net>
   21:  *
   22:  * Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III
   23:  *

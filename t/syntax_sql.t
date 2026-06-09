@@ -23,7 +23,7 @@ EOD
 use constant SQL_COMMENTS	=> <<'EOD';
    1: -- Select all breweries in the state of Maine
    5: /*
-   6:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+   6:  * Author: Thomas R. Wyant, III F<harryfmudd at comcast dot net>
    7:  *
    8:  * Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III
    9:  *
@@ -41,7 +41,7 @@ use constant SQL_CODE_COMMENTS => <<'EOD';
    3: select * from brewery where state = 'ME' order by name;
    4:
    5: /*
-   6:  * Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+   6:  * Author: Thomas R. Wyant, III F<harryfmudd at comcast dot net>
    7:  *
    8:  * Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III
    9:  *

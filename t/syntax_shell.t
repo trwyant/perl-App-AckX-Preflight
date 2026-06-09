@@ -23,7 +23,7 @@ use constant SHELL_CODE	=> <<'EOD';
 EOD
 
 use constant SHELL_COMMENTS	=> <<'EOD';
-   6: # Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+   6: # Author: Thomas R. Wyant, III F<harryfmudd at comcast dot net>
    7: #
    8: # Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III
    9: #
@@ -39,7 +39,7 @@ use constant SHELL_CODE_COMMENT_METADATA => <<'EOD';
    3: x=$1
    4: echo "Hello ${x:-world}!"
    5:
-   6: # Author: Thomas R. Wyant, III F<wyant at cpan dot org>
+   6: # Author: Thomas R. Wyant, III F<harryfmudd at comcast dot net>
    7: #
    8: # Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III
    9: #
