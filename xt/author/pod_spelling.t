@@ -30,6 +30,7 @@ hocery
 Javadoc
 Lua
 merchantability
+mung
 os
 perlcore
 preflight
