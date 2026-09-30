@@ -3,7 +3,6 @@ Changes
 eg/ACKXP-REF
 eg/README
 eg/syntax
-inc/File/Which.pm
 inc/My/Module/Build.pm
 inc/My/Module/Meta.pm
 inc/My/Module/Preflight.pm
@@ -132,7 +131,6 @@ xt/author/carp_not.t
 xt/author/changes.t
 xt/author/critic.t
 xt/author/executable.t
-xt/author/file_which.t
 xt/author/kwalitee.t
 xt/author/manifest.t
 xt/author/minimum_perl.t
