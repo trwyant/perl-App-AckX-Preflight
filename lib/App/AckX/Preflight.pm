@@ -16,7 +16,7 @@ use Pod::Usage ();
 use Text::Abbrev ();
 use Text::ParseWords ();
 
-our $VERSION = '0.000_049';
+our $VERSION = '0.000_050';
 our $COPYRIGHT = 'Copyright (C) 2018-2023, 2026 by Thomas R. Wyant, III';
 
 use constant DEVELOPMENT => grep { m{ \b blib \b }smx } @INC;

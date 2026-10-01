@@ -10,7 +10,7 @@ use App::AckX::Preflight;
 use Getopt::Long 2.33 qw{ :config no_auto_version pass_through };
 use Pod::Usage;
 
-our $VERSION = '0.000_049';
+our $VERSION = '0.000_050';
 
 my %opt;
 

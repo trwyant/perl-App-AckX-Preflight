@@ -9,7 +9,7 @@ use parent qw{ App::AckX::Preflight };
 
 use Carp;
 
-our $VERSION = '0.000_049';
+our $VERSION = '0.000_050';
 
 sub __execute {
     my ( $self, @arg ) = @_;

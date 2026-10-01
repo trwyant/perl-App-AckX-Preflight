@@ -1,3 +1,6 @@
+0.000_050	2026-10-01	T. R. Wyant
+    Get rid of embedded File::Which.
+
 0.000_049	2026-06-09	T. R. Wyant
     Add SECURITY policy.
 
