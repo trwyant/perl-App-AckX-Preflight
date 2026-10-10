@@ -21,7 +21,7 @@ our %EXPORT_TAGS = (
     test	=> [ qw{ prs xqt xqt_unsafe } ],
 );
 
-our $VERSION = '0.000_050';
+our $VERSION = '0.000_051';
 
 sub inc {
     return( grep { -d } @INC, $Config{scriptdirexp} );

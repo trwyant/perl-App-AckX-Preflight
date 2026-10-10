@@ -19,7 +19,7 @@ use Exporter qw{ import };
 use Scalar::Util qw{ blessed };
 use Test2::V0;
 
-our $VERSION = '0.000_050';
+our $VERSION = '0.000_051';
 
 our @EXPORT = ( qw{
 	layers

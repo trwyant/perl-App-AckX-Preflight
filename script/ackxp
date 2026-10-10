@@ -7,7 +7,7 @@ use warnings;
 
 use App::AckX::Preflight;
 
-our $VERSION = '0.000_050';
+our $VERSION = '0.000_051';
 
 use constant PREFLIGHT	=> 'App::AckX::Preflight';
 

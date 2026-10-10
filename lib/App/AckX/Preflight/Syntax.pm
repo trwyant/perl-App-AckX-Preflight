@@ -26,7 +26,7 @@ use Text::Abbrev ();
 # This is PRIVATE to the App-AckX-Preflight package.
 our @EXPORT_OK = qw{ __normalize_options };
 
-our $VERSION = '0.000_050';
+our $VERSION = '0.000_051';
 
 use constant IN_SERVICE		=> 1;
 use constant IS_EXHAUSTIVE	=> 1;

@@ -1,3 +1,8 @@
+0.000_051	2026-10-10	T. R. Wyant
+    Correct Makefile.PL EUMM version accommodations.
+
+    Add explicit release_status to metadata.
+
 0.000_050	2026-10-01	T. R. Wyant
     Get rid of embedded File::Which.
 
